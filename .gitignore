@@ -1,5 +1,5 @@
-LiveBot3/bin/Debug/*
-LiveBot3/obj/Debug/*
+LiveBot3/bin/*
+LiveBot3/obj/*
 LiveBot3/ConfigDev.json
 LiveBot3/ConfigLive.json
 LiveBot3/DBCFG.json
