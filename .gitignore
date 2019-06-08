@@ -1,0 +1,7 @@
+LiveBot3/bin/Debug/*
+LiveBot3/obj/Debug/*
+LiveBot3/ConfigDev.json
+LiveBot3/ConfigLive.json
+LiveBot3/DBCFG.json
+LiveBot3/TCECFG.json
+.vs/*

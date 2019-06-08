@@ -1,0 +1,1 @@
+﻿Pour pouvoir envoyer des messages dans <#191567033064751104>, <#404613175024025601>, <#195095947871518721>, <#447134224349134848> et <#257881955184410624> vous devez avoir le rôle share. Pour l'obtenir, allez dans <#475547614255906816> et cliquez sur la réaction "Caméra". Le bot va alors vous donner le rôle share. N'oubliez pas qu'il ne faut pas discuter dans ces channels ;)

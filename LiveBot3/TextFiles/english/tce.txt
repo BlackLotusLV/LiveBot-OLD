@@ -1,0 +1,2 @@
+﻿TCE is an image sharing site for The Crew. <https://thecrew-exchange.com/>
+You can link your TCE account with your discord account and all pictures you send in <#191567033064751104> and <#447134224349134848> will be uploaded to TCE.

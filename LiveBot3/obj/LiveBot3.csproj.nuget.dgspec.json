@@ -1,0 +1,106 @@
+{
+  "format": 1,
+  "restore": {
+    "E:\\LiveBot\\GitLiveBot\\LiveBot3\\LiveBot3.csproj": {}
+  },
+  "projects": {
+    "E:\\LiveBot\\GitLiveBot\\LiveBot3\\LiveBot3.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\LiveBot\\GitLiveBot\\LiveBot3\\LiveBot3.csproj",
+        "projectName": "LiveBot3",
+        "projectPath": "E:\\LiveBot\\GitLiveBot\\LiveBot3\\LiveBot3.csproj",
+        "packagesPath": "C:\\Users\\rcpow\\.nuget\\packages\\",
+        "outputPath": "E:\\LiveBot\\GitLiveBot\\LiveBot3\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\rcpow\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json": {},
+          "https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json": {},
+          "https://www.myget.org/F/dsharpplus-nightly/api/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "dependencies": {
+            "DSharpPlus": {
+              "target": "Package",
+              "version": "[4.0.0-nightly-00600, )"
+            },
+            "DSharpPlus.CommandsNext": {
+              "target": "Package",
+              "version": "[4.0.0-nightly-00600, )"
+            },
+            "DSharpPlus.Interactivity": {
+              "target": "Package",
+              "version": "[4.0.0-nightly-00600, )"
+            },
+            "Microsoft.NETCore.Platforms": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[3.0.0-preview5.19224.8, )",
+              "autoReferenced": true
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[4.0.7, )"
+            },
+            "SixLabors.Core": {
+              "target": "Package",
+              "version": "[1.0.0-beta0007, )"
+            },
+            "SixLabors.Fonts": {
+              "target": "Package",
+              "version": "[1.0.0-beta0008, )"
+            },
+            "SixLabors.ImageSharp": {
+              "target": "Package",
+              "version": "[1.0.0-beta0006, )"
+            },
+            "SixLabors.ImageSharp.Drawing": {
+              "target": "Package",
+              "version": "[1.0.0-beta0006, )"
+            },
+            "SixLabors.Shapes.Text": {
+              "target": "Package",
+              "version": "[1.0.0-beta0008, )"
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": [
+            "Microsoft.NETCore.App"
+          ]
+        }
+      }
+    }
+  }
+}

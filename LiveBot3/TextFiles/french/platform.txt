@@ -1,0 +1,1 @@
+﻿Ce serveur a un système de rôles auto-assignable pour les différentes plateformes (PlayStation: bleu, Xbox: vert, PC: rouge). Pour montrer la plateforme sur laquelle vous jouez aux autres joueurs,vous pouvez récupérer ce role en allant dans <#475547614255906816> et en cliquant sur la réaction correspondant à votre plateforme de jeu (pc, xbox ou ps4).
