@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace LiveBot
 {
@@ -62,6 +64,15 @@ namespace LiveBot
                 "green" => Rgba32.Green,
                 _ => Rgba32.Transparent
             };
+        }
+        public static string GetConnString()
+        {
+            string json;
+            using (var fs = File.OpenRead("DBCFG.json"))
+            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+                json = sr.ReadToEnd();
+            var cfgjson = JsonConvert.DeserializeObject<DBJson>(json);
+            return $"Host={cfgjson.Host};Username={cfgjson.Username};Password={cfgjson.Password};Database={cfgjson.Database}";
         }
     }
 }

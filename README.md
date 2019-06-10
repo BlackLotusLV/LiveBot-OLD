@@ -1,4 +1,4 @@
-# LIve Bot
+# Live Bot
 # Still Work In Progress
 The bot has alot of code parts that are tied to a specific server.
 
@@ -11,8 +11,8 @@ The bot has alot of code parts that are tied to a specific server.
 
 ## Database installation
 
-In the folder DBBackup there is a file Backup.sql. If you don't use the postgres user for your database, you have to rename postgres on line 28 to your username. Then simply copy the code in console.
-If you are using PG admin, connect to your database, and under tools drop down, select "Query Tool". Past the code in, and execute it.
+Copy the code in console(psql), or query tool in pgadmin.
+Change line 28 to "ALTER SCHEMA livebot OWNER TO [your username here];"
 
 ## Config File setup
 

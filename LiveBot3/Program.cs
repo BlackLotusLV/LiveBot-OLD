@@ -11,6 +11,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace LiveBot
 {
@@ -20,6 +21,7 @@ namespace LiveBot
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
         public static string BotVersion = $"20190608_B";
+
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -55,8 +57,7 @@ namespace LiveBot
 
         public async Task RunBotAsync(string[] args)
         {
-            DataBase.DataBaseStart();
-            DataBase.GetReactionRoles();
+            DB.DBLists.LoadAllLists();
             var json = "";
             using (var fs = File.OpenRead("ConfigDev.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
@@ -97,15 +98,15 @@ namespace LiveBot
             this.Commands.CommandExecuted += this.Commands_CommandExecuted;
             this.Commands.CommandErrored += this.Commands_CommandErrored;
 
-            this.Commands.RegisterCommands<UngroupedCommands>();
-            this.Commands.RegisterCommands<BotCMD1Commands>();
-            this.Commands.RegisterCommands<OwnerCommands>();
+            this.Commands.RegisterCommands<Commands.UngroupedCommands>();
+            this.Commands.RegisterCommands<Commands.AdminCommands>();
+            this.Commands.RegisterCommands<Commands.OCommands>();
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
             DiscordGuild SPGuild = await Client.GetGuildAsync(325271225565970434); // Star Player server
             testserver = await Client.GetGuildAsync(282478449539678210); //test server
             DiscordGuild SavaGuild = await Client.GetGuildAsync(311533687756029953); // savas server
-            DiscordGuild test = await Client.GetGuildAsync(132671445376565248); // test
+            DiscordGuild test = await Client.GetGuildAsync(282478449539678210); // test
 
             // Channels
             TCWelcome = TCGuild.GetChannel(430006884834213888);
@@ -155,10 +156,11 @@ namespace LiveBot
 
         private async Task Presence_Updated(PresenceUpdateEventArgs e)
         {
-            foreach (DataRow row in DataBase.StreamNotificationSettings.Rows)
+            List<DB.StreamNotifications> StreamNotifications = DB.DBLists.StreamNotifications;
+            foreach (var row in StreamNotifications)
             {
-                DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(row["server_id"].ToString()));
-                DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(row["channel_id"].ToString()));
+                DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(row.Server_ID.ToString()));
+                DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(row.Channel_ID.ToString()));
                 if (e.User.Presence.Guild.Id == guild.Id)
                 {
                     LiveStreamer streamer = new LiveStreamer
@@ -192,11 +194,11 @@ namespace LiveBot
                     {
                         DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
                         bool role = false, game = false;
-                        if (row["roles_id"] != DBNull.Value)
+                        if (row.Roles_ID != null)
                         {
                             foreach (DiscordRole urole in StreamMember.Roles)
                             {
-                                foreach (string roleid in (string[])row["roles_id"])
+                                foreach (string roleid in (string[])row.Roles_ID)
                                 {
                                     if (urole.Id.ToString() == roleid)
                                     {
@@ -205,13 +207,13 @@ namespace LiveBot
                                 }
                             }
                         }
-                        else if (row["roles_id"] == DBNull.Value)
+                        else if (row.Roles_ID == null)
                         {
                             role = true;
                         }
-                        if (row["games"] != DBNull.Value)
+                        if (row.Games != null)
                         {
-                            foreach (string ugame in (string[])row["games"])
+                            foreach (string ugame in (string[])row.Games)
                             {
                                 if (e.User.Presence.Activity.RichPresence.Details == ugame)
                                 {
@@ -219,7 +221,7 @@ namespace LiveBot
                                 }
                             }
                         }
-                        else if (row["games"] == DBNull.Value)
+                        else if (row.Games == null)
                         {
                             game = true;
                         }
@@ -276,7 +278,7 @@ namespace LiveBot
             }
             if (!e.Author.IsBot)
             {
-                bool checkglobal = false, checklocal = false, update = false;
+                bool checkglobal = false, checklocal = false;
                 Random r = new Random();
                 int MinInterval = 10, MaxInterval = 30, MinMoney = 5, MaxMoney = 25;
                 int points_added = r.Next(MinInterval, MaxInterval);
@@ -288,15 +290,18 @@ namespace LiveBot
                         checkglobal = true;
                         if (Guser.Time.AddMinutes(2) <= DateTime.Now)
                         {
-                            DataRow[] global = DataBase.Leaderboard.Select($"id_user='{e.Author.Id}'");
-                            global[0]["followers"] = (long)global[0]["followers"] + points_added;
-                            global[0]["bucks"] = (long)global[0]["bucks"] + money_added;
-                            if ((int)global[0]["level"] < (long)global[0]["followers"] / (300 * ((int)global[0]["level"] + 1) * 0.5))
+                            List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
+                            var global = (from lb in Leaderboard
+                                        where lb.ID_User == e.Author.Id.ToString()
+                                        select lb).ToList();
+                            global[0].Followers = (long)global[0].Followers + points_added;
+                            global[0].Bucks = (long)global[0].Bucks + money_added;
+                            if ((int)global[0].Level < (long)global[0].Followers / (300 * ((int)global[0].Level + 1) * 0.5))
                             {
-                                global[0]["level"] = (int)global[0]["level"] + 1;
+                                global[0].Level = (int)global[0].Level + 1;
                             }
                             Guser.Time = DateTime.Now;
-                            update = true;
+                            DB.DBLists.UpdateLeaderboard(global);
                         }
                     }
                 }
@@ -309,33 +314,43 @@ namespace LiveBot
                             checklocal = true;
                             if (Suser.Time.AddMinutes(2) <= DateTime.Now)
                             {
-                                DataRow[] local = DataBase.Server_Leaderboard.Select($"user_id='{e.Author.Id}' and server_id='{e.Channel.Guild.Id}'");
-                                local[0]["followers"] = (long)local[0]["followers"] + points_added;
-                                Suser.Time = DateTime.Now;
-                                update = true;
+                                List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
+                                var local = (from lb in Leaderboard
+                                             where lb.User_ID == e.Author.Id.ToString()
+                                             where lb.Server_ID == e.Channel.Guild.Id.ToString()
+                                             select lb).ToList();
+                                local[0].Followers = (long)local[0].Followers + points_added;
+                                Suser.Time = DateTime.Now;DB.DBLists.UpdateServerRanks(local);
                             }
                         }
                     }
                 }
                 if (!checkglobal)
                 {
-                    DataRow[] global = DataBase.Leaderboard.Select($"id_user='{e.Author.Id}'");
-                    if (global.Length == 0)
+                    List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
+                    var global = (from lb in Leaderboard
+                                  where lb.ID_User == e.Author.Id.ToString()
+                                  select lb).ToList();
+                    if (global.Count == 0)
                     {
-                        DataRow newrow = DataBase.Leaderboard.NewRow();
-                        newrow["id_user"] = e.Author.Id.ToString();
-                        newrow["followers"] = 0;
-                        newrow["level"] = 0;
-                        newrow["bucks"] = 0;
-                        DataBase.Leaderboard.Rows.Add(newrow);
+                        DB.Leaderboard newEntry = new DB.Leaderboard
+                        {
+                            ID_User = e.Author.Id.ToString(),
+                            Followers = 0,
+                            Level = 0,
+                            Bucks = 0
+                        };
+                        DB.DBLists.InsertLeaderboard(newEntry);
                     }
-                    global = DataBase.Leaderboard.Select($"id_user='{e.Author.Id}'");
+                    global = (from lb in Leaderboard
+                              where lb.ID_User == e.Author.Id.ToString()
+                              select lb).ToList();
                     points_added = r.Next(MinInterval, MaxInterval);
-                    global[0]["followers"] = (long)global[0]["followers"] + points_added;
-                    global[0]["bucks"] = (long)global[0]["bucks"] + money_added;
-                    if ((int)global[0]["level"] < (long)global[0]["followers"] / (300 * ((int)global[0]["level"] + 1) * 0.5))
+                    global[0].Followers = (long)global[0].Followers + points_added;
+                    global[0].Bucks = (long)global[0].Bucks + money_added;
+                    if ((int)global[0].Level < (long)global[0].Followers / (300 * ((int)global[0].Level + 1) * 0.5))
                     {
-                        global[0]["level"] = (int)global[0]["level"] + 1;
+                        global[0].Level = (int)global[0].Level + 1;
                     }
                     LevelTimer NewToList = new LevelTimer
                     {
@@ -343,21 +358,30 @@ namespace LiveBot
                         User = e.Author
                     };
                     UserLevelTimer.Add(NewToList);
-                    update = true;
+                    DB.DBLists.UpdateLeaderboard(global);
                 }
                 if (!checklocal)
                 {
-                    DataRow[] local = DataBase.Server_Leaderboard.Select($"user_id='{e.Author.Id}' and server_id='{e.Channel.Guild.Id}'");
-                    if (local.Length == 0)
+                    List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
+                    var local = (from lb in Leaderboard
+                                 where lb.User_ID == e.Author.Id.ToString()
+                                 where lb.Server_ID == e.Channel.Guild.Id.ToString()
+                                 select lb).ToList();
+                    if (local.Count == 0)
                     {
-                        DataRow newrow = DataBase.Server_Leaderboard.NewRow();
-                        newrow["user_id"] = e.Author.Id.ToString();
-                        newrow["server_id"] = e.Channel.Guild.Id.ToString();
-                        newrow["followers"] = 0;
-                        DataBase.Server_Leaderboard.Rows.Add(newrow);
+                        DB.ServerRanks newEntry = new DB.ServerRanks
+                        {
+                            User_ID = e.Author.Id.ToString(),
+                            Server_ID = e.Channel.Guild.Id.ToString(),
+                            Followers = 0
+                        };
+                        DB.DBLists.InsertServerRanks(newEntry);
                     }
-                    local = DataBase.Server_Leaderboard.Select($"user_id='{e.Author.Id}' and server_id='{e.Channel.Guild.Id}'");
-                    local[0]["followers"] = (long)local[0]["followers"] + points_added;
+                    local = (from lb in Leaderboard
+                             where lb.User_ID == e.Author.Id.ToString()
+                             where lb.Server_ID == e.Channel.Guild.Id.ToString()
+                             select lb).ToList();
+                    local[0].Followers = (long)local[0].Followers + points_added;
                     ServerLevelTimer NewToList = new ServerLevelTimer
                     {
                         Time = DateTime.Now,
@@ -365,11 +389,7 @@ namespace LiveBot
                         Guild = e.Guild
                     };
                     ServerUserLevelTimer.Add(NewToList);
-                    update = true;
-                }
-                if (update == true)
-                {
-                    DataBase.UpdateLeaderboards("base");
+                    DB.DBLists.UpdateServerRanks(local);
                 }
             }
         }
@@ -378,17 +398,22 @@ namespace LiveBot
         {
             if (e.Emoji.Id != 0)
             {
-                DataTable dt = DataBase.Reaction_Roles_DT;
                 DiscordEmoji used = e.Emoji;
                 DiscordMessage sourcemsg = e.Message;
                 DiscordUser username = e.User;
                 //ulong f = e.User.Id;
-                DataRow[] result = dt.Select($"server_id={e.Channel.Guild.Id.ToString()} AND message_id={sourcemsg.Id.ToString()} AND reaction_id={used.Id.ToString()}");
-                if (result.Length == 1)
+
+                List<DB.ReactionRoles> ReactionRoles = DB.DBLists.ReactionRoles;
+                var RR = (from rr in ReactionRoles
+                         where rr.Server_ID == e.Channel.Guild.Id.ToString()
+                         where rr.Message_ID == sourcemsg.Id.ToString()
+                         where rr.Reaction_ID == used.Id.ToString()
+                         select rr).ToList();
+                if (RR.Count == 1)
                 {
-                    DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(result[0]["server_id"].ToString()));
+                    DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(RR[0].Server_ID.ToString()));
                     DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                    await rolemember.GrantRoleAsync(guild.GetRole(UInt64.Parse(result[0]["role_id"].ToString())));
+                    await rolemember.GrantRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
                 }
             }
         }
@@ -397,17 +422,22 @@ namespace LiveBot
         {
             if (e.Emoji.Id != 0)
             {
-                DataTable dt = DataBase.Reaction_Roles_DT;
                 DiscordEmoji used = e.Emoji;
                 DiscordMessage sourcemsg = e.Message;
                 DiscordUser username = e.User;
                 //ulong f = e.User.Id;
-                DataRow[] result = dt.Select($"server_id={e.Channel.Guild.Id.ToString()} AND message_id={sourcemsg.Id.ToString()} AND reaction_id={used.Id.ToString()}");
-                if (result.Length == 1)
+
+                List<DB.ReactionRoles> ReactionRoles = DB.DBLists.ReactionRoles;
+                var RR = (from rr in ReactionRoles
+                          where rr.Server_ID == e.Channel.Guild.Id.ToString()
+                          where rr.Message_ID == sourcemsg.Id.ToString()
+                          where rr.Reaction_ID == used.Id.ToString()
+                          select rr).ToList();
+                if (RR.Count == 1)
                 {
-                    DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(result[0]["server_id"].ToString()));
+                    DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(RR[0].Server_ID.ToString()));
                     DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                    await rolemember.RevokeRoleAsync(guild.GetRole(UInt64.Parse(result[0]["role_id"].ToString())));
+                    await rolemember.RevokeRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
                 }
             }
         }
@@ -499,8 +529,7 @@ namespace LiveBot
             DateTimeOffset time = DateTimeOffset.Now.UtcDateTime;
             DateTimeOffset beforetime = time.AddSeconds(-5);
             DateTimeOffset aftertime = time.AddSeconds(10);
-            DataBase.UpdateTables();
-            DataTable User_warnings = DataBase.User_warnings;
+            List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
             string uid = e.Member.Id.ToString();
             bool UserCheck = false;
             if (e.Guild == TCGuild)
@@ -520,26 +549,27 @@ namespace LiveBot
                 {
                     if (item.CreationTimestamp >= beforetime && item.CreationTimestamp <= aftertime)
                     {
-                        foreach (DataRow rows in User_warnings.Rows)
+                        foreach (var rows in userWarnings)
                         {
-                            if (rows["id_user"].ToString() == uid)
+                            if (rows.ID_User.ToString() == uid)
                             {
                                 UserCheck = true;
-                                rows["kick_count"] = (int)rows["kick_count"] + 1;
+                                rows.Kick_Count = (int)rows.Kick_Count + 1;
+                                DB.DBLists.UpdateUserWarnings(userWarnings);
                             }
                         }
                         if (!UserCheck)
                         {
-                            Console.WriteLine("kicked");
-                            DataRow NewUser = User_warnings.NewRow();
-                            NewUser["warning_level"] = 0;
-                            NewUser["warning_count"] = 0;
-                            NewUser["kick_count"] = 1;
-                            NewUser["ban_count"] = 0;
-                            NewUser["id_user"] = uid;
-                            User_warnings.Rows.Add(NewUser);
+                            DB.UserWarnings newEntry = new DB.UserWarnings
+                            {
+                                Warning_Level = 0,
+                                Warning_Count = 0,
+                                Kick_Count = 1,
+                                Ban_Count = 0,
+                                ID_User = uid
+                            };
+                            DB.DBLists.InsertUserWarnings(newEntry);
                         }
-                        DataBase.UserWarnAdapter.Update(User_warnings);
                     }
                 }
             }
@@ -547,31 +577,33 @@ namespace LiveBot
 
         private async Task Ban_Counter(GuildBanAddEventArgs e)
         {
-            DataBase.UpdateTables();
-            DataTable User_warnings = DataBase.User_warnings;
+            List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
             string uid = e.Member.Id.ToString();
             bool UserCheck = false;
             if (e.Guild == TCGuild)
             {
-                foreach (DataRow rows in User_warnings.Rows)
+                foreach (var rows in userWarnings)
                 {
-                    if (rows["id_user"].ToString() == uid)
+                    if (rows.ID_User.ToString() == uid)
                     {
                         UserCheck = true;
-                        rows["ban_count"] = (int)rows["ban_count"] + 1;
+                        rows.Ban_Count = (int)rows.Ban_Count + 1;
+                        DB.DBLists.UpdateUserWarnings(userWarnings);
                     }
                 }
                 if (!UserCheck)
                 {
-                    DataRow NewUser = User_warnings.NewRow();
-                    NewUser["warning_level"] = 0;
-                    NewUser["warning_count"] = 0;
-                    NewUser["kick_count"] = 0;
-                    NewUser["ban_count"] = 1;
-                    NewUser["id_user"] = uid;
-                    User_warnings.Rows.Add(NewUser);
+
+                    DB.UserWarnings newEntry = new DB.UserWarnings
+                    {
+                        Warning_Level = 0,
+                        Warning_Count = 0,
+                        Kick_Count = 0,
+                        Ban_Count = 1,
+                        ID_User = uid
+                    };
+                    DB.DBLists.InsertUserWarnings(newEntry);
                 }
-                DataBase.UserWarnAdapter.Update(User_warnings);
             }
             await Task.Delay(0);
         }

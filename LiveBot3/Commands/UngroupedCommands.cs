@@ -19,8 +19,12 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Npgsql.EntityFrameworkCore;
+using System.Linq;
 
-namespace LiveBot
+namespace LiveBot.Commands
 {
     public class UngroupedCommands : BaseCommandModule
     {
@@ -451,31 +455,30 @@ namespace LiveBot
         public async Task GetKicks(CommandContext ctx)
         {
             await ctx.Message.DeleteAsync();
-            DataBase.UpdateTables();
-            DataTable User_warnings = DataBase.User_warnings;
-            DataTable Warnings = DataBase.Warnings;
+            List<DB.UserWarnings> UWarnings = DB.DBLists.UserWarnings;
+            List<DB.Warnings> Warn = DB.DBLists.Warnings;
             string uid = ctx.User.Id.ToString();
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
-            foreach (DataRow row in User_warnings.Rows)
+            var UserWarnings = (from uw in UWarnings
+                          where uw.ID_User == ctx.User.Id.ToString()
+                          select uw).ToList();
+            var WarningList = (from w in Warn
+                               where w.User_ID == ctx.User.Id.ToString()
+                               select w).ToList();
+            if (UserWarnings.Count==1)
             {
-                if (row["id_user"].ToString() == uid)
+                UserCheck = true;
+                kcount = (int)UserWarnings[0].Kick_Count;
+                bcount = (int)UserWarnings[0].Ban_Count;
+                wcount = (int)UserWarnings[0].Warning_Count;
+                wlevel = (int)UserWarnings[0].Warning_Level;
+                foreach (var warning in WarningList)
                 {
-                    UserCheck = true;
-                    kcount = (int)row["kick_count"];
-                    bcount = (int)row["ban_count"];
-                    wcount = (int)row["warning_count"];
-                    wlevel = (int)row["warning_level"];
-                    foreach (DataRow item in Warnings.Rows)
+                    if (warning.Active==true)
                     {
-                        if (item["user_id"].ToString() == row["id_user"].ToString())
-                        {
-                            if ((bool)item["active"] == true)
-                            {
-                                reason += $"ID: {item["id_warning"].ToString()}\t By: <@{item["admin_id"].ToString()}>\t Reason: {item["reason"].ToString()}\n";
-                            }
-                        }
+                        reason += $"By: <@{warning.Admin_ID}>\t Reason: {warning.Reason}\n";
                     }
                 }
             }
@@ -511,7 +514,12 @@ namespace LiveBot
         [Description("Gives a random vehicle from a discipline, if discipline allows both bikes and cars, it will give two vehicles")]
         public async Task RVehicle(CommandContext ctx, DiscordEmoji discipline = null)
         {
-            string disciplinename = (discipline.Id) switch
+            string disciplinename;
+            if (discipline == null)
+            {
+                disciplinename = "Street Race";
+            }
+            disciplinename = (discipline.Id) switch
             {
                 449686964757594123 => "Power Boat",
                 449686964925628426 => "Alpha Grand Prix",
@@ -529,35 +537,40 @@ namespace LiveBot
                 449688867251945493 => "Drag Race",
                 449688866870525963 => "Drift",
                 449688867164127232 => "Street Race",
-                _ => "Street Race",
+                _ => "Street Race"
             };
+            List<DB.VehicleList> VehicleList = DB.DBLists.VehicleList;
+            List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList;
             Random r = new Random();
             string output;
             if (disciplinename == "Street Race")
             {
-                DataRow[] carlist = DataBase.vehicle_list.Select($"discipline_name='Street Race' and type='car'");
-                DataRow[] bikelist = DataBase.vehicle_list.Select($"discipline_name='Street Race' and type='bike'");
-
-                int row = r.Next(0, carlist.Length);
-                output = $"**Car:** {carlist[row]["brand"]} {carlist[row]["model"]} {carlist[row]["year"]}\n";
-                row = r.Next(0, bikelist.Length);
-                output += $"**Bike:** {bikelist[row]["brand"]} {bikelist[row]["model"]} {bikelist[row]["year"]}";
-            }
-            else if (discipline == null)
-            {
-                DataRow[] disciplinelist = DataBase.vehicle_list.Select();
-                int row = r.Next(0, disciplinelist.Length);
-                output = $"{disciplinelist[row]["discipline_name"]} - {disciplinelist[row]["model"]} {disciplinelist[row]["year"]}";
+                var CarList = (from vl in VehicleList
+                               join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                               where dl.Discipline_Name == disciplinename
+                               where vl.Type == "car"
+                               select vl).ToList();
+                var BikeList = (from vl in VehicleList
+                                join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                                where dl.Discipline_Name == disciplinename
+                                where vl.Type == "bike"
+                                select vl).ToList();
+                int row = r.Next(0, CarList.Count);
+                output = $"**Car:** {CarList[row].Brand} {CarList[row].Model} {CarList[row].Year}\n";
+                row = r.Next(0, BikeList.Count);
+                output += $"**Bike:** {BikeList[row].Brand} {BikeList[row].Model} {BikeList[row].Year}";
             }
             else
             {
-                DataRow[] disciplinelist = DataBase.vehicle_list.Select($"discipline_name='{disciplinename}'");
-                int row = r.Next(0, disciplinelist.Length);
-                output = $"{disciplinelist[row]["brand"]} {disciplinelist[row]["model"]} {disciplinelist[row]["year"]}";
+                var disciplinelist = (from vl in VehicleList
+                                      join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                                      where dl.Discipline_Name == disciplinename
+                                      select vl).ToList();
+                int row = r.Next(0, disciplinelist.Count);
+                output = $"{disciplinelist[row].Brand} {disciplinelist[row].Model} {disciplinelist[row].Year} ({disciplinelist[row].Type})";
             }
             await ctx.RespondAsync(output);
         }
-
         [Command("rank")]
         public async Task Rank(CommandContext ctx, DiscordMember user = null)
         {
@@ -565,19 +578,19 @@ namespace LiveBot
             {
                 user = ctx.Member;
             }
-            string rank = "";
-            NpgsqlConnection conn = DataBase.DBConnection();
-            conn.Open();
-            NpgsqlCommand selectrank = new NpgsqlCommand($"with r as (select *,row_number() over(order by followers desc) as rank from server_ranks where server_id='{ctx.Channel.Guild.Id}') select * from r where user_id='{user.Id}'", conn);
-            using (NpgsqlDataReader dr = selectrank.ExecuteReader())
+            string output = "";
+            int rank = 0;
+            List<DB.ServerRanks> SR = DB.DBLists.ServerRanks;
+            List<DB.ServerRanks> serverRanks = SR.Where(w=>w.Server_ID==ctx.Guild.Id.ToString()).OrderByDescending(x => x.Followers).ToList();
+            foreach (var item in serverRanks)
             {
-                while (dr.Read())
+                rank++;
+                if (item.User_ID == user.Id.ToString())
                 {
-                    rank = $"{user.Username}'s rank: {dr["rank"]}\tFollowers: {dr["followers"]}\t";
+                    output = $"{user.Username}'s rank:{rank}\t Followers: {item.Followers}";
                 }
             }
-            conn.Close();
-            await ctx.RespondAsync(rank);
+            await ctx.RespondAsync(output);
         }
 
         [Command("globalrank")]
@@ -588,21 +601,21 @@ namespace LiveBot
             {
                 user = ctx.Member;
             }
-            string rank = "";
-            NpgsqlConnection conn = DataBase.DBConnection();
-            conn.Open();
-            NpgsqlCommand selectrank = new NpgsqlCommand($"with r as (select *,row_number() over(order by followers desc) as rank from leaderboard) select * from r where id_user='{user.Id}'", conn);
-            using (NpgsqlDataReader dr = selectrank.ExecuteReader())
+            string output = "";
+            int rank = 0;
+            List<DB.Leaderboard> LB = DB.DBLists.Leaderboard;
+            List<DB.Leaderboard> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
+            foreach (var item in leaderbaords)
             {
-                while (dr.Read())
+                rank++;
+                if (item.ID_User==user.Id.ToString())
                 {
-                    rank = $"{user.Username}'s rank: {dr["rank"]}\tFollowers: {dr["followers"]}\tLevel: {dr["level"]}";
+                    output = $"{user.Username}'s rank:{rank}\t Followers: {item.Followers}\t Level {item.Level}";
                 }
             }
-            conn.Close();
-            await ctx.RespondAsync(rank);
+            await ctx.RespondAsync(output);
         }
-
+        
         [Command("profile")]
         [Description("User profile command")]
         public async Task Profile(CommandContext ctx,
@@ -633,25 +646,32 @@ namespace LiveBot
                 }
             }
 
-            DataRow[] global = DataBase.Leaderboard.Select($"id_user='{user.Id}'");
 
-            NpgsqlDataAdapter adapter = new NpgsqlDataAdapter();
-            NpgsqlCommand GetUserSettings = new NpgsqlCommand($"select us.user_id as uid, background_colour, text_colour, border_colour, user_info, bi.image from user_settings us inner join user_images ui on us.image_id = ui.id_user_images and us.user_id = ui.user_id inner join background_image bi on ui.bg_id = bi.id_bg where us.user_id = '{user.Id}'", DataBase.DBConnection());
-            adapter.SelectCommand = GetUserSettings;
-            DataTable dt = new DataTable();
-            adapter.Fill(dt);
-            byte[] baseBG = (byte[])dt.Rows[0]["image"];
+            List<DB.Leaderboard> Leaderboard=DB.DBLists.Leaderboard;
+            List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
+            var global = (from gl in Leaderboard
+                          where gl.ID_User == user.Id.ToString()
+                          select gl).ToList();
+            var UserSettings = (from us in USettings
+                                join ui in DB.DBLists.UserImages on us.Image_ID equals ui.ID_User_Images
+                                join bi in DB.DBLists.BackgroundImage on ui.BG_ID equals bi.ID_BG
+                                where us.User_ID == ui.User_ID
+                                where us.User_ID == user.Id.ToString()
+                                select new {us,ui,bi }).ToList();
+
+
+            byte[] baseBG = (byte[])UserSettings[0].bi.Image;
             var webclinet = new WebClient();
             byte[] profilepic = webclinet.DownloadData(user.AvatarUrl);
 
             string username = user.Username;
-            string level = global[0]["level"].ToString();
-            string followers = $"{global[0]["followers"].ToString()}/{(int)global[0]["level"] * (300 * ((int)global[0]["level"] + 1) * 0.5)}";
-            string bucks = global[0]["bucks"].ToString();
-            string bio = dt.Rows[0]["user_info"].ToString();
-            Rgba32 bordercolour = CustomMethod.GetColour(dt.Rows[0]["border_colour"].ToString());
-            Rgba32 textcolour = CustomMethod.GetColour(dt.Rows[0]["text_colour"].ToString());
-            Rgba32 backfieldcolour = CustomMethod.GetColour(dt.Rows[0]["background_colour"].ToString());
+            string level = global[0].Level.ToString();
+            string followers = $"{global[0].Followers.ToString()}/{(int)global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)}";
+            string bucks = global[0].Bucks.ToString();
+            string bio = UserSettings[0].us.User_Info.ToString();
+            Rgba32 bordercolour = CustomMethod.GetColour(UserSettings[0].us.Border_Colour.ToString());
+            Rgba32 textcolour = CustomMethod.GetColour(UserSettings[0].us.Text_Colour.ToString());
+            Rgba32 backfieldcolour = CustomMethod.GetColour(UserSettings[0].us.Background_Colour.ToString());
 
             using Image<Rgba32> pfp = Image.Load<Rgba32>(profilepic);
             using Image<Rgba32> picture = new Image<Rgba32>(600, 600);
@@ -756,30 +776,25 @@ namespace LiveBot
             string output = "";
             if (input[0] == "update" && input.Length > 1)
             {
-                NpgsqlDataAdapter adapter = new NpgsqlDataAdapter();
-                NpgsqlCommand GetUserSettings = new NpgsqlCommand($"select * from user_settings where user_id='{ctx.User.Id}'", DataBase.DBConnection());
-                adapter.SelectCommand = GetUserSettings;
-                NpgsqlCommand SetUserSettings = new NpgsqlCommand($"update user_settings set image_id=@iid,background_colour=@bgc, text_colour=@txtc, border_colour=@bc, user_info=@ui where user_id='{ctx.User.Id}'", DataBase.DBConnection());
-                SetUserSettings.Parameters.Add(new NpgsqlParameter("@iid", NpgsqlDbType.Integer, sizeof(int), "image_id"));
-                SetUserSettings.Parameters.Add(new NpgsqlParameter("@bgc", NpgsqlDbType.Text, 500, "background_colour"));
-                SetUserSettings.Parameters.Add(new NpgsqlParameter("@txtc", NpgsqlDbType.Text, 500, "text_colour"));
-                SetUserSettings.Parameters.Add(new NpgsqlParameter("@bc", NpgsqlDbType.Text, 500, "border_colour"));
-                SetUserSettings.Parameters.Add(new NpgsqlParameter("@ui", NpgsqlDbType.Text, 500, "user_info"));
-                adapter.UpdateCommand = SetUserSettings;
-                DataTable dt = new DataTable();
-                adapter.Fill(dt);
+                List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
+                var UserSettings = (from us in USettings
+                                    where us.User_ID == ctx.User.Id.ToString()
+                                    select us).ToList();
                 if (input.Length > 2 && (input[1] == "bg" || input[1] == "background"))
                 {
-                    DataBase.UpdateUserBackground("table");
-                    DataRow[] row = DataBase.User_Background.Select($"user_id='{ctx.User.Id}' and bg_id={Int32.Parse(input[2])}");
-                    if (row.Length == 0)
+                    List<DB.UserImages> UImages = DB.DBLists.UserImages;
+                    var UserImages = (from ui in UImages
+                                      where ui.User_ID == ctx.User.Id.ToString()
+                                      where ui.BG_ID == Int32.Parse(input[2])
+                                      select ui).ToList();
+                    if (UserImages.Count == 0)
                     {
                         output = "You do not have this background!";
                     }
-                    else if (row.Length == 1)
+                    else if (UserImages.Count == 1)
                     {
-                        dt.Rows[0]["image_id"] = row[0]["id_user_images"];
-                        adapter.Update(dt);
+                        UserSettings[0].Image_ID = UserImages[0].ID_User_Images;
+                        DB.DBLists.UpdateUserSettings(USettings);
                         output = $"You have changed your profile background";
                     }
                 }
@@ -800,8 +815,9 @@ namespace LiveBot
                         */
                         sb.Append(input[i] + " ");
                     }
-                    dt.Rows[0]["user_info"] = sb.ToString();
-                    adapter.Update(dt);
+                    UserSettings[0].User_Info = sb.ToString();
+
+                    DB.DBLists.UpdateUserSettings(USettings);
                     output = "You have changed your user info.";
                 }
                 else
@@ -826,32 +842,33 @@ namespace LiveBot
         [Description("Shows the global live bot leaderboard")]
         public async Task GlobalTop(CommandContext ctx, int? page = null)
         {
-            NpgsqlConnection conn = DataBase.DBConnection();
             if (page == null || page <= 0)
             {
                 page = 1;
             }
             string list = "", personalscore = "";
-            DataRow[] user = DataBase.Leaderboard.Select("", "followers desc");
+            List<DB.Leaderboard> leaderboard = DB.DBLists.Leaderboard;
+            var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
-                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i]["id_user"].ToString()));
-                list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i]["followers"]}\tLevel:{user[i]["level"]}\n";
-                if (i == user.Length - 1)
+                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].ID_User.ToString()));
+                list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}\n";
+                if (i == user.Count - 1)
                 {
                     i = (int)page * 10;
                 }
             }
-            conn.Open();
-            NpgsqlCommand selectrank = new NpgsqlCommand($"with r as (select *,row_number() over(order by followers desc) as rank from leaderboard) select * from r where id_user='{ctx.User.Id}'", conn);
-            using (NpgsqlDataReader dr = selectrank.ExecuteReader())
+            int rank = 0;
+            List<DB.Leaderboard> LB = DB.DBLists.Leaderboard;
+            List<DB.Leaderboard> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
+            foreach (var item in leaderbaords)
             {
-                while (dr.Read())
+                rank++;
+                if (item.ID_User == ctx.User.Id.ToString())
                 {
-                    personalscore = $"⭐Rank: {dr["rank"]}\tFollowers: {dr["followers"]}\tLevel: {dr["level"]}";
+                    personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t Level {item.Level}";
                 }
             }
-            conn.Close();
             await ctx.RespondAsync("```csharp\n" +
                 "📋 Rank | Username\n" +
                 $"{list}\n" +
@@ -865,32 +882,33 @@ namespace LiveBot
         [Description("Shows the server specific leaderboard")]
         public async Task ServerTop(CommandContext ctx, int? page = null)
         {
-            NpgsqlConnection conn = DataBase.DBConnection();
             if (page == null || page <= 0)
             {
                 page = 1;
             }
             string list = "", personalscore = "";
-            DataRow[] user = DataBase.Server_Leaderboard.Select($"server_id={ctx.Guild.Id.ToString()}", "followers desc");
+            List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
+            var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
-                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i]["user_id"].ToString()));
-                list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i]["followers"]}\n";
-                if (i == user.Length - 1)
+                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].User_ID.ToString()));
+                list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\n";
+                if (i == user.Count - 1)
                 {
                     i = (int)page * 10;
                 }
             }
-            conn.Open();
-            NpgsqlCommand selectrank = new NpgsqlCommand($"with r as (select *,row_number() over(order by followers desc) as rank from server_ranks where server_id='{ctx.Channel.Guild.Id}') select * from r where user_id='{ctx.User.Id}'", conn);
-            using (NpgsqlDataReader dr = selectrank.ExecuteReader())
+            int rank = 0;
+            List<DB.ServerRanks> LB = DB.DBLists.ServerRanks;
+            List<DB.ServerRanks> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
+            foreach (var item in leaderbaords)
             {
-                while (dr.Read())
+                rank++;
+                if (item.User_ID == ctx.User.Id.ToString())
                 {
-                    personalscore = $"⭐Rank: {dr["rank"]}\tFollowers: {dr["followers"]}\t";
+                    personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t";
                 }
             }
-            conn.Close();
             await ctx.RespondAsync("```csharp\n" +
                 "📋 Rank | Username\n" +
                 $"{list}\n" +
@@ -907,29 +925,30 @@ namespace LiveBot
             {
                 page = 1;
             }
-            NpgsqlDataAdapter adapter = new NpgsqlDataAdapter();
-            NpgsqlCommand GetUserSettings = new NpgsqlCommand($"select b.id_bg,b.name from background_image b inner join user_images ui on b.id_bg=ui.bg_id where ui.user_id='{ctx.User.Id}'", DataBase.DBConnection());
-            adapter.SelectCommand = GetUserSettings;
-            DataTable dt = new DataTable();
-            adapter.Fill(dt);
+            List<DB.UserImages> userImages = DB.DBLists.UserImages;
+            List<DB.BackgroundImage> Backgrounds = DB.DBLists.BackgroundImage;
+            var List = (from bi in Backgrounds
+                        join ui in userImages on bi.ID_BG equals ui.BG_ID
+                        where ui.User_ID == ctx.User.Id.ToString()
+                        select bi).ToList();
             StringBuilder sb = new StringBuilder();
             sb.Append("Visual representation of the backgrounds can be viewed here: <http://bit.ly/LiveBG>\n```csharp\n[ID]\tBackground Name\n");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
                 bool check = false;
-                foreach (DataRow userimage in dt.Rows)
+                foreach (var userimage in List)
                 {
-                    if ((int)DataBase.Backgrounds.Rows[i]["id_bg"] == (int)userimage["id_bg"])
+                    if (Backgrounds[i].ID_BG == (int)userimage.ID_BG)
                     {
-                        sb.Append($"[{DataBase.Backgrounds.Rows[i]["id_bg"]}]\t# {DataBase.Backgrounds.Rows[i]["name"]}\n\t\t\t [OWNED]\n");
+                        sb.Append($"[{Backgrounds[i].ID_BG}]\t# {Backgrounds[i].Name}\n\t\t\t [OWNED]\n");
                         check = true;
                     }
                 }
                 if (check == false)
                 {
-                    sb.Append($"[{DataBase.Backgrounds.Rows[i]["id_bg"]}]\t# {DataBase.Backgrounds.Rows[i]["name"]}\n\t\t\t Price:{DataBase.Backgrounds.Rows[i]["price"]} Bucks\n");
+                    sb.Append($"[{Backgrounds[i].ID_BG}]\t# {Backgrounds[i].Name}\n\t\t\t Price:{Backgrounds[i].Price} Bucks\n");
                 }
-                if (i == DataBase.Backgrounds.Rows.Count - 1)
+                if (i == Backgrounds.Count - 1)
                 {
                     i = (int)page * 10;
                 }
@@ -944,30 +963,40 @@ namespace LiveBot
             string output = "";
             if (what == "background" || what == "bg")
             {
-                DataRow[] backgroundrow = DataBase.User_Background.Select($"user_id='{ctx.User.Id}' and bg_id={id}");
-                DataRow[] background = DataBase.Backgrounds.Select($"id_bg={id}");
-                DataRow[] user = DataBase.Leaderboard.Select($"id_user='{ctx.User.Id}'");
-                if (background.Length == 1)
+                List<DB.UserImages> UserImg = DB.DBLists.UserImages;
+                var backgroundrow = (from ui in UserImg
+                                     where ui.User_ID == ctx.User.Id.ToString()
+                                     where ui.BG_ID == id
+                                     select ui).ToList();
+                List<DB.BackgroundImage> BG = DB.DBLists.BackgroundImage;
+                var background = (from bg in BG
+                                  where bg.ID_BG == id
+                                  select bg).ToList();
+                List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
+                var user = (from lb in Leaderboard
+                            where lb.ID_User == ctx.User.Id.ToString()
+                            select lb).ToList();
+                if (background.Count == 1)
                 {
-                    if (backgroundrow.Length == 0)
+                    if (backgroundrow.Count == 0)
                     {
-                        if ((long)background[0]["price"] <= (long)user[0]["bucks"])
+                        if ((long)background[0].Price <= (long)user[0].Bucks)
                         {
-                            user[0]["bucks"] = (long)user[0]["bucks"] - (long)background[0]["price"];
-                            DataRow newrow = DataBase.User_Background.NewRow();
-                            newrow["user_id"] = ctx.User.Id.ToString();
-                            newrow["bg_id"] = id;
-                            DataBase.User_Background.Rows.Add(newrow);
-                            DataBase.UpdateLeaderboards("base");
-                            DataBase.UpdateUserBackground("base");
-                            output = $"You have bought the \"{background[0]["name"]}\" background.";
+                            user[0].Bucks = (long)user[0].Bucks - (long)background[0].Price;
+                            DB.UserImages newEntry = new DB.UserImages
+                            {
+                                User_ID = ctx.User.Id.ToString(),
+                                BG_ID = id
+                            };
+                            DB.DBLists.InsertUserImages(newEntry);
+                            output = $"You have bought the \"{background[0].Name}\" background.";
                         }
                         else
                         {
                             output = $"You don't have enough bucks to buy this background.";
                         }
                     }
-                    else if (backgroundrow.Length == 1)
+                    else if (backgroundrow.Count == 1)
                     {
                         output = $"You already have this background, use `/background` command to ";
                     }
@@ -980,12 +1009,12 @@ namespace LiveBot
             await ctx.RespondAsync(output);
         }
         [Command("summit")]
-        [Cooldown(1,60,CooldownBucketType.User)]
-        public async Task Summit(CommandContext ctx, string platform="pc")
+        [Cooldown(1, 60, CooldownBucketType.User)]
+        public async Task Summit(CommandContext ctx, string platform = "pc")
         {
             switch (platform.ToLower())
             {
-                case"xbox":
+                case "xbox":
                 case "xb1":
                 case "xb":
                 case "xbox1":
@@ -1005,9 +1034,9 @@ namespace LiveBot
                     platform = "pc";
                     break;
             }
-            string EventJsonString="";
+            string EventJsonString = "";
             byte[] SummitLogo;
-            using (WebClient wc=new WebClient())
+            using (WebClient wc = new WebClient())
             {
                 string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
                 var JSummit = JsonConvert.DeserializeObject<List<SummitJson>>(JSummitString);
@@ -1020,8 +1049,8 @@ namespace LiveBot
             int i = 0;
             foreach (var item in JEvent.Tier_entries)
             {
-                
-                if (item.Points==4294967295)
+
+                if (item.Points == 4294967295)
                 {
                     pts[i] = "";
                 }
@@ -1043,7 +1072,7 @@ namespace LiveBot
                 Font FooterFont = SystemFonts.CreateFont("Consolas", 15, FontStyle.Regular);
                 FooterImg.Mutate(ctx => ctx
                 .Fill(Rgba32.Black)
-                .DrawText($"TOTAL PARTICIPANTS: {JEvent.Player_Count}",FooterFont,TextColour,new PointF(10,10))
+                .DrawText($"TOTAL PARTICIPANTS: {JEvent.Player_Count}", FooterFont, TextColour, new PointF(10, 10))
                 );
                 BaseImg.Mutate(ctx => ctx
                     .DrawImage(SummitImg, SummitLocation, 1)
@@ -1052,480 +1081,13 @@ namespace LiveBot
                     .DrawText(pts[2], Basefont, TextColour, new PointF(80, 440))
                     .DrawText(pts[1], Basefont, TextColour, new PointF(80, 510))
                     .DrawText(pts[0], Basefont, TextColour, new PointF(80, 580))
-                    .DrawImage(FooterImg,new Point(0,613),1)
+                    .DrawImage(FooterImg, new Point(0, 613), 1)
                     );
                 BaseImg.Save("SummitUpload.png");
             }
             using FileStream upFile = File.Open("SummitUpload.png", FileMode.Open);
             string output = platform == "x1" ? "XBox One." : platform == "ps4" ? "Play Station 4." : platform == "pc" ? "PC" : "*error*";
             await ctx.RespondWithFileAsync(upFile, $"Summit tier list for {output}");
-        }
-    }
-
-    [Group("@")]
-    [Description("Administrative commands")]
-    [Hidden]
-    [RequireRoles(RoleCheckMode.Any, "BotCMD1")]
-    public class BotCMD1Commands : BaseCommandModule
-    {
-        [Command("uptime")] //uptime command
-        [Aliases("live")]
-        public async Task Uptime(CommandContext ctx)
-        {
-            DateTime current = DateTime.Now;
-            TimeSpan time = current - Program.start;
-            await ctx.Message.RespondAsync($"{time.Days} Days {time.Hours}:{time.Minutes}.{time.Seconds}");
-        }
-
-        [Command("Warn")]
-        public async Task Warning(CommandContext ctx, DiscordMember username, params string[] reason)
-        {
-            DataBase.UpdateTables();
-            await ctx.Message.DeleteAsync();
-            DataTable User_warnings = DataBase.User_warnings;
-            DataTable Warnings = DataBase.Warnings;
-            DiscordChannel modlog = ctx.Guild.GetChannel(440365270893330432);
-            string f = CustomMethod.ParamsStringConverter(reason);
-            string modmsg, DM;
-            string uid = username.Id.ToString(), aid = ctx.User.Id.ToString();
-            bool UserCheck = false, kick = false;
-            int level = 1, count = 1;
-            foreach (DataRow item in User_warnings.Rows)
-            {
-                if (item["id_user"].ToString() == uid)
-                {
-                    UserCheck = true;
-                    level = (int)item["warning_level"] + 1;
-                    count = (int)item["warning_count"] + 1;
-                    if (level > 2)
-                    {
-                        DM = $"You have been kicked by {ctx.User.Mention} for exceeding the warning level(2). Your level: {level}\n" +
-                            $"Warning reason: {f}";
-                        try
-                        {
-                            await username.SendMessageAsync(DM);
-                        }
-                        catch
-                        {
-                            await modlog.SendMessageAsync($"{username.Mention} could not be contacted via DM. Reason not sent");
-                        }
-                        await username.RemoveAsync();
-                        kick = true;
-                    }
-                    item["warning_level"] = level;
-                    item["warning_count"] = count;
-                }
-            }
-            if (!UserCheck)
-            {
-                DataRow NewUser = User_warnings.NewRow();
-                NewUser["warning_level"] = level;
-                NewUser["warning_count"] = level;
-                NewUser["kick_count"] = 0;
-                NewUser["ban_count"] = 0;
-                NewUser["id_user"] = uid;
-                User_warnings.Rows.Add(NewUser);
-            }
-            DataRow row = Warnings.NewRow();
-            row["reason"] = f;
-            row["active"] = true;
-            row["date"] = DateTime.Now.ToString("yyyy-MM-dd");
-            row["admin_id"] = aid;
-            row["user_id"] = uid;
-            Warnings.Rows.Add(row);
-
-            modmsg = $"**Warned user:**\t{username.Mention}\n**Warning level:**\t {level}\t**Warning count:\t {count}\n**Warned by**\t{ctx.User.Username}\n**Reason:** {f}";
-            DM = $"You have been warned by <@{ctx.User.Id}>.\n**Warning Reason:**\t{f}\n**Warning Level:** {level}";
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xf90707),
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    IconUrl = username.AvatarUrl,
-                    Name = username.Username
-                },
-                Description = modmsg
-            };
-            if (!kick)
-            {
-                try
-                {
-                    await username.SendMessageAsync(DM);
-                }
-                catch
-                {
-                    await modlog.SendMessageAsync($":exclamation::exclamation:{username.Mention} could not be contacted via DM. Reason not sent");
-                }
-            }
-            await Task.Delay(1000);
-            DataBase.UserWarnAdapter.Update(User_warnings);
-            DataBase.WarnAdapter.Update(Warnings);
-            await modlog.SendMessageAsync(embed: embed);
-        }
-
-        [Command("unwarn")]
-        public async Task Unwarning(CommandContext ctx, DiscordMember username)
-        {
-            await ctx.Message.DeleteAsync();
-            DataBase.UpdateTables();
-            DataTable User_warnings = DataBase.User_warnings;
-            DataTable Warnings = DataBase.Warnings;
-            DiscordChannel modlog = ctx.Guild.GetChannel(440365270893330432);
-            string modmsg;
-            string uid = username.Id.ToString(), aid = ctx.User.Id.ToString();
-            bool UserCheck = false;
-            int level = 0;
-            foreach (DataRow item in User_warnings.Rows)
-            {
-                if (item["id_user"].ToString() == uid && (int)item["warning_level"] > 0)
-                {
-                    level = (int)item["warning_level"] - 1;
-                    item["warning_level"] = level;
-                    bool check = false;
-                    foreach (DataRow row in Warnings.Rows)
-                    {
-                        if (check == false && row["user_id"].ToString() == uid && (bool)row["active"] == true)
-                        {
-                            row["active"] = false;
-                            check = true;
-                        }
-                    }
-                }
-                else if (item["id_user"].ToString() == uid && (int)item["warning_level"] == 0)
-                {
-                    await ctx.RespondAsync($"{ctx.User.Mention}, this user warning level is already at 0");
-                    UserCheck = true;
-                }
-            }
-            modmsg = $"{username.Mention} has been unwarned by <@{aid}>. Warning level now {level}";
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xf90707),
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    IconUrl = username.AvatarUrl,
-                    Name = username.Username
-                },
-                Description = modmsg
-            };
-            await Task.Delay(1000);
-            DataBase.UserWarnAdapter.Update(User_warnings);
-            DataBase.WarnAdapter.Update(Warnings);
-            if (!UserCheck)
-            {
-                try
-                {
-                    await username.SendMessageAsync($"Your warning level has been lowerd to {level} by {ctx.User.Mention}");
-                }
-                catch
-                {
-                    await modlog.SendMessageAsync($":exclamation::exclamation:{username.Mention} could not be contacted via DM. Reason not sent");
-                }
-            }
-            await modlog.SendMessageAsync(embed: embed);
-        }
-
-        [Command("getkicks")]
-        public async Task GetKicks(CommandContext ctx, DiscordMember username)
-        {
-            await ctx.Message.DeleteAsync();
-            DataBase.UpdateTables();
-            DataTable User_warnings = DataBase.User_warnings;
-            DataTable Warnings = DataBase.Warnings;
-            string uid = username.Id.ToString();
-            bool UserCheck = false;
-            int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
-            string reason = "";
-            foreach (DataRow row in User_warnings.Rows)
-            {
-                if (row["id_user"].ToString() == uid)
-                {
-                    UserCheck = true;
-                    kcount = (int)row["kick_count"];
-                    bcount = (int)row["ban_count"];
-                    wcount = (int)row["warning_count"];
-                    wlevel = (int)row["warning_level"];
-                    foreach (DataRow item in Warnings.Rows)
-                    {
-                        if (item["user_id"].ToString() == row["id_user"].ToString())
-                        {
-                            if ((bool)item["active"] == true)
-                            {
-                                reason += $"ID: {item["id_warning"].ToString()}\t By: <@{item["admin_id"].ToString()}>\t Reason: {item["reason"].ToString()}\n";
-                            }
-                        }
-                    }
-                }
-            }
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xFF6600),
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    Name = username.Username,
-                    IconUrl = username.AvatarUrl
-                },
-                Description = $"",
-                Title = "User kick Count",
-                ThumbnailUrl = username.AvatarUrl
-            };
-            embed.AddField("Warning level: ", $"{wlevel}", true);
-            embed.AddField("Times warned: ", $"{wcount}", true);
-            embed.AddField("Times banned: ", $"{bcount}", true);
-            embed.AddField("Times kicked: ", $"{kcount}", true);
-            embed.AddField("Warning reasons: ", $"-{reason}-", true);
-            if (!UserCheck)
-            {
-                await ctx.RespondAsync($"{ctx.User.Mention}, This user has no warning, kick and/or ban history.");
-            }
-            else
-            {
-                await ctx.RespondAsync(embed: embed);
-            }
-        }
-
-        [Command("vote")]
-        [Description("starts a timed vote")]
-        public async Task Vote(CommandContext ctx, [Description("What to vote about?")] params string[] topic)
-        {
-            await ctx.Message.DeleteAsync();
-            string f = CustomMethod.ParamsStringConverter(topic);
-            DiscordMessage msg = await ctx.Message.RespondAsync(f);
-            DiscordEmoji up = DiscordEmoji.FromName(ctx.Client, ":thumbsup:");
-            DiscordEmoji down = DiscordEmoji.FromName(ctx.Client, ":thumbsdown:");
-            await msg.CreateReactionAsync(up);
-            await Task.Delay(500);
-            await msg.CreateReactionAsync(down);
-        }
-
-        [Command("poll")]
-        [Description("creates a poll up to 10 choices. Delimiter \".\"")]
-        public async Task Poll(CommandContext ctx, [Description("Options")]params string[] input)
-        {
-            //var interactivity = ctx.Client.GetInteractivity();
-            //var interactivity = ctx.Client.GetInteractivityModule();
-            await ctx.Message.DeleteAsync();
-            string f = CustomMethod.ParamsStringConverter(input);
-            char delimiter = '.';
-            string[] options = f.Split(delimiter);
-            string final = "";
-            string[] emotename = new string[] { ":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:" };
-            int i = 0;
-            foreach (var item in options)
-            {
-                final = $"{final}{emotename[i]} {item} \n";
-                i++;
-            }
-            DiscordMessage msg = await ctx.Message.RespondAsync(final);
-            DiscordEmoji zero = DiscordEmoji.FromName(ctx.Client, ":zero:");
-            DiscordEmoji one = DiscordEmoji.FromName(ctx.Client, ":one:");
-            DiscordEmoji two = DiscordEmoji.FromName(ctx.Client, ":two:");
-            DiscordEmoji three = DiscordEmoji.FromName(ctx.Client, ":three:");
-            DiscordEmoji four = DiscordEmoji.FromName(ctx.Client, ":four:");
-            DiscordEmoji five = DiscordEmoji.FromName(ctx.Client, ":five:");
-            DiscordEmoji six = DiscordEmoji.FromName(ctx.Client, ":six:");
-            DiscordEmoji seven = DiscordEmoji.FromName(ctx.Client, ":seven:");
-            DiscordEmoji eight = DiscordEmoji.FromName(ctx.Client, ":eight:");
-            DiscordEmoji nine = DiscordEmoji.FromName(ctx.Client, ":nine:");
-            DiscordEmoji[] emotes = new DiscordEmoji[] { zero, one, two, three, four, five, six, seven, eight, nine };
-            for (int j = 0; j < i; j++)
-            {
-                await msg.CreateReactionAsync(emotes[j]);
-                await Task.Delay(300);
-            }
-        }
-
-        [Command("rinfo")]
-        [Aliases("roleinfo")]
-        [Description("give the ID of the role that was mentioned with the command")]
-        public async Task RInfo(CommandContext ctx, DiscordRole role)
-        {
-            await ctx.RespondAsync($"**Role ID:**{role.Id}");
-        }
-        [Command("faq")]
-        public async Task FAQ(CommandContext ctx, DiscordMessage faqMsg, string type, params string[] input)
-        {
-            string str1 = CustomMethod.ParamsStringConverter(input);
-            string og = faqMsg.Content;
-            og = og.Replace("*", string.Empty);
-            og = og.Replace("\n", string.Empty);
-            string[] str2 = og.Split("A: ");
-            if (type.ToLower() == "q")
-            {
-                str2[0] = $"Q: {str1}";
-            }
-            else if (type.ToLower() == "a")
-            {
-                str2[1] = str1;
-            }
-            await faqMsg.ModifyAsync($"**{str2[0]}**\n *A: {str2[1].TrimEnd()}*");
-            await ctx.Message.DeleteAsync();
-        }
-        [Command("faq")]
-        public async Task FAQ(CommandContext ctx, params string[] input)
-        {
-            string str1 = CustomMethod.ParamsStringConverter(input);
-            string[] str2 = str1.Split('|');
-            await ctx.RespondAsync($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*");
-            await ctx.Message.DeleteAsync();
-        }
-        /*
-        [Command("event")]
-        [RequireRoles(RoleCheckMode.Any, "BotCMD1")]
-        public async Task Event(CommandContext ctx, string url)
-        {
-            await ctx.TriggerTypingAsync();
-            string newline = "\n";
-            List<string> titlelist = DataBase.WebToHTML(url, @"((Weekly|Special) Event: )(\w{1,}[ ]?){1,} [|]");
-            string titleone = DataBase.ParamsStringConverter(titlelist.ToArray());
-            string title = Regex.Replace(titleone, @"[|]", ""); // removes | from the title
-            List<string> stringlist = DataBase.WebToHTML(url, @"(<p>|<strong>|<em>){1,}(\w{1,}([ .#,-’!()]|.){0,}){1,}(<strong>|</strong>){0,}|(<br)");
-            string rawstring = DataBase.ParamsStringConverter(stringlist.ToArray());
-            string[] main = new string[8];
-            main[0] = Regex.Replace(rawstring, @"<p>For more information.{0,}", "");//removes not needed part from photo events
-            main[1] = Regex.Replace(main[0], @"</?strong>|</?b>", "**"); //html bold to markdown bold
-            main[2] = Regex.Replace(main[1], @"</?em>", "*"); // italics to italics
-            main[3] = Regex.Replace(main[2], @"<p>", newline); //paragraph to new line
-            main[4] = Regex.Replace(main[3], @"(<a href=(.https?://(\w{0,}[-./]){0,}\w{0,}.>))|</a>", "**"); //bolds the link words and removes the link
-            main[5] = Regex.Replace(main[4], @"[*][*]#TC2Weekly[*][*]", "`#TC2Weekly`");
-            main[6] = Regex.Replace(main[5], @"<u>|</u>", "__");
-            main[7] = Regex.Replace(main[6], @"</?sup>|</p>| <br ", "");//cleans up not used formating
-            DiscordGuild guild = await Program.Client.GetGuildAsync(150283740172517376);
-            DiscordRole EventsRole = guild.GetRole(486531401089417226);
-            string response = $"**--------------------------------------------------------------**" +
-                $"\n**{title}** {EventsRole.Mention}\n" +
-                $"{main[7]}\n" +
-                $"**--------------------------------------------------------------**";
-
-            await ctx.RespondAsync(response);
-            await ctx.Message.DeleteAsync();
-        }
-
-        [Command("event2")]
-        [RequireRoles(RoleCheckMode.Any, "BotCMD1")]
-        public async Task Event2(CommandContext ctx, string url)
-        {
-            int i = 0;
-            Console.WriteLine(i++);
-            string newline = "\n";
-            List<string> titlelist = DataBase.WebToHTML(url, @"((Weekly|Special) Event: )(\w{1,}[ ]?){1,} [|]");
-            string titleone = DataBase.ParamsStringConverter(titlelist.ToArray());
-            string title = Regex.Replace(titleone, @"[|]", ""); // removes | from the title
-            List<string> stringlist = DataBase.WebToHTML(url, @"(<td([ >="":;-]|\w){0,}|<strong>|<p>|<em>){1,}(\w{1,}([ -.#,'!()]|.){0,}){1,}(<strong>|</stron>){0,}(</td>)?");
-            Console.WriteLine(i++);
-            string rawstring = DataBase.ParamsStringConverter(stringlist.ToArray());
-            string[] main = new string[10];
-            main[0] = Regex.Replace(rawstring, @"<p>For more information.{0,}", "");//removes not needed part from photo events
-            main[1] = Regex.Replace(main[0], @"</?strong>|</?b>", "**"); //html bold to markdown bold
-            main[2] = Regex.Replace(main[1], @"</?em>", "*"); // italics to italics
-            main[3] = Regex.Replace(main[2], @"<p>", newline); //paragraph to new line
-            main[4] = Regex.Replace(main[3], @"(<a href=(.https?://(\w{0,}[-./]){0,}\w{0,}.>))|</a>", "**"); //bolds the link words and removes the link
-            main[5] = Regex.Replace(main[4], @"[*][*]#TC2Weekly[*][*]", "`#TC2Weekly`");
-            main[6] = Regex.Replace(main[5], @"<u>|</u>", "__");
-            main[7] = Regex.Replace(main[6], @".{2}Buy Now.{2}|<t(\w|[ :="";-]){1,}>|</?sup>|</p>| <br ", "");//cleans up not used formating
-            main[8] = Regex.Replace(main[7], @"</td>", "\t");//
-            main[9] = Regex.Replace(main[8], @"", "");
-            DiscordGuild guild = await Program.Client.GetGuildAsync(150283740172517376);
-            DiscordRole EventsRole = guild.GetRole(486531401089417226);
-            string response = $"**--------------------------------------------------------------**" +
-                $"\n**{title}** {EventsRole.Mention}\n" +
-                $"{main[9].Trim()}\n" +
-                $"**--------------------------------------------------------------**";
-
-            Console.WriteLine(i++);
-            Console.WriteLine(response);
-            await ctx.RespondAsync(response);
-            await ctx.Message.DeleteAsync();
-        }
-        //*/
-    }
-
-    [Group("!")]
-    [Description("Owner commands")]
-    [Hidden]
-    [RequireOwner]
-    public class OwnerCommands : BaseCommandModule
-    {
-        [Command("react")]
-        public async Task React(CommandContext ctx, DiscordMessage message, params DiscordEmoji[] emotes)
-        {
-            foreach (DiscordEmoji emote in emotes)
-            {
-                await message.CreateReactionAsync(emote);
-                await Task.Delay(300);
-            }
-            await ctx.Message.DeleteAsync();
-        }
-
-        [Command("textupdate")]
-        [Aliases("txtup")]
-        public async Task TextUpdate(CommandContext ctx, string language, string command, params string[] text)
-        {
-            string location = "TextFiles/" + language.ToLower() + "/" + command.ToLower() + ".txt";
-            string f = CustomMethod.ParamsStringConverter(text);
-            if (File.Exists(location))
-            {
-                File.WriteAllText(location, f);
-                await ctx.RespondAsync("Command updated");
-            }
-            else
-            {
-                await ctx.RespondAsync("Specified file locations incorrect.");
-            }
-        }
-
-        [Command("refresh")]
-        [Description("Updates data tables with the current date in the data base. Add info parameter if need more info")]
-        public async Task Refresh(CommandContext ctx, string what = null)
-        {
-#pragma warning disable IDE0059 // Value assigned to symbol is never used
-            string output = "";
-#pragma warning restore IDE0059 // Value assigned to symbol is never used
-            DiscordMessage msg;
-            if (what == null)
-            {
-                what = "info";
-            }
-            switch (what)
-            {
-                case "roles":
-                    DataBase.Reaction_Roles_DT.Clear();
-                    DataBase.Reaction_Roles_Adapter.Fill(DataBase.Reaction_Roles_DT);
-                    output = "Roles list updated";
-                    break;
-
-                case "vehicle":
-                    DataBase.UpdateVehicleList();
-                    output = "Vehicle list updated";
-                    break;
-
-                case "ranks":
-                    DataBase.UpdateLeaderboards("table");
-                    output = "Leaderboards have been updated";
-                    break;
-
-                case "background":
-                    DataBase.UpdateBackgroundTable();
-                    output = "Background table has been updated";
-                    break;
-
-                case "stream":
-                    DataBase.UpdateStreamNotifications("table");
-                    output = "Stream notification settings have been updated";
-                    break;
-
-                case "info":
-                default:
-                    output = "roles - updates role selector table\n" +
-                    "vehicle - updates vehicle list table\n" +
-                    "ranks - updates leaderboard tables\n" +
-                    "background - udpates background tables\n" +
-                    "stream - updates stream notification table";
-                    break;
-            }
-            msg = await ctx.RespondAsync(output);
-            await Task.Delay(1000);
-            await msg.DeleteAsync();
         }
     }
 }
