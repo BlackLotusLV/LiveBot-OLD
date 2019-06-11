@@ -1,22 +1,8 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Newtonsoft.Json;
-using Npgsql;
-using NpgsqlTypes;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
-using System.IO;
-using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -301,6 +287,7 @@ namespace LiveBot.Commands
         {
             await ctx.RespondAsync($"**Role ID:**{role.Id}");
         }
+
         [Command("faq")]
         public async Task FAQ(CommandContext ctx, DiscordMessage faqMsg, string type, params string[] input)
         {
@@ -320,6 +307,7 @@ namespace LiveBot.Commands
             await faqMsg.ModifyAsync($"**{str2[0]}**\n *A: {str2[1].TrimEnd()}*");
             await ctx.Message.DeleteAsync();
         }
+
         [Command("faq")]
         public async Task FAQ(CommandContext ctx, params string[] input)
         {
@@ -328,6 +316,7 @@ namespace LiveBot.Commands
             await ctx.RespondAsync($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*");
             await ctx.Message.DeleteAsync();
         }
+
         /*
         [Command("event")]
         [RequireRoles(RoleCheckMode.Any, "BotCMD1")]

@@ -8,6 +8,7 @@ namespace LiveBot.DB
     {
         [Key]
         public int ID { get; set; }
+
         public string Role_ID { get; set; }
         public string Server_ID { get; set; }
         public string Message_ID { get; set; }

@@ -8,6 +8,7 @@ namespace LiveBot.DB
     {
         [Key]
         public int Stream_Notification_ID { get; set; }
+
         public string Server_ID { get; set; }
         public string[] Games { get; set; }
         public string[] Roles_ID { get; set; }

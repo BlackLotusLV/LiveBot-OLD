@@ -3,8 +3,6 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
-using Npgsql;
-using NpgsqlTypes;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -15,14 +13,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
-using Npgsql.EntityFrameworkCore;
-using System.Linq;
 
 namespace LiveBot.Commands
 {
@@ -462,12 +456,12 @@ namespace LiveBot.Commands
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
             var UserWarnings = (from uw in UWarnings
-                          where uw.ID_User == ctx.User.Id.ToString()
-                          select uw).ToList();
+                                where uw.ID_User == ctx.User.Id.ToString()
+                                select uw).ToList();
             var WarningList = (from w in Warn
                                where w.User_ID == ctx.User.Id.ToString()
                                select w).ToList();
-            if (UserWarnings.Count==1)
+            if (UserWarnings.Count == 1)
             {
                 UserCheck = true;
                 kcount = (int)UserWarnings[0].Kick_Count;
@@ -476,7 +470,7 @@ namespace LiveBot.Commands
                 wlevel = (int)UserWarnings[0].Warning_Level;
                 foreach (var warning in WarningList)
                 {
-                    if (warning.Active==true)
+                    if (warning.Active == true)
                     {
                         reason += $"By: <@{warning.Admin_ID}>\t Reason: {warning.Reason}\n";
                     }
@@ -571,6 +565,7 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync(output);
         }
+
         [Command("rank")]
         public async Task Rank(CommandContext ctx, DiscordMember user = null)
         {
@@ -581,7 +576,7 @@ namespace LiveBot.Commands
             string output = "";
             int rank = 0;
             List<DB.ServerRanks> SR = DB.DBLists.ServerRanks;
-            List<DB.ServerRanks> serverRanks = SR.Where(w=>w.Server_ID==ctx.Guild.Id.ToString()).OrderByDescending(x => x.Followers).ToList();
+            List<DB.ServerRanks> serverRanks = SR.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).OrderByDescending(x => x.Followers).ToList();
             foreach (var item in serverRanks)
             {
                 rank++;
@@ -608,14 +603,14 @@ namespace LiveBot.Commands
             foreach (var item in leaderbaords)
             {
                 rank++;
-                if (item.ID_User==user.Id.ToString())
+                if (item.ID_User == user.Id.ToString())
                 {
                     output = $"{user.Username}'s rank:{rank}\t Followers: {item.Followers}\t Level {item.Level}";
                 }
             }
             await ctx.RespondAsync(output);
         }
-        
+
         [Command("profile")]
         [Description("User profile command")]
         public async Task Profile(CommandContext ctx,
@@ -646,8 +641,7 @@ namespace LiveBot.Commands
                 }
             }
 
-
-            List<DB.Leaderboard> Leaderboard=DB.DBLists.Leaderboard;
+            List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
             List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
             var global = (from gl in Leaderboard
                           where gl.ID_User == user.Id.ToString()
@@ -657,8 +651,7 @@ namespace LiveBot.Commands
                                 join bi in DB.DBLists.BackgroundImage on ui.BG_ID equals bi.ID_BG
                                 where us.User_ID == ui.User_ID
                                 where us.User_ID == user.Id.ToString()
-                                select new {us,ui,bi }).ToList();
-
+                                select new { us, ui, bi }).ToList();
 
             byte[] baseBG = (byte[])UserSettings[0].bi.Image;
             var webclinet = new WebClient();
@@ -1008,6 +1001,7 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync(output);
         }
+
         [Command("summit")]
         [Cooldown(1, 60, CooldownBucketType.User)]
         public async Task Summit(CommandContext ctx, string platform = "pc")
@@ -1022,12 +1016,14 @@ namespace LiveBot.Commands
                 case "x":
                     platform = "x1";
                     break;
+
                 case "ps4":
                 case "ps":
                 case "playstation":
                 case "playstation4":
                     platform = "ps4";
                     break;
+
                 case "pc":
                 case null:
                 default:
@@ -1049,7 +1045,6 @@ namespace LiveBot.Commands
             int i = 0;
             foreach (var item in JEvent.Tier_entries)
             {
-
                 if (item.Points == 4294967295)
                 {
                     pts[i] = "";

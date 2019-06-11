@@ -1,22 +1,7 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Newtonsoft.Json;
-using Npgsql;
-using NpgsqlTypes;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
 using System.IO;
-using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -26,7 +11,7 @@ namespace LiveBot.Commands
     [Description("Owner commands")]
     [Hidden]
     [RequireOwner]
-    class OCommands:BaseCommandModule
+    internal class OCommands : BaseCommandModule
     {
         [Command("react")]
         public async Task React(CommandContext ctx, DiscordMessage message, params DiscordEmoji[] emotes)

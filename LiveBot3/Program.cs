@@ -8,10 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace LiveBot
 {
@@ -20,8 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190608_B";
-
+        public static string BotVersion = $"20190611_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -292,8 +291,8 @@ namespace LiveBot
                         {
                             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
                             var global = (from lb in Leaderboard
-                                        where lb.ID_User == e.Author.Id.ToString()
-                                        select lb).ToList();
+                                          where lb.ID_User == e.Author.Id.ToString()
+                                          select lb).ToList();
                             global[0].Followers = (long)global[0].Followers + points_added;
                             global[0].Bucks = (long)global[0].Bucks + money_added;
                             if ((int)global[0].Level < (long)global[0].Followers / (300 * ((int)global[0].Level + 1) * 0.5))
@@ -320,7 +319,7 @@ namespace LiveBot
                                              where lb.Server_ID == e.Channel.Guild.Id.ToString()
                                              select lb).ToList();
                                 local[0].Followers = (long)local[0].Followers + points_added;
-                                Suser.Time = DateTime.Now;DB.DBLists.UpdateServerRanks(local);
+                                Suser.Time = DateTime.Now; DB.DBLists.UpdateServerRanks(local);
                             }
                         }
                     }
@@ -405,10 +404,10 @@ namespace LiveBot
 
                 List<DB.ReactionRoles> ReactionRoles = DB.DBLists.ReactionRoles;
                 var RR = (from rr in ReactionRoles
-                         where rr.Server_ID == e.Channel.Guild.Id.ToString()
-                         where rr.Message_ID == sourcemsg.Id.ToString()
-                         where rr.Reaction_ID == used.Id.ToString()
-                         select rr).ToList();
+                          where rr.Server_ID == e.Channel.Guild.Id.ToString()
+                          where rr.Message_ID == sourcemsg.Id.ToString()
+                          where rr.Reaction_ID == used.Id.ToString()
+                          select rr).ToList();
                 if (RR.Count == 1)
                 {
                     DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(RR[0].Server_ID.ToString()));
@@ -593,7 +592,6 @@ namespace LiveBot
                 }
                 if (!UserCheck)
                 {
-
                     DB.UserWarnings newEntry = new DB.UserWarnings
                     {
                         Warning_Level = 0,
@@ -700,22 +698,28 @@ namespace LiveBot
         public DiscordGuild Guild { get; set; }
         public DateTime Time { get; set; }
     }
+
     public struct SummitJson
     {
         [JsonProperty("id")]
         public ulong Summit_ID { get; private set; }
+
         [JsonProperty("start_date")]
         public string Start_Date { get; private set; }
+
         [JsonProperty("ticket_short")]
         public string LinkEnd { get; private set; }
     }
+
     public struct EventJson
     {
         [JsonProperty("total_players")]
         public string Player_Count { get; private set; }
+
         [JsonProperty("tier_entries")]
         public Tier_Entries[] Tier_entries { get; private set; }
     }
+
     public class Tier_Entries
     {
         public ulong Points { get; set; }

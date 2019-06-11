@@ -1,12 +1,12 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using Newtonsoft.Json;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace LiveBot
 {
@@ -65,6 +65,7 @@ namespace LiveBot
                 _ => Rgba32.Transparent
             };
         }
+
         public static string GetConnString()
         {
             string json;
