@@ -27,7 +27,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Added `/faq` command (moderator use)\n" +
+            string changelog = "Fixed the regular quote command\n" +
+                "Fixed server top command\n" +
+                "Random vehicle command now has a duplicate check. It will output a unique car untill 50% of the cars have been used, then start the counter again. (Each discipline has its own counter)\n" +
                 "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
@@ -276,6 +278,26 @@ namespace LiveBot.Commands
 
         [Command("quote")]
         [Description("Quotes a message using its ID")]
+        public async Task Quote(CommandContext ctx, [Description("message ID")] DiscordMessage msg)
+        {
+            await ctx.Message.DeleteAsync();
+            string content = $"\"{msg.Content}\"";
+            var embed = new DiscordEmbedBuilder
+            {
+                Color = new DiscordColor(0xFF6600),
+                Description = $"{content}\n[go to message]({msg.JumpLink})",
+                Author = new DiscordEmbedBuilder.EmbedAuthor
+                {
+                    Name = msg.Author is DiscordMember mx ? mx.DisplayName : msg.Author.Username,
+                    IconUrl = msg.Author.AvatarUrl
+                }
+            };
+            await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
+        }
+
+
+        [Command("quote")]
+        [Description("Quotes a message using its ID")]
         public async Task Quote(CommandContext ctx, [Description("message ID")] string ChannelMsg)
         {
             string[] strarr = ChannelMsg.Split("-");
@@ -300,26 +322,6 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
             }
         }
-
-        [Command("quote")]
-        [Description("Quotes a message using its ID")]
-        public async Task Quote(CommandContext ctx, [Description("message ID")] DiscordMessage msg)
-        {
-            await ctx.Message.DeleteAsync();
-            string content = $"\"{msg.Content}\"";
-            var embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xFF6600),
-                Description = $"{content}\n[go to message]({msg.JumpLink})",
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    Name = msg.Author is DiscordMember mx ? mx.DisplayName : msg.Author.Username,
-                    IconUrl = msg.Author.AvatarUrl
-                }
-            };
-            await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
-        }
-
         [Command("info"), Description("Shows user info")]
         public async Task Info(CommandContext ctx, [Description("users ID or mention")] DiscordMember user = null)
         {
@@ -534,9 +536,11 @@ namespace LiveBot.Commands
                 _ => "Street Race"
             };
             List<DB.VehicleList> VehicleList = DB.DBLists.VehicleList;
-            List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList;
+            List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w=>w.Discipline_Name==disciplinename).ToList();
             Random r = new Random();
             string output;
+            bool check = true;
+            int row=0;
             if (disciplinename == "Street Race")
             {
                 var CarList = (from vl in VehicleList
@@ -549,19 +553,44 @@ namespace LiveBot.Commands
                                 where dl.Discipline_Name == disciplinename
                                 where vl.Type == "bike"
                                 select vl).ToList();
-                int row = r.Next(0, CarList.Count);
-                output = $"**Car:** {CarList[row].Brand} {CarList[row].Model} {CarList[row].Year}\n";
-                row = r.Next(0, BikeList.Count);
-                output += $"**Bike:** {BikeList[row].Brand} {BikeList[row].Model} {BikeList[row].Year}";
+                
+                if (Program.VehicleList.Where(w=>w.Discipline==DisciplineList[0].ID_Discipline).Count()>CarList.Count/2)
+                {
+                    Program.VehicleList.RemoveAll(r => r.Discipline == DisciplineList[0].ID_Discipline);
+                }
+                while (check)
+                {
+                    row = r.Next(CarList.Count);
+                    if (!Program.VehicleList.Contains(CarList[row]))
+                    {
+                        check = false;
+                        Program.VehicleList.Add(CarList[row]);
+                    }
+                }
+                output = $"**Car:** {CarList[row].Brand} | {CarList[row].Model} | {CarList[row].Year}\n";
+                row = r.Next(BikeList.Count);
+                output += $"**Bike:** {BikeList[row].Brand} | {BikeList[row].Model} | {BikeList[row].Year}";
             }
             else
             {
-                var disciplinelist = (from vl in VehicleList
+                var Vlist = (from vl in VehicleList
                                       join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
                                       where dl.Discipline_Name == disciplinename
                                       select vl).ToList();
-                int row = r.Next(0, disciplinelist.Count);
-                output = $"{disciplinelist[row].Brand} {disciplinelist[row].Model} {disciplinelist[row].Year} ({disciplinelist[row].Type})";
+                if (Program.VehicleList.Where(w => w.Discipline == DisciplineList[0].ID_Discipline).Count() > Vlist.Count / 2)
+                {
+                    Program.VehicleList.RemoveAll(r => r.Discipline == DisciplineList[0].ID_Discipline);
+                }
+                do
+                {
+                    row = r.Next(Vlist.Count);
+                    if (!Program.VehicleList.Contains(Vlist[row]))
+                    {
+                        check = false;
+                        Program.VehicleList.Add(Vlist[row]);
+                    }
+                } while (check);
+                output = $"{Vlist[row].Brand} | {Vlist[row].Model} | {Vlist[row].Year} ({Vlist[row].Type})";
             }
             await ctx.RespondAsync(output);
         }
@@ -882,6 +911,7 @@ namespace LiveBot.Commands
             string list = "", personalscore = "";
             List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
             var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
+            user = user.Where(w=>w.Server_ID==ctx.Guild.Id.ToString()).ToList();
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
                 var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].User_ID.ToString()));
@@ -894,12 +924,14 @@ namespace LiveBot.Commands
             int rank = 0;
             List<DB.ServerRanks> LB = DB.DBLists.ServerRanks;
             List<DB.ServerRanks> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
+            leaderbaords=leaderbaords.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
             foreach (var item in leaderbaords)
             {
                 rank++;
                 if (item.User_ID == ctx.User.Id.ToString())
                 {
                     personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t";
+                    break;
                 }
             }
             await ctx.RespondAsync("```csharp\n" +

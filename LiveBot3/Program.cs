@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190611_A";
+        public static string BotVersion = $"20190617_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -30,6 +30,7 @@ namespace LiveBot
 
         public List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
         public List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
+        public static List<DB.VehicleList> VehicleList = new List<DB.VehicleList>();
 
         //channels
         public DiscordChannel TC1Photomode;
