@@ -27,10 +27,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Fixed the regular quote command\n" +
-                "Fixed server top command\n" +
-                "Random vehicle command now has a duplicate check. It will output a unique car untill 50% of the cars have been used, then start the counter again. (Each discipline has its own counter)\n" +
-                "";
+            string changelog = "Fixed getkicks command for admins.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;

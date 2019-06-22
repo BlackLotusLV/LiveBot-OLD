@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace LiveBot.Commands
 {
@@ -181,7 +182,26 @@ namespace LiveBot.Commands
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
-            foreach (var row in userWarnings)
+            var selectedUser = userWarnings.Where(w=>w.ID_User==uid).ToList();
+            Console.WriteLine(selectedUser[0].ID_User);
+            if (selectedUser.Count==1)
+            {
+                UserCheck = true;
+                kcount = (int)selectedUser[0].Kick_Count;
+                bcount = (int)selectedUser[0].Ban_Count;
+                wcount = (int)selectedUser[0].Warning_Count;
+                wlevel = (int)selectedUser[0].Warning_Level;
+                var WarningsList = warnings.Where(w => w.User_ID == uid).ToList();
+                foreach (var item in WarningsList)
+                {
+                    if ((bool)item.Active == true)
+                    {
+                        reason += $"By: <@{item.Admin_ID.ToString()}>\t Reason: {item.Reason.ToString()}\n";
+                    }
+                }
+            }
+            /*
+            foreach (var row in DB.DBLists.UserWarnings)
             {
                 if (row.ID_User.ToString() == uid)
                 {
@@ -190,7 +210,7 @@ namespace LiveBot.Commands
                     bcount = (int)row.Ban_Count;
                     wcount = (int)row.Warning_Count;
                     wlevel = (int)row.Warning_Level;
-                    foreach (var item in warnings)
+                    foreach (var item in DB.DBLists.Warnings)
                     {
                         if (item.User_ID.ToString() == row.ID_User.ToString())
                         {
@@ -202,6 +222,7 @@ namespace LiveBot.Commands
                     }
                 }
             }
+            */
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
                 Color = new DiscordColor(0xFF6600),
