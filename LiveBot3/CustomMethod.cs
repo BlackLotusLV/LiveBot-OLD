@@ -72,7 +72,7 @@ namespace LiveBot
             using (var fs = File.OpenRead("DBCFG.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = sr.ReadToEnd();
-            var cfgjson = JsonConvert.DeserializeObject<DBJson>(json);
+            var cfgjson = JsonConvert.DeserializeObject<Json.DB>(json);
             return $"Host={cfgjson.Host};Username={cfgjson.Username};Password={cfgjson.Password};Database={cfgjson.Database}";
         }
     }

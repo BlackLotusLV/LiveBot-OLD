@@ -646,7 +646,7 @@ namespace LiveBot.Commands
             using (var fs = File.OpenRead("TCECFG.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
-            TCEJson tcejson = JsonConvert.DeserializeObject<TCEJson>(json);
+            Json.TCE tcejson = JsonConvert.DeserializeObject<Json.TCE>(json);
             bool tcelink = false;
             string readoutput = "";
             if (user == null)
@@ -1064,11 +1064,11 @@ namespace LiveBot.Commands
             using (WebClient wc = new WebClient())
             {
                 string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
-                var JSummit = JsonConvert.DeserializeObject<List<SummitJson>>(JSummitString);
+                var JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
                 EventJsonString = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].Summit_ID}/score/{platform}/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].LinkEnd}");
             }
-            var JEvent = JsonConvert.DeserializeObject<EventJson>(EventJsonString);
+            var JEvent = JsonConvert.DeserializeObject<Json.Event>(EventJsonString);
 
             string[] pts = new string[4];
             int i = 0;

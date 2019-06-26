@@ -72,7 +72,7 @@ namespace LiveBot
                     Console.WriteLine($"Running live version: {BotVersion}");
                 }
             }
-            var cfgjson = JsonConvert.DeserializeObject<ConfigJson>(json);
+            var cfgjson = JsonConvert.DeserializeObject<Json.Config>(json);
             var cfg = new DiscordConfiguration
             {
                 Token = cfgjson.Token,
@@ -101,6 +101,8 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.UngroupedCommands>();
             this.Commands.RegisterCommands<Commands.AdminCommands>();
             this.Commands.RegisterCommands<Commands.OCommands>();
+            this.Commands.RegisterCommands<Commands.MusicCommands>();
+
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
             DiscordGuild SPGuild = await Client.GetGuildAsync(325271225565970434); // Star Player server
@@ -650,35 +652,7 @@ namespace LiveBot
         }
     }
 
-    public struct ConfigJson
-    {
-        [JsonProperty("token")]
-        public string Token { get; private set; }
 
-        [JsonProperty("prefix")]
-        public string CommandPrefix { get; private set; }
-    }
-
-    public struct DBJson
-    {
-        [JsonProperty("host")]
-        public string Host { get; private set; }
-
-        [JsonProperty("username")]
-        public string Username { get; private set; }
-
-        [JsonProperty("password")]
-        public string Password { get; private set; }
-
-        [JsonProperty("database")]
-        public string Database { get; private set; }
-    }
-
-    public struct TCEJson
-    {
-        [JsonProperty("key")]
-        public string Key { get; private set; }
-    }
 
     internal class LiveStreamer
     {
@@ -698,27 +672,6 @@ namespace LiveBot
         public DiscordUser User { get; set; }
         public DiscordGuild Guild { get; set; }
         public DateTime Time { get; set; }
-    }
-
-    public struct SummitJson
-    {
-        [JsonProperty("id")]
-        public ulong Summit_ID { get; private set; }
-
-        [JsonProperty("start_date")]
-        public string Start_Date { get; private set; }
-
-        [JsonProperty("ticket_short")]
-        public string LinkEnd { get; private set; }
-    }
-
-    public struct EventJson
-    {
-        [JsonProperty("total_players")]
-        public string Player_Count { get; private set; }
-
-        [JsonProperty("tier_entries")]
-        public Tier_Entries[] Tier_entries { get; private set; }
     }
 
     public class Tier_Entries
