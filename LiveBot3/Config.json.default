@@ -1,0 +1,19 @@
+{
+  "LiveBot": {
+    "token": "your bot token here",
+    "prefix": "/"
+  },
+  "DevBot": {
+    "token": "Your test bot token here",
+    "prefix": "//"
+  },
+  "DataBase": {
+    "host": "Database host",
+    "username": "Databse username",
+    "password": "User passwrod",
+    "database": "Database name"
+  },
+  "TCE": {
+    "key": "TCE key here"
+  }
+}

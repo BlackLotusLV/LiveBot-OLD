@@ -57,30 +57,31 @@ namespace LiveBot
 
         public async Task RunBotAsync(string[] args)
         {
+            // fills all database lists
             DB.DBLists.LoadAllLists();
+
             var json = "";
-            using (var fs = File.OpenRead("ConfigDev.json"))
+            using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
+            Json.Bot cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).DevBot;
             if (args.Length == 1)
             {
                 if (args[0] == "live")
                 {
-                    using (var fs = File.OpenRead("ConfigLive.json"))
-                    using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                        json = await sr.ReadToEndAsync();
+                    cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).LiveBot;
                     Console.WriteLine($"Running live version: {BotVersion}");
                 }
             }
-            var cfgjson = JsonConvert.DeserializeObject<Json.Config>(json);
             var cfg = new DiscordConfiguration
             {
                 Token = cfgjson.Token,
                 TokenType = TokenType.Bot,
-
                 AutoReconnect = true,
+                ReconnectIndefinitely = true,
                 LogLevel = LogLevel.Debug,
                 UseInternalLogHandler = true
+
             };
 
             Client = new DiscordClient(cfg);
@@ -101,7 +102,6 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.UngroupedCommands>();
             this.Commands.RegisterCommands<Commands.AdminCommands>();
             this.Commands.RegisterCommands<Commands.OCommands>();
-            this.Commands.RegisterCommands<Commands.MusicCommands>();
 
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
@@ -118,10 +118,7 @@ namespace LiveBot
             modlog = TCGuild.GetChannel(440365270893330432); // tc modlog
             // Roles - TC
             Anonymous = TCGuild.GetRole(257865859823828995);
-            // roles - sava
-            //
             testchannel = testserver.GetChannel(438354175668256768);
-            //List<LiveStreamer> LiveStreamerList = new List<LiveStreamer>();
             //*/
             void StreamListCheck(List<LiveStreamer> list)
             {
@@ -143,6 +140,7 @@ namespace LiveBot
             }
             Timer StreamTimer = new Timer(e => StreamListCheck(LiveStreamerList), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
             //*/ comment this when testing features
+            /*
             Client.PresenceUpdated += this.Presence_Updated;
             Client.MessageCreated += this.Message_Created;
             Client.MessageReactionAdded += this.Reaction_Role_Added;

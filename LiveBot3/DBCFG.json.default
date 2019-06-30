@@ -1,6 +1,0 @@
-{
-  "host": "Host ip address - localhost if selfhosted",
-  "username": "users username",
-  "password": "users password",
-  "database": "name of the database"
-}

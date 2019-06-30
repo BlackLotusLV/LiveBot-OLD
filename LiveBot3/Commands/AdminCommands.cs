@@ -12,7 +12,7 @@ namespace LiveBot.Commands
     [Group("@")]
     [Description("Administrative commands")]
     [Hidden]
-    [RequireRoles(RoleCheckMode.Any, "BotCMD1")]
+    [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
     public class AdminCommands : BaseCommandModule
     {
         [Command("uptime")] //uptime command

@@ -27,7 +27,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Fixed getkicks command for admins.";
+            string changelog = "Fixed `/profile` command not working when TCE is down\n" +
+                "Minor code cleanups";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -275,6 +276,7 @@ namespace LiveBot.Commands
 
         [Command("quote")]
         [Description("Quotes a message using its ID")]
+        [Priority(10)]
         public async Task Quote(CommandContext ctx, [Description("message ID")] DiscordMessage msg)
         {
             await ctx.Message.DeleteAsync();
@@ -294,8 +296,9 @@ namespace LiveBot.Commands
 
 
         [Command("quote")]
-        [Description("Quotes a message using its ID")]
-        public async Task Quote(CommandContext ctx, [Description("message ID")] string ChannelMsg)
+        [Description("Cross channel message quoting. (ChannelID-MessageID)")]
+        [Priority(9)]
+        public async Task Quote(CommandContext ctx, [Description("Channel and Message ID seperated by -")] string ChannelMsg)
         {
             string[] strarr = ChannelMsg.Split("-");
             if (strarr.Length == 2)
@@ -639,34 +642,30 @@ namespace LiveBot.Commands
 
         [Command("profile")]
         [Description("User profile command")]
+        [Priority(10)]
         public async Task Profile(CommandContext ctx,
             [Description("Specify which user to show, if left empty, will take command caster")]DiscordMember user = null)
         {
             string json = "";
-            using (var fs = File.OpenRead("TCECFG.json"))
+            using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
-            Json.TCE tcejson = JsonConvert.DeserializeObject<Json.TCE>(json);
+            Json.TCE tcejson = JsonConvert.DeserializeObject<Json.Config>(json).TCE;
             bool tcelink = false;
-            string readoutput = "";
             if (user == null)
             {
                 user = ctx.Member;
             }
             string link = $"https://thecrew-exchange.com/api/bot/isAccountLinked/{tcejson.Key}/{user.Id}";
-            HttpWebRequest r = (HttpWebRequest)WebRequest.Create(link);
-            r.AutomaticDecompression = DecompressionMethods.GZip;
-            using (HttpWebResponse response = (HttpWebResponse)r.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
+            try
             {
-                readoutput = reader.ReadToEnd();
-                if (readoutput == "True")
+                using WebClient wc = new WebClient();
+                if (wc.DownloadString(link).ToLower().Contains("true"))
                 {
                     tcelink = true;
                 }
             }
-
+            catch { }
             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
             List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
             var global = (from gl in Leaderboard
@@ -790,6 +789,7 @@ namespace LiveBot.Commands
         }
 
         [Command("profile")] // needs to be tested
+        [Priority(9)]
         public async Task Profile(CommandContext ctx, [Description("profile settings command input, write help for info")] params string[] input)
         {
             string output = "";
@@ -822,16 +822,6 @@ namespace LiveBot.Commands
                     StringBuilder sb = new StringBuilder();
                     for (int i = 2; i < input.Length; i++)
                     {
-                        /*
-                        if (input[i]=="$n")
-                        {
-                            sb.Append("\n");
-                        }
-                        else
-                        {
-                            sb.Append(input[i] + " ");
-                        }
-                        */
                         sb.Append(input[i] + " ");
                     }
                     UserSettings[0].User_Info = sb.ToString();
@@ -1064,11 +1054,11 @@ namespace LiveBot.Commands
             using (WebClient wc = new WebClient())
             {
                 string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
-                var JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
-                EventJsonString = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].Summit_ID}/score/{platform}/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].LinkEnd}");
+                List<Json.Summit> JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
+                EventJsonString = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{platform}/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
             }
-            var JEvent = JsonConvert.DeserializeObject<Json.Event>(EventJsonString);
+            Json.Rank JEvent = JsonConvert.DeserializeObject<Json.Rank>(EventJsonString);
 
             string[] pts = new string[4];
             int i = 0;
@@ -1084,7 +1074,6 @@ namespace LiveBot.Commands
                 }
                 i++;
             }
-
             using (Image<Rgba32> BaseImg = new Image<Rgba32>(300, 643))
             using (Image<Rgba32> TierImg = Image.Load<Rgba32>("SummitBase.png"))
             using (Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo))

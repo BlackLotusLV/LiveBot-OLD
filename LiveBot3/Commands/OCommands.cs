@@ -40,5 +40,27 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync("Specified file locations incorrect.");
             }
         }
+        [Command("update")]
+        public async Task Update(CommandContext ctx, [Description("Which database to update. (All will update all db)")] string db=null)
+        {
+            switch (db.ToLower())
+            {
+                case "all":
+                    DB.DBLists.LoadAllLists();
+                    break;
+                case "vehicle":
+                    DB.DBLists.LoadVehicleList();
+                    break;
+                default:
+                    DiscordMessage msg= await ctx.RespondAsync("Couldn't find this table. Nothing was updated\n" +
+                        "all - updates all tables\n" +
+                        "vehicle - updates the **vehicle list**\n" +
+                        "");
+                    await Task.Delay(10000);
+                    await msg.DeleteAsync();
+                    break;
+
+            }
+        }
     }
 }
