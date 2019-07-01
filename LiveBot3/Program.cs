@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190622_A";
+        public static string BotVersion = $"20190630_B";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -140,7 +140,6 @@ namespace LiveBot
             }
             Timer StreamTimer = new Timer(e => StreamListCheck(LiveStreamerList), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
             //*/ comment this when testing features
-            /*
             Client.PresenceUpdated += this.Presence_Updated;
             Client.MessageCreated += this.Message_Created;
             Client.MessageReactionAdded += this.Reaction_Role_Added;
