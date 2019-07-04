@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190630_B";
+        public static string BotVersion = $"20190704_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -335,21 +335,40 @@ namespace LiveBot
                         DB.Leaderboard newEntry = new DB.Leaderboard
                         {
                             ID_User = e.Author.Id.ToString(),
-                            Followers = 0,
+                            Followers = (long)0,
                             Level = 0,
-                            Bucks = 0
+                            Bucks = (long)0
                         };
                         DB.DBLists.InsertLeaderboard(newEntry);
+                        DB.UserImages newUImage = new DB.UserImages
+                        {
+                            User_ID = e.Author.Id.ToString(),
+                            BG_ID = 1
+                        };
+                        DB.DBLists.InsertUserImages(newUImage);
+                        DB.UserSettings newUSettings = new DB.UserSettings
+                        {
+                            User_ID = e.Author.Id.ToString(),
+                            Background_Colour = "white",
+                            Text_Colour = "black",
+                            Border_Colour = "black",
+                            User_Info = "Just a flesh wound",
+                            Image_ID = newUImage.ID_User_Images
+                        };
+                        DB.DBLists.InsertUserSettings(newUSettings);
                     }
                     global = (from lb in Leaderboard
                               where lb.ID_User == e.Author.Id.ToString()
                               select lb).ToList();
                     points_added = r.Next(MinInterval, MaxInterval);
-                    global[0].Followers = (long)global[0].Followers + points_added;
-                    global[0].Bucks = (long)global[0].Bucks + money_added;
-                    if ((int)global[0].Level < (long)global[0].Followers / (300 * ((int)global[0].Level + 1) * 0.5))
+                    if (global.Count == 1)
                     {
-                        global[0].Level = (int)global[0].Level + 1;
+                        global[0].Followers = (long)global[0].Followers + points_added;
+                        global[0].Bucks = (long)global[0].Bucks + money_added;
+                        if ((int)global[0].Level < (long)global[0].Followers / (300 * ((int)global[0].Level + 1) * 0.5))
+                        {
+                            global[0].Level = (int)global[0].Level + 1;
+                        }
                     }
                     LevelTimer NewToList = new LevelTimer
                     {

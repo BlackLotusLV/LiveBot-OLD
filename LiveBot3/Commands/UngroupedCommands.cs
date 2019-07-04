@@ -27,8 +27,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Fixed `/profile` command not working when TCE is down\n" +
-                "Minor code cleanups";
+            string changelog = "Found and fixed a bug where users who didn't have a profile in the database, wuld not get any points, nor have a profile created.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
