@@ -399,7 +399,10 @@ namespace LiveBot
                              where lb.User_ID == e.Author.Id.ToString()
                              where lb.Server_ID == e.Channel.Guild.Id.ToString()
                              select lb).ToList();
-                    local[0].Followers = (long)local[0].Followers + points_added;
+                    if (local.Count > 0)
+                    {
+                        local[0].Followers = (long)local[0].Followers + points_added;
+                    }
                     ServerLevelTimer NewToList = new ServerLevelTimer
                     {
                         Time = DateTime.Now,
