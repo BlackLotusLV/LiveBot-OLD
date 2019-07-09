@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190704_A";
+        public static string BotVersion = $"20190709_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -179,14 +179,10 @@ namespace LiveBot
                     }
                     if (ItemIndex >= 0 && e.Activity.ActivityType != ActivityType.Streaming)
                     {
+                        //removes user from list
                         if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.Now && e.Activity == LiveStreamerList[ItemIndex].User.Presence.Activity)
                         {
-                            Console.WriteLine($"{ItemIndex} {LiveStreamerList[ItemIndex].User.Username} stoped streaming, removing from list");
                             LiveStreamerList.RemoveAt(ItemIndex);
-                        }
-                        else
-                        {
-                            Console.WriteLine($"{ItemIndex} {LiveStreamerList[ItemIndex].User.Username} {StreamCheckDelay} hours haven't passed. Not removing from list.");
                         }
                     }
                     else if (ItemIndex == -1 && e.Activity.ActivityType == ActivityType.Streaming)
@@ -212,12 +208,16 @@ namespace LiveBot
                         }
                         if (row.Games != null)
                         {
-                            foreach (string ugame in (string[])row.Games)
+                            foreach (string ugame in row.Games)
                             {
-                                if (e.User.Presence.Activity.RichPresence.Details == ugame)
+                                try
                                 {
-                                    game = true;
+                                    if (e.User.Presence.Activity.RichPresence.Details == ugame)
+                                    {
+                                        game = true;
+                                    }
                                 }
+                                catch { }
                             }
                         }
                         else if (row.Games == null)
@@ -243,13 +243,9 @@ namespace LiveBot
                                 Title = $"Check out {e.User.Username} is now Streaming!"
                             };
                             await channel.SendMessageAsync(embed: embed);
+                            //adds user to list
                             LiveStreamerList.Add(streamer);
-                            Console.WriteLine($"User added to streaming list - {e.User.Username}");
                         }
-                    }
-                    else if (ItemIndex >= 0)
-                    {
-                        Console.WriteLine($"{ItemIndex} {LiveStreamerList[ItemIndex].User.Username} game changed");
                     }
                 }
             }
