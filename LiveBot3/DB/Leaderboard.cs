@@ -15,5 +15,7 @@ namespace LiveBot.DB
         public int Level { get; set; }
         [Column("bucks")]
         public long Bucks { get; set; }
+        [Column("daily_used")]
+        public string Daily_Used { get; set; }
     }
 }

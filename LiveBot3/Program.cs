@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190709_B";
+        public static string BotVersion = $"20190720_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -160,6 +160,8 @@ namespace LiveBot
             {
                 DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(row.Server_ID.ToString()));
                 DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(row.Channel_ID.ToString()));
+                Console.WriteLine($"user guild id: {e.User.Presence.Guild.Id}");
+                Console.WriteLine($"Compared Guild: {guild.Id}");
                 if (e.User.Presence.Guild.Id == guild.Id)
                 {
                     LiveStreamer streamer = new LiveStreamer
@@ -275,7 +277,7 @@ namespace LiveBot
             {
                 bool checkglobal = false, checklocal = false;
                 Random r = new Random();
-                int MinInterval = 10, MaxInterval = 30, MinMoney = 5, MaxMoney = 25;
+                int MinInterval = 10, MaxInterval = 30, MinMoney = 2, MaxMoney = 5;
                 int points_added = r.Next(MinInterval, MaxInterval);
                 int money_added = r.Next(MinMoney, MaxMoney);
                 foreach (var Guser in UserLevelTimer)
