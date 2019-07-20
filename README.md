@@ -11,7 +11,6 @@ The Bot is very specific to a certain Discord server called The Crew Community, 
 * postgresql
 
 ## Database installation
-THE DB FILE NEEDS AN UPDATE, OUTDATED IN ITS CURRENT FORM
 Copy the code in console(psql), or query tool in pgadmin.
 Change line 28 to "ALTER SCHEMA livebot OWNER TO [your username here];"
 
