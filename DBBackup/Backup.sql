@@ -3,9 +3,9 @@
 --
 
 -- Dumped from database version 9.6.13
--- Dumped by pg_dump version 11.2
+-- Dumped by pg_dump version 11.3
 
--- Started on 2019-06-10 03:30:39
+-- Started on 2019-07-20 12:03:48
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -14,6 +14,7 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
@@ -100,10 +101,10 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE livebot."Background_Image" (
-    "ID_BG" integer NOT NULL,
-    "Image" bytea,
-    "Name" text NOT NULL,
-    "Price" bigint
+    id_bg integer NOT NULL,
+    image bytea,
+    name text NOT NULL,
+    price bigint
 );
 
 
@@ -115,9 +116,9 @@ ALTER TABLE livebot."Background_Image" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."Discipline_List" (
-    "ID_Discipline" integer NOT NULL,
-    "Family" text NOT NULL,
-    "Discipline_Name" text NOT NULL
+    id_discipline integer NOT NULL,
+    family text NOT NULL,
+    discipline_name text NOT NULL
 );
 
 
@@ -129,10 +130,11 @@ ALTER TABLE livebot."Discipline_List" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."Leaderboard" (
-    "ID_User" text NOT NULL,
-    "Followers" bigint DEFAULT 0,
-    "Level" integer DEFAULT 0,
-    "Bucks" bigint DEFAULT 0
+    id_user text NOT NULL,
+    followers bigint DEFAULT 0,
+    level integer DEFAULT 0,
+    bucks bigint DEFAULT 0,
+    daily_used text
 );
 
 
@@ -144,11 +146,11 @@ ALTER TABLE livebot."Leaderboard" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."Reaction_Roles" (
-    "ID" integer NOT NULL,
-    "Role_ID" text NOT NULL,
-    "Server_ID" text NOT NULL,
-    "Message_ID" text NOT NULL,
-    "Reaction_ID" text NOT NULL
+    id integer NOT NULL,
+    role_id text NOT NULL,
+    server_id text NOT NULL,
+    message_id text NOT NULL,
+    reaction_id text NOT NULL
 );
 
 
@@ -160,10 +162,10 @@ ALTER TABLE livebot."Reaction_Roles" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."Server_Ranks" (
-    "ID_Server_Rank" integer NOT NULL,
-    "User_ID" text,
-    "Server_ID" text,
-    "Followers" bigint
+    id_server_rank integer NOT NULL,
+    user_id text,
+    server_id text,
+    followers bigint
 );
 
 
@@ -175,11 +177,11 @@ ALTER TABLE livebot."Server_Ranks" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."Stream_Notification" (
-    "Stream_Notification_ID" integer NOT NULL,
-    "Server_ID" text NOT NULL,
-    "Games" text[],
-    "Roles_ID" text[],
-    "Channel_ID" text NOT NULL
+    stream_notification_id integer NOT NULL,
+    server_id text NOT NULL,
+    games text[],
+    roles_id text[],
+    channel_id text NOT NULL
 );
 
 
@@ -191,9 +193,9 @@ ALTER TABLE livebot."Stream_Notification" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."User_Images" (
-    "ID_User_Images" integer NOT NULL,
-    "User_ID" text,
-    "BG_ID" integer
+    id_user_images integer NOT NULL,
+    user_id text,
+    bg_id integer
 );
 
 
@@ -205,13 +207,13 @@ ALTER TABLE livebot."User_Images" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."User_Settings" (
-    "ID_User_Settings" integer NOT NULL,
-    "User_ID" text,
-    "Image_ID" integer,
-    "Background_Colour" text,
-    "Text_Colour" text,
-    "Border_Colour" text,
-    "User_Info" text
+    id_user_settings integer NOT NULL,
+    user_id text,
+    image_id integer,
+    background_colour text,
+    text_colour text,
+    border_colour text,
+    user_info text
 );
 
 
@@ -223,11 +225,11 @@ ALTER TABLE livebot."User_Settings" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."User_Warnings" (
-    "Warning_Level" integer DEFAULT 0 NOT NULL,
-    "Warning_Count" integer DEFAULT 0 NOT NULL,
-    "Kick_Count" integer DEFAULT 0 NOT NULL,
-    "Ban_Count" integer DEFAULT 0 NOT NULL,
-    "ID_User" text NOT NULL
+    warning_level integer DEFAULT 0 NOT NULL,
+    warning_count integer DEFAULT 0 NOT NULL,
+    kick_count integer DEFAULT 0 NOT NULL,
+    ban_count integer DEFAULT 0 NOT NULL,
+    id_user text NOT NULL
 );
 
 
@@ -239,12 +241,12 @@ ALTER TABLE livebot."User_Warnings" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."Vehicle_List" (
-    "ID_Vehicle" integer NOT NULL,
-    "Discipline" integer NOT NULL,
-    "Brand" text NOT NULL,
-    "Model" text NOT NULL,
-    "Year" text NOT NULL,
-    "Type" text NOT NULL
+    id_vehicle integer NOT NULL,
+    discipline integer NOT NULL,
+    brand text NOT NULL,
+    model text NOT NULL,
+    year text NOT NULL,
+    type text NOT NULL
 );
 
 
@@ -256,12 +258,12 @@ ALTER TABLE livebot."Vehicle_List" OWNER TO livebot;
 --
 
 CREATE TABLE livebot."Warnings" (
-    "ID_Warning" integer NOT NULL,
-    "Reason" text COLLATE pg_catalog."C.UTF-8" NOT NULL,
-    "Active" boolean NOT NULL,
-    "Date" text NOT NULL,
-    "Admin_ID" text NOT NULL,
-    "User_ID" text NOT NULL
+    id_warning integer NOT NULL,
+    reason text COLLATE pg_catalog."C.UTF-8" NOT NULL,
+    active boolean NOT NULL,
+    date text NOT NULL,
+    admin_id text NOT NULL,
+    user_id text NOT NULL
 );
 
 
@@ -288,7 +290,7 @@ ALTER TABLE livebot.backgrond_image_id_bg_seq OWNER TO livebot;
 -- Name: backgrond_image_id_bg_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.backgrond_image_id_bg_seq OWNED BY livebot."Background_Image"."ID_BG";
+ALTER SEQUENCE livebot.backgrond_image_id_bg_seq OWNED BY livebot."Background_Image".id_bg;
 
 
 --
@@ -312,7 +314,7 @@ ALTER TABLE livebot.discipline_list_id_discipline_seq OWNER TO livebot;
 -- Name: discipline_list_id_discipline_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.discipline_list_id_discipline_seq OWNED BY livebot."Discipline_List"."ID_Discipline";
+ALTER SEQUENCE livebot.discipline_list_id_discipline_seq OWNED BY livebot."Discipline_List".id_discipline;
 
 
 --
@@ -336,7 +338,7 @@ ALTER TABLE livebot.reaction_roles_id_seq OWNER TO livebot;
 -- Name: reaction_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.reaction_roles_id_seq OWNED BY livebot."Reaction_Roles"."ID";
+ALTER SEQUENCE livebot.reaction_roles_id_seq OWNED BY livebot."Reaction_Roles".id;
 
 
 --
@@ -360,7 +362,7 @@ ALTER TABLE livebot."server_ranks_Id_server_rank_seq" OWNER TO livebot;
 -- Name: server_ranks_Id_server_rank_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot."server_ranks_Id_server_rank_seq" OWNED BY livebot."Server_Ranks"."ID_Server_Rank";
+ALTER SEQUENCE livebot."server_ranks_Id_server_rank_seq" OWNED BY livebot."Server_Ranks".id_server_rank;
 
 
 --
@@ -384,7 +386,7 @@ ALTER TABLE livebot.stream_notification_stream_notification_id_seq OWNER TO live
 -- Name: stream_notification_stream_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.stream_notification_stream_notification_id_seq OWNED BY livebot."Stream_Notification"."Stream_Notification_ID";
+ALTER SEQUENCE livebot.stream_notification_stream_notification_id_seq OWNED BY livebot."Stream_Notification".stream_notification_id;
 
 
 --
@@ -408,7 +410,7 @@ ALTER TABLE livebot.user_images_id_user_images_seq OWNER TO livebot;
 -- Name: user_images_id_user_images_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.user_images_id_user_images_seq OWNED BY livebot."User_Images"."ID_User_Images";
+ALTER SEQUENCE livebot.user_images_id_user_images_seq OWNED BY livebot."User_Images".id_user_images;
 
 
 --
@@ -432,7 +434,7 @@ ALTER TABLE livebot.user_settings_id_user_settings_seq OWNER TO livebot;
 -- Name: user_settings_id_user_settings_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.user_settings_id_user_settings_seq OWNED BY livebot."User_Settings"."ID_User_Settings";
+ALTER SEQUENCE livebot.user_settings_id_user_settings_seq OWNED BY livebot."User_Settings".id_user_settings;
 
 
 --
@@ -456,7 +458,7 @@ ALTER TABLE livebot.vehicle_list_id_vehicle_seq OWNER TO livebot;
 -- Name: vehicle_list_id_vehicle_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.vehicle_list_id_vehicle_seq OWNED BY livebot."Vehicle_List"."ID_Vehicle";
+ALTER SEQUENCE livebot.vehicle_list_id_vehicle_seq OWNED BY livebot."Vehicle_List".id_vehicle;
 
 
 --
@@ -480,79 +482,79 @@ ALTER TABLE livebot.warnings_id_warning_seq OWNER TO livebot;
 -- Name: warnings_id_warning_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
 
-ALTER SEQUENCE livebot.warnings_id_warning_seq OWNED BY livebot."Warnings"."ID_Warning";
+ALTER SEQUENCE livebot.warnings_id_warning_seq OWNED BY livebot."Warnings".id_warning;
 
 
 --
 -- TOC entry 2176 (class 2604 OID 18050)
--- Name: Background_Image ID_BG; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: Background_Image id_bg; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."Background_Image" ALTER COLUMN "ID_BG" SET DEFAULT nextval('livebot.backgrond_image_id_bg_seq'::regclass);
+ALTER TABLE ONLY livebot."Background_Image" ALTER COLUMN id_bg SET DEFAULT nextval('livebot.backgrond_image_id_bg_seq'::regclass);
 
 
 --
 -- TOC entry 2177 (class 2604 OID 18051)
--- Name: Discipline_List ID_Discipline; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: Discipline_List id_discipline; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."Discipline_List" ALTER COLUMN "ID_Discipline" SET DEFAULT nextval('livebot.discipline_list_id_discipline_seq'::regclass);
+ALTER TABLE ONLY livebot."Discipline_List" ALTER COLUMN id_discipline SET DEFAULT nextval('livebot.discipline_list_id_discipline_seq'::regclass);
 
 
 --
 -- TOC entry 2181 (class 2604 OID 18052)
--- Name: Reaction_Roles ID; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: Reaction_Roles id; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."Reaction_Roles" ALTER COLUMN "ID" SET DEFAULT nextval('livebot.reaction_roles_id_seq'::regclass);
+ALTER TABLE ONLY livebot."Reaction_Roles" ALTER COLUMN id SET DEFAULT nextval('livebot.reaction_roles_id_seq'::regclass);
 
 
 --
 -- TOC entry 2182 (class 2604 OID 18053)
--- Name: Server_Ranks ID_Server_Rank; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: Server_Ranks id_server_rank; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."Server_Ranks" ALTER COLUMN "ID_Server_Rank" SET DEFAULT nextval('livebot."server_ranks_Id_server_rank_seq"'::regclass);
+ALTER TABLE ONLY livebot."Server_Ranks" ALTER COLUMN id_server_rank SET DEFAULT nextval('livebot."server_ranks_Id_server_rank_seq"'::regclass);
 
 
 --
 -- TOC entry 2183 (class 2604 OID 18054)
--- Name: Stream_Notification Stream_Notification_ID; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: Stream_Notification stream_notification_id; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."Stream_Notification" ALTER COLUMN "Stream_Notification_ID" SET DEFAULT nextval('livebot.stream_notification_stream_notification_id_seq'::regclass);
+ALTER TABLE ONLY livebot."Stream_Notification" ALTER COLUMN stream_notification_id SET DEFAULT nextval('livebot.stream_notification_stream_notification_id_seq'::regclass);
 
 
 --
 -- TOC entry 2184 (class 2604 OID 18055)
--- Name: User_Images ID_User_Images; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: User_Images id_user_images; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."User_Images" ALTER COLUMN "ID_User_Images" SET DEFAULT nextval('livebot.user_images_id_user_images_seq'::regclass);
+ALTER TABLE ONLY livebot."User_Images" ALTER COLUMN id_user_images SET DEFAULT nextval('livebot.user_images_id_user_images_seq'::regclass);
 
 
 --
 -- TOC entry 2185 (class 2604 OID 18056)
--- Name: User_Settings ID_User_Settings; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: User_Settings id_user_settings; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."User_Settings" ALTER COLUMN "ID_User_Settings" SET DEFAULT nextval('livebot.user_settings_id_user_settings_seq'::regclass);
+ALTER TABLE ONLY livebot."User_Settings" ALTER COLUMN id_user_settings SET DEFAULT nextval('livebot.user_settings_id_user_settings_seq'::regclass);
 
 
 --
 -- TOC entry 2190 (class 2604 OID 18057)
--- Name: Vehicle_List ID_Vehicle; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: Vehicle_List id_vehicle; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."Vehicle_List" ALTER COLUMN "ID_Vehicle" SET DEFAULT nextval('livebot.vehicle_list_id_vehicle_seq'::regclass);
+ALTER TABLE ONLY livebot."Vehicle_List" ALTER COLUMN id_vehicle SET DEFAULT nextval('livebot.vehicle_list_id_vehicle_seq'::regclass);
 
 
 --
 -- TOC entry 2191 (class 2604 OID 18058)
--- Name: Warnings ID_Warning; Type: DEFAULT; Schema: livebot; Owner: livebot
+-- Name: Warnings id_warning; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
-ALTER TABLE ONLY livebot."Warnings" ALTER COLUMN "ID_Warning" SET DEFAULT nextval('livebot.warnings_id_warning_seq'::regclass);
+ALTER TABLE ONLY livebot."Warnings" ALTER COLUMN id_warning SET DEFAULT nextval('livebot.warnings_id_warning_seq'::regclass);
 
 
 --
@@ -561,7 +563,7 @@ ALTER TABLE ONLY livebot."Warnings" ALTER COLUMN "ID_Warning" SET DEFAULT nextva
 --
 
 ALTER TABLE ONLY livebot."Background_Image"
-    ADD CONSTRAINT backgrond_image_pkey PRIMARY KEY ("ID_BG");
+    ADD CONSTRAINT backgrond_image_pkey PRIMARY KEY (id_bg);
 
 
 --
@@ -570,7 +572,7 @@ ALTER TABLE ONLY livebot."Background_Image"
 --
 
 ALTER TABLE ONLY livebot."Discipline_List"
-    ADD CONSTRAINT discipline_list_discipline_name_key UNIQUE ("Discipline_Name");
+    ADD CONSTRAINT discipline_list_discipline_name_key UNIQUE (discipline_name);
 
 
 --
@@ -579,7 +581,7 @@ ALTER TABLE ONLY livebot."Discipline_List"
 --
 
 ALTER TABLE ONLY livebot."Discipline_List"
-    ADD CONSTRAINT discipline_list_pkey PRIMARY KEY ("ID_Discipline");
+    ADD CONSTRAINT discipline_list_pkey PRIMARY KEY (id_discipline);
 
 
 --
@@ -588,7 +590,7 @@ ALTER TABLE ONLY livebot."Discipline_List"
 --
 
 ALTER TABLE ONLY livebot."Leaderboard"
-    ADD CONSTRAINT leaderboard_pkey PRIMARY KEY ("ID_User");
+    ADD CONSTRAINT leaderboard_pkey PRIMARY KEY (id_user);
 
 
 --
@@ -597,7 +599,7 @@ ALTER TABLE ONLY livebot."Leaderboard"
 --
 
 ALTER TABLE ONLY livebot."Reaction_Roles"
-    ADD CONSTRAINT reaction_roles_pkey PRIMARY KEY ("ID");
+    ADD CONSTRAINT reaction_roles_pkey PRIMARY KEY (id);
 
 
 --
@@ -606,7 +608,7 @@ ALTER TABLE ONLY livebot."Reaction_Roles"
 --
 
 ALTER TABLE ONLY livebot."Server_Ranks"
-    ADD CONSTRAINT server_ranks_pkey PRIMARY KEY ("ID_Server_Rank");
+    ADD CONSTRAINT server_ranks_pkey PRIMARY KEY (id_server_rank);
 
 
 --
@@ -615,7 +617,7 @@ ALTER TABLE ONLY livebot."Server_Ranks"
 --
 
 ALTER TABLE ONLY livebot."Stream_Notification"
-    ADD CONSTRAINT stream_notification_pkey PRIMARY KEY ("Stream_Notification_ID");
+    ADD CONSTRAINT stream_notification_pkey PRIMARY KEY (stream_notification_id);
 
 
 --
@@ -624,7 +626,7 @@ ALTER TABLE ONLY livebot."Stream_Notification"
 --
 
 ALTER TABLE ONLY livebot."User_Images"
-    ADD CONSTRAINT user_images_pkey PRIMARY KEY ("ID_User_Images");
+    ADD CONSTRAINT user_images_pkey PRIMARY KEY (id_user_images);
 
 
 --
@@ -633,7 +635,7 @@ ALTER TABLE ONLY livebot."User_Images"
 --
 
 ALTER TABLE ONLY livebot."User_Settings"
-    ADD CONSTRAINT user_settings_pkey PRIMARY KEY ("ID_User_Settings");
+    ADD CONSTRAINT user_settings_pkey PRIMARY KEY (id_user_settings);
 
 
 --
@@ -642,7 +644,7 @@ ALTER TABLE ONLY livebot."User_Settings"
 --
 
 ALTER TABLE ONLY livebot."User_Warnings"
-    ADD CONSTRAINT user_warnings_pkey PRIMARY KEY ("ID_User");
+    ADD CONSTRAINT user_warnings_pkey PRIMARY KEY (id_user);
 
 
 --
@@ -651,7 +653,7 @@ ALTER TABLE ONLY livebot."User_Warnings"
 --
 
 ALTER TABLE ONLY livebot."Vehicle_List"
-    ADD CONSTRAINT vehicle_list_pkey PRIMARY KEY ("ID_Vehicle");
+    ADD CONSTRAINT vehicle_list_pkey PRIMARY KEY (id_vehicle);
 
 
 --
@@ -660,7 +662,7 @@ ALTER TABLE ONLY livebot."Vehicle_List"
 --
 
 ALTER TABLE ONLY livebot."Warnings"
-    ADD CONSTRAINT warnings_pkey PRIMARY KEY ("ID_Warning");
+    ADD CONSTRAINT warnings_pkey PRIMARY KEY (id_warning);
 
 
 --
@@ -670,6 +672,8 @@ ALTER TABLE ONLY livebot."Warnings"
 
 CREATE TRIGGER "Add_User_Settings" AFTER INSERT ON livebot."Leaderboard" FOR EACH ROW EXECUTE PROCEDURE livebot."AddUserSettings"();
 
+ALTER TABLE livebot."Leaderboard" DISABLE TRIGGER "Add_User_Settings";
+
 
 --
 -- TOC entry 2217 (class 2606 OID 18084)
@@ -677,7 +681,7 @@ CREATE TRIGGER "Add_User_Settings" AFTER INSERT ON livebot."Leaderboard" FOR EAC
 --
 
 ALTER TABLE ONLY livebot."User_Images"
-    ADD CONSTRAINT "background to user list" FOREIGN KEY ("BG_ID") REFERENCES livebot."Background_Image"("ID_BG");
+    ADD CONSTRAINT "background to user list" FOREIGN KEY (bg_id) REFERENCES livebot."Background_Image"(id_bg);
 
 
 --
@@ -686,7 +690,7 @@ ALTER TABLE ONLY livebot."User_Images"
 --
 
 ALTER TABLE ONLY livebot."Server_Ranks"
-    ADD CONSTRAINT server_ranks_user_id_fkey FOREIGN KEY ("User_ID") REFERENCES livebot."Leaderboard"("ID_User");
+    ADD CONSTRAINT server_ranks_user_id_fkey FOREIGN KEY (user_id) REFERENCES livebot."Leaderboard"(id_user);
 
 
 --
@@ -695,7 +699,7 @@ ALTER TABLE ONLY livebot."Server_Ranks"
 --
 
 ALTER TABLE ONLY livebot."User_Settings"
-    ADD CONSTRAINT "user settings to user" FOREIGN KEY ("User_ID") REFERENCES livebot."Leaderboard"("ID_User");
+    ADD CONSTRAINT "user settings to user" FOREIGN KEY (user_id) REFERENCES livebot."Leaderboard"(id_user);
 
 
 --
@@ -704,7 +708,7 @@ ALTER TABLE ONLY livebot."User_Settings"
 --
 
 ALTER TABLE ONLY livebot."User_Images"
-    ADD CONSTRAINT "user to leaderboard" FOREIGN KEY ("User_ID") REFERENCES livebot."Leaderboard"("ID_User");
+    ADD CONSTRAINT "user to leaderboard" FOREIGN KEY (user_id) REFERENCES livebot."Leaderboard"(id_user);
 
 
 --
@@ -713,7 +717,7 @@ ALTER TABLE ONLY livebot."User_Images"
 --
 
 ALTER TABLE ONLY livebot."Vehicle_List"
-    ADD CONSTRAINT vehicle_list_discipline_fkey FOREIGN KEY ("Discipline") REFERENCES livebot."Discipline_List"("ID_Discipline");
+    ADD CONSTRAINT vehicle_list_discipline_fkey FOREIGN KEY (discipline) REFERENCES livebot."Discipline_List"(id_discipline);
 
 
 --
@@ -722,10 +726,10 @@ ALTER TABLE ONLY livebot."Vehicle_List"
 --
 
 ALTER TABLE ONLY livebot."Warnings"
-    ADD CONSTRAINT warnings_user_id_fkey FOREIGN KEY ("User_ID") REFERENCES livebot."User_Warnings"("ID_User");
+    ADD CONSTRAINT warnings_user_id_fkey FOREIGN KEY (user_id) REFERENCES livebot."User_Warnings"(id_user);
 
 
--- Completed on 2019-06-10 03:30:48
+-- Completed on 2019-07-20 12:03:59
 
 --
 -- PostgreSQL database dump complete
