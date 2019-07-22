@@ -3,9 +3,9 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace LiveBot.Commands
 {
@@ -182,9 +182,9 @@ namespace LiveBot.Commands
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
-            var selectedUser = userWarnings.Where(w=>w.ID_User==uid).ToList();
+            var selectedUser = userWarnings.Where(w => w.ID_User == uid).ToList();
             Console.WriteLine(selectedUser[0].ID_User);
-            if (selectedUser.Count==1)
+            if (selectedUser.Count == 1)
             {
                 UserCheck = true;
                 kcount = (int)selectedUser[0].Kick_Count;

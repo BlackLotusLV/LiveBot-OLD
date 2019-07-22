@@ -9,8 +9,10 @@ namespace LiveBot.DB
         [Key]
         [Column("id_discipline")]
         public int ID_Discipline { get; set; }
+
         [Column("family")]
         public string Family { get; set; }
+
         [Column("discipline_name")]
         public string Discipline_Name { get; set; }
     }

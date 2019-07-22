@@ -9,14 +9,19 @@ namespace LiveBot.DB
         [Key]
         [Column("id_vehicle")]
         public int ID_Vehicle { get; set; }
+
         [Column("discipline")]
         public int Discipline { get; set; }
+
         [Column("brand")]
         public string Brand { get; set; }
+
         [Column("model")]
         public string Model { get; set; }
+
         [Column("year")]
         public string Year { get; set; }
+
         [Column("type")]
         public string Type { get; set; }
     }

@@ -9,12 +9,16 @@ namespace LiveBot.DB
         [Key]
         [Column("stream_notification_id")]
         public int Stream_Notification_ID { get; set; }
+
         [Column("server_id")]
         public string Server_ID { get; set; }
+
         [Column("games")]
         public string[] Games { get; set; }
+
         [Column("roles_id")]
         public string[] Roles_ID { get; set; }
+
         [Column("channel_id")]
         public string Channel_ID { get; set; }
     }

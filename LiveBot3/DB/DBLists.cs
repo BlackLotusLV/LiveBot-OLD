@@ -158,6 +158,7 @@ namespace LiveBot.DB
             ctx.SaveChanges();
             LoadUserImages();
         }
+
         public static void InsertUserSettings(UserSettings o)
         {
             using var ctx = new UserSettingsContext();
@@ -165,6 +166,7 @@ namespace LiveBot.DB
             ctx.SaveChanges();
             LoadUserSettings();
         }
+
         public static void InsertLeaderboard(Leaderboard o)
         {
             using var ctx = new LeaderboardContext();

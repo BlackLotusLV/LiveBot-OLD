@@ -9,12 +9,16 @@ namespace LiveBot.DB
         [Key]
         [Column("id_user")]
         public string ID_User { get; set; }
+
         [Column("followers")]
         public long Followers { get; set; }
+
         [Column("level")]
         public int Level { get; set; }
+
         [Column("bucks")]
         public long Bucks { get; set; }
+
         [Column("daily_used")]
         public string Daily_Used { get; set; }
     }

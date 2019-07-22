@@ -27,8 +27,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Bucks nerfs\n" +
-                "New command, `/daily` - can be used once a day, gives you or someone else 200 bucks";
+            string changelog = "Daily command fixed\n" +
+                "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -294,7 +294,6 @@ namespace LiveBot.Commands
             await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
         }
 
-
         [Command("quote")]
         [Description("Cross channel message quoting. (ChannelID-MessageID)")]
         [Priority(9)]
@@ -322,6 +321,7 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
             }
         }
+
         [Command("info"), Description("Shows user info")]
         public async Task Info(CommandContext ctx, [Description("users ID or mention")] DiscordMember user = null)
         {
@@ -536,11 +536,11 @@ namespace LiveBot.Commands
                 _ => "Street Race"
             };
             List<DB.VehicleList> VehicleList = DB.DBLists.VehicleList;
-            List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w=>w.Discipline_Name==disciplinename).ToList();
+            List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w => w.Discipline_Name == disciplinename).ToList();
             Random r = new Random();
             string output;
             bool check = true;
-            int row=0;
+            int row = 0;
             if (disciplinename == "Street Race")
             {
                 var CarList = (from vl in VehicleList
@@ -553,8 +553,8 @@ namespace LiveBot.Commands
                                 where dl.Discipline_Name == disciplinename
                                 where vl.Type == "bike"
                                 select vl).ToList();
-                
-                if (Program.VehicleList.Where(w=>w.Discipline==DisciplineList[0].ID_Discipline).Count()>CarList.Count/2)
+
+                if (Program.VehicleList.Where(w => w.Discipline == DisciplineList[0].ID_Discipline).Count() > CarList.Count / 2)
                 {
                     Program.VehicleList.RemoveAll(r => r.Discipline == DisciplineList[0].ID_Discipline);
                 }
@@ -574,9 +574,9 @@ namespace LiveBot.Commands
             else
             {
                 var Vlist = (from vl in VehicleList
-                                      join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
-                                      where dl.Discipline_Name == disciplinename
-                                      select vl).ToList();
+                             join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                             where dl.Discipline_Name == disciplinename
+                             select vl).ToList();
                 if (Program.VehicleList.Where(w => w.Discipline == DisciplineList[0].ID_Discipline).Count() > Vlist.Count / 2)
                 {
                     Program.VehicleList.RemoveAll(r => r.Discipline == DisciplineList[0].ID_Discipline);
@@ -780,7 +780,7 @@ namespace LiveBot.Commands
                         );
                         BadgeCount++;
                     }
-                    if (role.Id== 585537338491404290)
+                    if (role.Id == 585537338491404290)
                     {
                         using Image<Rgba32> badge = Image.Load<Rgba32>("Badges/Booster.png");
                         Point badgeloc = new Point(BadgeX + (BadgeCount * badge.Width) + 5, BadgeY);
@@ -909,7 +909,7 @@ namespace LiveBot.Commands
             string list = "", personalscore = "";
             List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
             var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
-            user = user.Where(w=>w.Server_ID==ctx.Guild.Id.ToString()).ToList();
+            user = user.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
                 var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].User_ID.ToString()));
@@ -922,7 +922,7 @@ namespace LiveBot.Commands
             int rank = 0;
             List<DB.ServerRanks> LB = DB.DBLists.ServerRanks;
             List<DB.ServerRanks> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
-            leaderbaords=leaderbaords.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
+            leaderbaords = leaderbaords.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
             foreach (var item in leaderbaords)
             {
                 rank++;
@@ -1113,29 +1113,30 @@ namespace LiveBot.Commands
             string output = platform == "x1" ? "XBox One." : platform == "ps4" ? "Play Station 4." : platform == "pc" ? "PC" : "*error*";
             await ctx.RespondWithFileAsync(upFile, $"Summit tier list for {output}");
         }
+
         [Command("daily")]
-        [Cooldown(1,60,CooldownBucketType.User)]
-        public async Task Daily(CommandContext ctx,DiscordMember member = null)
+        [Cooldown(1, 60, CooldownBucketType.User)]
+        public async Task Daily(CommandContext ctx, DiscordMember member = null)
         {
-            if (member==null)
+            if (member == null)
             {
                 member = ctx.Member;
             }
             List<DB.Leaderboard> dbase = DB.DBLists.Leaderboard;
             var user = (from db in dbase
-                         where db.ID_User == ctx.Member.Id.ToString()
-                         select db).ToList();
+                        where db.ID_User == ctx.Member.Id.ToString()
+                        select db).ToList();
             var receiver = (from db in dbase
                             where db.ID_User == member.Id.ToString()
                             select db).ToList();
-            DateTime? dailyused=null;
-            if (user[0].Daily_Used!=null)
+            DateTime? dailyused = null;
+            if (user[0].Daily_Used != null)
             {
                 dailyused = DateTime.ParseExact(user[0].Daily_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
             }
-            if (dailyused==null||dailyused>DateTime.Now)
+            if (dailyused == null || dailyused < DateTime.Now)
             {
-                if (member.Id==ctx.Member.Id)
+                if (member.Id == ctx.Member.Id)
                 {
                     user[0].Daily_Used = DateTime.Now.ToString("ddMMyyyy");
                     user[0].Bucks += 200;

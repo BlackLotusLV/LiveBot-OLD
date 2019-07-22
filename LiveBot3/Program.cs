@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190720_A";
+        public static string BotVersion = $"20190722_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -81,7 +81,6 @@ namespace LiveBot
                 ReconnectIndefinitely = true,
                 LogLevel = LogLevel.Debug,
                 UseInternalLogHandler = true
-
             };
 
             Client = new DiscordClient(cfg);
@@ -160,8 +159,6 @@ namespace LiveBot
             {
                 DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(row.Server_ID.ToString()));
                 DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(row.Channel_ID.ToString()));
-                Console.WriteLine($"user guild id: {e.User.Presence.Guild.Id}");
-                Console.WriteLine($"Compared Guild: {guild.Id}");
                 if (e.User.Presence.Guild.Id == guild.Id)
                 {
                     LiveStreamer streamer = new LiveStreamer
@@ -668,8 +665,6 @@ namespace LiveBot
             }
         }
     }
-
-
 
     internal class LiveStreamer
     {
