@@ -28,7 +28,7 @@ namespace LiveBot.Commands
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
             string changelog = "Daily command fixed\n" +
-                "";
+                "Now giving your daily to someone else will give them between 200 and 400 bucks";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1115,9 +1115,10 @@ namespace LiveBot.Commands
         }
 
         [Command("daily")]
-        [Cooldown(1, 60, CooldownBucketType.User)]
+        //[Cooldown(1, 60, CooldownBucketType.User)]
         public async Task Daily(CommandContext ctx, DiscordMember member = null)
         {
+            int money = 200;
             if (member == null)
             {
                 member = ctx.Member;
@@ -1134,22 +1135,24 @@ namespace LiveBot.Commands
             {
                 dailyused = DateTime.ParseExact(user[0].Daily_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
             }
-            if (dailyused == null || dailyused < DateTime.Now)
+            if (dailyused == null || dailyused < DateTime.Now.Date)
             {
                 if (member.Id == ctx.Member.Id)
                 {
                     user[0].Daily_Used = DateTime.Now.ToString("ddMMyyyy");
-                    user[0].Bucks += 200;
+                    user[0].Bucks += money;
                     DB.DBLists.UpdateLeaderboard(user);
-                    await ctx.RespondAsync($"{ctx.Member.Mention}, You have received 200 bucks");
+                    await ctx.RespondAsync($"{ctx.Member.Mention}, You have received {money} bucks");
                 }
                 else
                 {
+                    Random r = new Random();
+                    money += r.Next(200);
                     user[0].Daily_Used = DateTime.Now.ToString("ddMMyyyy");
-                    receiver[0].Bucks += 200;
+                    receiver[0].Bucks += money;
                     DB.DBLists.UpdateLeaderboard(user);
                     DB.DBLists.UpdateLeaderboard(receiver);
-                    await ctx.RespondAsync($"{member.Mention}, You were given 200 bucks by {ctx.Member.Username}");
+                    await ctx.RespondAsync($"{member.Mention}, You were given {money} bucks by {ctx.Member.Username}");
                 }
             }
             else
