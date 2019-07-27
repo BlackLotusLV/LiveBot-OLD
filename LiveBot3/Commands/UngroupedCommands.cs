@@ -27,8 +27,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Daily command fixed\n" +
-                "Now giving your daily to someone else will give them between 200 and 400 bucks";
+            string changelog = "Added `/mhc` command, which will inform people that it is the most efficient grinding mision.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1115,7 +1114,7 @@ namespace LiveBot.Commands
         }
 
         [Command("daily")]
-        //[Cooldown(1, 60, CooldownBucketType.User)]
+        [Cooldown(1, 60, CooldownBucketType.User)]
         public async Task Daily(CommandContext ctx, DiscordMember member = null)
         {
             int money = 200;
@@ -1161,6 +1160,17 @@ namespace LiveBot.Commands
 
                 await ctx.RespondAsync($"Time untill you can use daily {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.");
             }
+        }
+
+        [Command("mhc")]
+        public async Task MHC(CommandContext ctx, DiscordMember member = null)
+        {
+            if (member==null)
+            {
+                member = ctx.Member;
+            }
+            await ctx.RespondAsync($"{member.Mention}, the best even to farm money and followers is **Maine Highlands Cave** in the :JetSprint: (JetSprint) discpline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
+            await ctx.Message.DeleteAsync();
         }
     }
 }

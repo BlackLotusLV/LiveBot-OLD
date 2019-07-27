@@ -44,25 +44,31 @@ namespace LiveBot.Commands
         [Command("update")]
         public async Task Update(CommandContext ctx, [Description("Which database to update. (All will update all db)")] string db = null)
         {
+            string msgcontent;
             switch (db.ToLower())
             {
                 case "all":
                     DB.DBLists.LoadAllLists();
+                    msgcontent = "All lists updated";
                     break;
 
                 case "vehicle":
                     DB.DBLists.LoadVehicleList();
+                    msgcontent = "Vehicle list updated";
                     break;
 
+                case null:
                 default:
-                    DiscordMessage msg = await ctx.RespondAsync("Couldn't find this table. Nothing was updated\n" +
+                    msgcontent = "Couldn't find this table. Nothing was updated\n" +
                         "all - updates all tables\n" +
                         "vehicle - updates the **vehicle list**\n" +
-                        "");
-                    await Task.Delay(10000);
-                    await msg.DeleteAsync();
+                        "";
                     break;
             }
+            DiscordMessage msg = await ctx.RespondAsync(msgcontent);
+            await Task.Delay(10000);
+            await msg.DeleteAsync();
+
         }
     }
 }
