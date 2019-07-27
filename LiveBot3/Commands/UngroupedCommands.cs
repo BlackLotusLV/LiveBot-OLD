@@ -1165,11 +1165,12 @@ namespace LiveBot.Commands
         [Command("mhc")]
         public async Task MHC(CommandContext ctx, DiscordMember member = null)
         {
-            if (member==null)
+            DiscordEmoji JS = await Program.TCGuild.GetEmojiAsync(449686964950794240);
+            if (member == null)
             {
                 member = ctx.Member;
             }
-            await ctx.RespondAsync($"{member.Mention}, the best even to farm money and followers is **Maine Highlands Cave** in the :JetSprint: (JetSprint) discpline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
+            await ctx.RespondAsync($"{member.Mention}, the best even to farm money and followers is **Maine Highlands Cave** in the {JS} (JetSprint) discpline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
             await ctx.Message.DeleteAsync();
         }
     }

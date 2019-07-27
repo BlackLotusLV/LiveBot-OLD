@@ -68,7 +68,6 @@ namespace LiveBot.Commands
             DiscordMessage msg = await ctx.RespondAsync(msgcontent);
             await Task.Delay(10000);
             await msg.DeleteAsync();
-
         }
     }
 }
