@@ -150,6 +150,12 @@ namespace LiveBot.DB
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+        public static void UpdateVehicleList(List<VehicleList> o)
+        {
+            using var ctx = new VehicleListContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
 
         public static void InsertUserImages(UserImages o)
         {

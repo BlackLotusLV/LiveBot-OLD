@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00621" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00621" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00621" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00623" />
     <PackageReference Include="EntityFramework" Version="6.3.0-preview7-19363-02" />
     <PackageReference Include="Npgsql" Version="4.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.0.0-preview7" />

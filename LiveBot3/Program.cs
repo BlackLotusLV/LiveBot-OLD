@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190727_B";
+        public static string BotVersion = $"20190804_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -335,10 +335,13 @@ namespace LiveBot
                             Bucks = (long)0
                         };
                         DB.DBLists.InsertLeaderboard(newEntry);
+                        List<DB.UserImages> UserImg = DB.DBLists.UserImages;
+                        var idui = UserImg.Max(m => m.ID_User_Images);
                         DB.UserImages newUImage = new DB.UserImages
                         {
                             User_ID = e.Author.Id.ToString(),
-                            BG_ID = 1
+                            BG_ID = 1,
+                            ID_User_Images = idui + 1
                         };
                         DB.DBLists.InsertUserImages(newUImage);
                         DB.UserSettings newUSettings = new DB.UserSettings
@@ -650,6 +653,10 @@ namespace LiveBot
         private async Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
             e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+            if (e.Exception.InnerException != null)
+            {
+                e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"{e.Exception.InnerException.Message}", DateTime.Now);
+            }
 #pragma warning disable IDE0059 // Value assigned to symbol is never used
             if (e.Exception is ChecksFailedException ex)
 #pragma warning restore IDE0059 // Value assigned to symbol is never used

@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace LiveBot
 {
@@ -74,6 +75,15 @@ namespace LiveBot
                 json = sr.ReadToEnd();
             var cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).DataBase;
             return $"Host={cfgjson.Host};Username={cfgjson.Username};Password={cfgjson.Password};Database={cfgjson.Database}";
+        }
+
+        public static List<DB.VehicleList> UpdateVehicle(List<DB.VehicleList> Full, List<DB.VehicleList> Small,int row)
+        {
+            var vehicle = (from f in Full
+                           where f.ID_Vehicle == Small[row].ID_Vehicle
+                           select f).ToList();
+            vehicle[0].Selected_Count++;
+            return vehicle;
         }
     }
 }

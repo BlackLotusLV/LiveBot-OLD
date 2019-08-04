@@ -7,7 +7,7 @@ namespace LiveBot.DB
     internal class UserImages
     {
         [Key]
-        [Column("id_user_images")]
+        [Column("id_user_images",TypeName ="Serial")]
         public int ID_User_Images { get; set; }
 
         [Column("user_id")]

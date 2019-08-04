@@ -27,7 +27,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Added `/mhc` command, which will inform people that it is the most efficient grinding mision.";
+            string changelog = "Fixed an issue where you could not buy a new background.\n" +
+                "Random vehicle `/rv` or `/rvehicle` command will now cycle through every car in the discipline, before having the chance to pick the same car. It will also no longer reset after bot restart";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -538,8 +539,11 @@ namespace LiveBot.Commands
             List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w => w.Discipline_Name == disciplinename).ToList();
             Random r = new Random();
             string output;
-            bool check = true;
             int row = 0;
+            int maxCount = (from vl in VehicleList
+                            join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                            where dl.Discipline_Name == disciplinename
+                            select vl).ToList().Max(m => m.Selected_Count);
             if (disciplinename == "Street Race")
             {
                 var CarList = (from vl in VehicleList
@@ -552,23 +556,25 @@ namespace LiveBot.Commands
                                 where dl.Discipline_Name == disciplinename
                                 where vl.Type == "bike"
                                 select vl).ToList();
-
-                if (Program.VehicleList.Where(w => w.Discipline == DisciplineList[0].ID_Discipline).Count() > CarList.Count / 2)
+                if (CarList.Min(m=>m.Selected_Count)!=maxCount)
                 {
-                    Program.VehicleList.RemoveAll(r => r.Discipline == DisciplineList[0].ID_Discipline);
+                    CarList = (from cl in CarList
+                               where cl.Selected_Count < maxCount
+                               select cl).ToList();
                 }
-                while (check)
+                if (BikeList.Min(m=>m.Selected_Count) != maxCount)
                 {
-                    row = r.Next(CarList.Count);
-                    if (!Program.VehicleList.Contains(CarList[row]))
-                    {
-                        check = false;
-                        Program.VehicleList.Add(CarList[row]);
-                    }
+                    BikeList = (from bl in BikeList
+                               where bl.Selected_Count < maxCount
+                               select bl).ToList();
                 }
+                row = r.Next(CarList.Count);
                 output = $"**Car:** {CarList[row].Brand} | {CarList[row].Model} | {CarList[row].Year}\n";
+                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList,CarList,row));
                 row = r.Next(BikeList.Count);
                 output += $"**Bike:** {BikeList[row].Brand} | {BikeList[row].Model} | {BikeList[row].Year}";
+
+                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, BikeList, row));
             }
             else
             {
@@ -576,20 +582,16 @@ namespace LiveBot.Commands
                              join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
                              where dl.Discipline_Name == disciplinename
                              select vl).ToList();
-                if (Program.VehicleList.Where(w => w.Discipline == DisciplineList[0].ID_Discipline).Count() > Vlist.Count / 2)
+                Console.WriteLine(Vlist);
+                if (Vlist.Min(m=>m.Selected_Count) != maxCount)
                 {
-                    Program.VehicleList.RemoveAll(r => r.Discipline == DisciplineList[0].ID_Discipline);
+                    Vlist = (from vl in Vlist
+                             where vl.Selected_Count < maxCount
+                             select vl).ToList();
                 }
-                do
-                {
-                    row = r.Next(Vlist.Count);
-                    if (!Program.VehicleList.Contains(Vlist[row]))
-                    {
-                        check = false;
-                        Program.VehicleList.Add(Vlist[row]);
-                    }
-                } while (check);
+                row = r.Next(Vlist.Count);
                 output = $"{Vlist[row].Brand} | {Vlist[row].Model} | {Vlist[row].Year} ({Vlist[row].Type})";
+                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, Vlist, row));
             }
             await ctx.RespondAsync(output);
         }
@@ -998,19 +1000,25 @@ namespace LiveBot.Commands
                 var user = (from lb in Leaderboard
                             where lb.ID_User == ctx.User.Id.ToString()
                             select lb).ToList();
+
                 if (background.Count == 1)
                 {
                     if (backgroundrow.Count == 0)
                     {
                         if ((long)background[0].Price <= (long)user[0].Bucks)
                         {
-                            user[0].Bucks = (long)user[0].Bucks - (long)background[0].Price;
+                            var idui = UserImg.Max(m => m.ID_User_Images);
+                            user[0].Bucks -= (long)background[0].Price;
                             DB.UserImages newEntry = new DB.UserImages
                             {
                                 User_ID = ctx.User.Id.ToString(),
-                                BG_ID = id
+                                BG_ID = id,
+                                ID_User_Images=idui+1
                             };
                             DB.DBLists.InsertUserImages(newEntry);
+                            Console.WriteLine(4);
+                            DB.DBLists.UpdateLeaderboard(user);
+                            Console.WriteLine(5);
                             output = $"You have bought the \"{background[0].Name}\" background.";
                         }
                         else
