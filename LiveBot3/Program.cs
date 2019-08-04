@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190804_A";
+        public static string BotVersion = $"20190804_B";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -344,6 +344,8 @@ namespace LiveBot
                             ID_User_Images = idui + 1
                         };
                         DB.DBLists.InsertUserImages(newUImage);
+                        List<DB.UserSettings> UserSet = DB.DBLists.UserSettings;
+                        var us = UserSet.Max(m => m.ID_User_Settings);
                         DB.UserSettings newUSettings = new DB.UserSettings
                         {
                             User_ID = e.Author.Id.ToString(),
@@ -351,7 +353,8 @@ namespace LiveBot
                             Text_Colour = "black",
                             Border_Colour = "black",
                             User_Info = "Just a flesh wound",
-                            Image_ID = newUImage.ID_User_Images
+                            Image_ID = newUImage.ID_User_Images,
+                            ID_User_Settings = us + 1
                         };
                         DB.DBLists.InsertUserSettings(newUSettings);
                     }

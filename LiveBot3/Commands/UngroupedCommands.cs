@@ -1016,9 +1016,7 @@ namespace LiveBot.Commands
                                 ID_User_Images=idui+1
                             };
                             DB.DBLists.InsertUserImages(newEntry);
-                            Console.WriteLine(4);
                             DB.DBLists.UpdateLeaderboard(user);
-                            Console.WriteLine(5);
                             output = $"You have bought the \"{background[0].Name}\" background.";
                         }
                         else
