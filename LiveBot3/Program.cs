@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190804_B";
+        public static string BotVersion = $"20190806_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -147,7 +147,9 @@ namespace LiveBot
             Client.GuildMemberAdded += this.Member_Joined;
             Client.GuildMemberRemoved += this.Memmber_Leave;
             Client.GuildBanAdded += this.Ban_Counter;
+            Client.GuildBanRemoved += this.Ban_Removed;
             //*/
+            Client.MessageCreated += this.Message_Created;
             await Client.ConnectAsync();
             await Task.Delay(-1);
         }
@@ -413,6 +415,32 @@ namespace LiveBot
                     ServerUserLevelTimer.Add(NewToList);
                     DB.DBLists.UpdateServerRanks(local);
                 }
+                //*/
+                var userrank = (from sr in DB.DBLists.ServerRanks
+                                where sr.Server_ID == e.Guild.Id.ToString()
+                                where sr.User_ID == e.Author.Id.ToString()
+                                select sr).ToList()[0].Followers;
+                var rankedroles = (from rr in DB.DBLists.RankRoles
+                                   where rr.Server_Rank != 0
+                                   where rr.Server_Rank<=userrank
+                                   select rr).ToList();
+                List<DiscordRole> roles = new List<DiscordRole>();
+                foreach (var item in rankedroles)
+                {
+                    roles.Add(e.Guild.GetRole(Convert.ToUInt64(item.Role_ID)));
+                }
+                DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+                for (int i = 0; i < roles.Count; i++)
+                {
+                    if (i!=roles.Count-1&&member.Roles.Contains(roles[i]))
+                    {
+                        await member.RevokeRoleAsync(roles[i]);
+                    }
+                    else if (i==roles.Count-1&&!member.Roles.Contains(roles[i]))
+                    {
+                        await member.GrantRoleAsync(roles[i]);
+                    }
+                }
             }
         }
 
@@ -468,9 +496,14 @@ namespace LiveBot
         {
             DiscordMessage msg = e.Message;
             DiscordUser author = msg.Author;
-            if (e.Guild == TCGuild)
+            var GuildSettings = (from ss in DB.DBLists.ServerSettings
+                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 select ss).ToList();
+            if (GuildSettings[0].Delete_Log!="0")
             {
-                if (author.IsBot == false)
+                DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
+                DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
+                if (!author.IsBot)
                 {
                     string converteddeletedmsg = msg.Content;
                     if (converteddeletedmsg.StartsWith("/"))
@@ -488,7 +521,7 @@ namespace LiveBot
                             $"**Content:** {converteddeletedmsg}\n" +
                             $"**Time Posted:** {msg.CreationTimestamp}"
                         };
-                        await deletelog.SendMessageAsync(embed: embed);
+                        await DeleteLog.SendMessageAsync(embed: embed);
                     }
                     else
                     {
@@ -509,7 +542,7 @@ namespace LiveBot
                             $"**Contents:** {converteddeletedmsg}\n" +
                             $"Time posted: {msg.CreationTimestamp}"
                         };
-                        await deletelog.SendMessageAsync(embed: embed);
+                        await DeleteLog.SendMessageAsync(embed: embed);
                     }
                 }
             }
@@ -517,30 +550,41 @@ namespace LiveBot
 
         private async Task Member_Joined(GuildMemberAddEventArgs e)
         {
-            if (e.Guild == TCGuild)
+            var GuildSettings = (from ss in DB.DBLists.ServerSettings
+                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 select ss).ToList();
+            var JoinRole = (from rr in DB.DBLists.RankRoles
+                            where rr.Server_ID == e.Guild.Id.ToString()
+                            where rr.Server_Rank == 0
+                            select rr).ToList();
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
+            if (GuildSettings[0].User_Traffic!="0")
             {
-                string name = e.Member.Username;
-                if (name.Contains("discord.gg/") || name.Contains("discordapp.com/invite/"))
+                DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
-                    try
+                    Title = $"📥{e.Member.Username}({e.Member.Id}) has joined the server",
+                    Footer= new DiscordEmbedBuilder.EmbedFooter
                     {
-                        await e.Member.SendMessageAsync("Your nickname contains a server invite thus you have been removed.");
-                    }
-                    catch
-                    {
-                    }
-                    await e.Member.BanAsync();
-                    await modlog.SendMessageAsync($"{e.Member.Mention} Was baned for having an invite link in their name.");
-                }
-                else
+                        IconUrl=e.Member.AvatarUrl,
+                        Text=$"User joined ({e.Guild.MemberCount})"
+                    },
+                    Color= new DiscordColor(0x00ff00),
+                };
+                await UserTraffic.SendMessageAsync(embed:embed);
+            }
+            if (GuildSettings[0].Welcome_Settings[0]!="0")
+            {
+                DiscordChannel WelcomeChannel = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Welcome_Settings[0]));
+                if (GuildSettings[0].Welcome_Settings[1] != "0")
                 {
-                    await TCWelcome.SendMessageAsync($"Welcome {e.Member.Mention} to The Crew Community Discord! " + File.ReadAllText(@"TextFiles/sys/welcome.txt"));
-                    try
+                    string msg = GuildSettings[0].Welcome_Settings[1];
+                    msg = msg.Replace("$Mention", $"{e.Member.Mention}");
+                    await WelcomeChannel.SendMessageAsync(msg);
+                    if (JoinRole.Count!=0)
                     {
-                        await e.Member.GrantRoleAsync(Anonymous);
-                    }
-                    catch (Exception)
-                    {
+                        DiscordRole role = Guild.GetRole(Convert.ToUInt64(JoinRole[0].Role_ID));
+                        await e.Member.GrantRoleAsync(role);
                     }
                 }
             }
@@ -554,19 +598,58 @@ namespace LiveBot
             List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
             string uid = e.Member.Id.ToString();
             bool UserCheck = false;
+            var GuildSettings = (from ss in DB.DBLists.ServerSettings
+                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 select ss).ToList();
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
+            if (GuildSettings[0].User_Traffic != "0")
+            {
+                DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                {
+                    Title = $"📤{e.Member.Username}({e.Member.Id}) has left the server",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        IconUrl = e.Member.AvatarUrl,
+                        Text = $"User left ({e.Guild.MemberCount})"
+                    },
+                    Color = new DiscordColor(0xff0000),
+                };
+                await UserTraffic.SendMessageAsync(embed: embed);
+            }
+            if (GuildSettings[0].Welcome_Settings[0] != "0")
+            {
+                DiscordChannel WelcomeChannel = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Welcome_Settings[0]));
+                if (GuildSettings[0].Welcome_Settings[2] != "0")
+                {
+                    string msg = GuildSettings[0].Welcome_Settings[2];
+                    msg = msg.Replace("$Username", $"{e.Member.Username}");
+                    await WelcomeChannel.SendMessageAsync(msg);
+                }
+            }
+            var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Kick);
+            if (GuildSettings[0].WKB_Log!="0")
+            {
+                DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].WKB_Log));
+                if (logs[0].CreationTimestamp>=beforetime && logs[0].CreationTimestamp<=aftertime)
+                {
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    {
+                        Title = $"👢 {e.Member.Username} ({e.Member.Id}) has been kicked",
+                        Description = $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
+                        Footer = new DiscordEmbedBuilder.EmbedFooter
+                        {
+                            IconUrl = e.Member.AvatarUrl,
+                            Text = $"User kicked"
+                        },
+                        Color = new DiscordColor(0xff0000),
+                    };
+                    await wkbLog.SendMessageAsync(embed: embed);
+                }
+            }
             if (e.Guild == TCGuild)
             {
-                string name = e.Member.Username;
-                if (name.Contains("discord.gg/") || name.Contains("discordapp.com/invite/"))
-                {
-                }
-                else
-                {
-                    await TCWelcome.SendMessageAsync($"{name} " + File.ReadAllText(@"TextFiles/sys/bye.txt"));
-                }
-
                 // Checks if user was kicked.
-                var logs = await testserver.GetAuditLogsAsync(1, action_type: AuditLogActionType.Kick);
                 foreach (var item in logs)
                 {
                     if (item.CreationTimestamp >= beforetime && item.CreationTimestamp <= aftertime)
@@ -599,6 +682,27 @@ namespace LiveBot
 
         private async Task Ban_Counter(GuildBanAddEventArgs e)
         {
+            var wkb_Settings = (from ss in DB.DBLists.ServerSettings
+                                where ss.ID_Server == e.Guild.Id.ToString()
+                                select ss).ToList();
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
+            var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
+            if (wkb_Settings[0].WKB_Log!="0")
+            {
+                DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                {
+                    Title = $"❌ {e.Member.Username} ({e.Member.Id}) has been banned",
+                    Description=$"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        IconUrl = e.Member.AvatarUrl,
+                        Text = $"User banned"
+                    },
+                    Color = new DiscordColor(0xff0000),
+                };
+                await wkbLog.SendMessageAsync(embed: embed);
+            }
             List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
             string uid = e.Member.Id.ToString();
             bool UserCheck = false;
@@ -628,7 +732,30 @@ namespace LiveBot
             }
             await Task.Delay(0);
         }
-
+        private async Task Ban_Removed(GuildBanRemoveEventArgs e)
+        {
+            var wkb_Settings = (from ss in DB.DBLists.ServerSettings
+                                where ss.ID_Server == e.Guild.Id.ToString()
+                                select ss).ToList();
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
+            var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
+            if (wkb_Settings[0].WKB_Log != "0")
+            {
+                DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                {
+                    Title = $"✓ {e.Member.Username} ({e.Member.Id}) has been unbanned",
+                    Description=$"*by {logs[0].UserResponsible.Mention}*",
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    {
+                        IconUrl = e.Member.AvatarUrl,
+                        Text = $"User unbanned"
+                    },
+                    Color = new DiscordColor(0x606060),
+                };
+                await wkbLog.SendMessageAsync(embed: embed);
+            }
+        }
         private Task Client_Ready(ReadyEventArgs e)
         {
             e.Client.DebugLogger.LogMessage(LogLevel.Info, "LiveBot", "Client is ready to process events.", DateTime.Now);
@@ -637,6 +764,22 @@ namespace LiveBot
 
         private Task Client_GuildAvailable(GuildCreateEventArgs e)
         {
+            var list = (from ss in DB.DBLists.ServerSettings
+                        where ss.ID_Server == e.Guild.Id.ToString()
+                        select ss).ToList();
+            if (list.Count==0)
+            {
+                string[] arr = new string[] { "0", "0", "0" };
+                var newEntry = new DB.ServerSettings()
+                {
+                    ID_Server = e.Guild.Id.ToString(),
+                    Delete_Log="0",
+                    User_Traffic="0",
+                    Welcome_Settings = arr,
+                    WKB_Log="0"
+                };
+                DB.DBLists.InsertServerSettings(newEntry);
+            }
             e.Client.DebugLogger.LogMessage(LogLevel.Info, "LiveBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
             return Task.CompletedTask;
         }

@@ -16,6 +16,8 @@ namespace LiveBot.DB
         public static List<UserSettings> UserSettings;
         public static List<UserWarnings> UserWarnings;
         public static List<Warnings> Warnings;
+        public static List<ServerSettings> ServerSettings;
+        public static List<RankRoles> RankRoles;
 
         public static void LoadAllLists()
         {
@@ -30,6 +32,8 @@ namespace LiveBot.DB
             LoadUserSettings();
             LoadUserWarnings();
             LoadWarnings();
+            LoadServerSettings();
+            LoadRankRoles();
         }
 
         public static void LoadVehicleList()
@@ -108,6 +112,18 @@ namespace LiveBot.DB
             UserWarnings = (from c in ctx.UserWarnings
                             select c).ToList();
         }
+        public static void LoadServerSettings()
+        {
+            using var ctx = new ServerSettingsContext();
+            ServerSettings = (from c in ctx.ServerSettings
+                              select c).ToList();
+        }
+        public static void LoadRankRoles()
+        {
+            using var ctx = new RankRolesContext();
+            RankRoles = (from c in ctx.RankRoles
+                         select c).ToList();
+        }
 
         public static void UpdateLeaderboard(List<Leaderboard> o)
         {
@@ -153,6 +169,18 @@ namespace LiveBot.DB
         public static void UpdateVehicleList(List<VehicleList> o)
         {
             using var ctx = new VehicleListContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+        public static void UpdateServerSettings(List<ServerSettings> o)
+        {
+            using var ctx = new ServerSettingsContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+        public static void UpdateRankRoles(List<RankRoles> o)
+        {
+            using var ctx = new RankRolesContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
@@ -203,6 +231,20 @@ namespace LiveBot.DB
             ctx.Warnings.Add(o);
             ctx.SaveChanges();
             LoadWarnings();
+        }
+        public static void InsertServerSettings(ServerSettings o)
+        {
+            using var ctx = new ServerSettingsContext();
+            ctx.ServerSettings.Add(o);
+            ctx.SaveChanges();
+            LoadServerSettings();
+        }
+        public static void InsertRankRoles(RankRoles o)
+        {
+            using var ctx = new RankRolesContext();
+            ctx.RankRoles.Add(o);
+            ctx.SaveChanges();
+            LoadRankRoles();
         }
     }
 }

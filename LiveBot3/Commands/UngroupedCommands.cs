@@ -27,8 +27,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Fixed an issue where you could not buy a new background.\n" +
-                "Random vehicle `/rv` or `/rvehicle` command will now cycle through every car in the discipline, before having the chance to pick the same car. It will also no longer reset after bot restart";
+            string changelog = "Livebot fully replaces tatsu. Thanks to Tatsumaki for the help thus far, we say good bye for now\n" +
+                "server rank roles will now be removed as you progress, instead of stacking up\n" +
+                "Kick, ban, user traffic now done by livebot\n" +
+                "Welcome and bye message now stored in the database, will soon be possible to change with a command";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
