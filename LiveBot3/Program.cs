@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190806_B";
+        public static string BotVersion = $"20190811_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -685,9 +685,10 @@ namespace LiveBot
                                 where ss.ID_Server == e.Guild.Id.ToString()
                                 select ss).ToList();
             DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
-            var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
             if (wkb_Settings[0].WKB_Log!="0")
             {
+                await Task.Delay(1000);
+                var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
                 DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
@@ -737,9 +738,10 @@ namespace LiveBot
                                 where ss.ID_Server == e.Guild.Id.ToString()
                                 select ss).ToList();
             DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
-            var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
             if (wkb_Settings[0].WKB_Log != "0")
             {
+                await Task.Delay(1000);
+                var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
                 DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {

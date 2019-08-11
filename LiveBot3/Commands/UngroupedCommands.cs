@@ -27,10 +27,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Livebot fully replaces tatsu. Thanks to Tatsumaki for the help thus far, we say good bye for now\n" +
-                "server rank roles will now be removed as you progress, instead of stacking up\n" +
-                "Kick, ban, user traffic now done by livebot\n" +
-                "Welcome and bye message now stored in the database, will soon be possible to change with a command";
+            string changelog = "[Fixed] Random vehicle command selecting duplicates without going through the full list\n" +
+                "[Addition] 1 second delay to audit log check for bans, to give discord time to log data before requesting it.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -553,21 +551,23 @@ namespace LiveBot.Commands
                                where dl.Discipline_Name == disciplinename
                                where vl.Type == "car"
                                select vl).ToList();
+                int StreetMaxCountC = CarList.Max(m => m.Selected_Count);
                 var BikeList = (from vl in VehicleList
                                 join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
                                 where dl.Discipline_Name == disciplinename
                                 where vl.Type == "bike"
                                 select vl).ToList();
-                if (CarList.Min(m=>m.Selected_Count)!=maxCount)
+                int StreetMaxCountB = BikeList.Max(m => m.Selected_Count);
+                if (CarList.Min(m=>m.Selected_Count)!=StreetMaxCountC)
                 {
                     CarList = (from cl in CarList
-                               where cl.Selected_Count < maxCount
+                               where cl.Selected_Count < StreetMaxCountC
                                select cl).ToList();
                 }
-                if (BikeList.Min(m=>m.Selected_Count) != maxCount)
+                if (BikeList.Min(m=>m.Selected_Count) != StreetMaxCountB)
                 {
                     BikeList = (from bl in BikeList
-                               where bl.Selected_Count < maxCount
+                               where bl.Selected_Count < StreetMaxCountB
                                select bl).ToList();
                 }
                 row = r.Next(CarList.Count);
