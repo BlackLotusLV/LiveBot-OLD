@@ -27,8 +27,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Fixed] Random vehicle command selecting duplicates without going through the full list\n" +
-                "[Addition] 1 second delay to audit log check for bans, to give discord time to log data before requesting it.";
+            string changelog = "[Addition] `/cookie` command. same as daily, but gives a cookie. Can't give it to yourself. Don't specify user to see your cookie stats.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1168,6 +1167,65 @@ namespace LiveBot.Commands
 
                 await ctx.RespondAsync($"Time untill you can use daily {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.");
             }
+        }
+
+        [Command("cookie")]
+        [Priority(10)]
+        public async Task Cookie(CommandContext ctx, DiscordMember member)
+        {
+            string output = "";
+            if (ctx.Member == member)
+            {
+                output = $"{ctx.Member.Mention}, you can't give a cookie to yourself";
+            }
+            else
+            {
+                var giver = (from lb in DB.DBLists.Leaderboard
+                             where lb.ID_User == ctx.Member.Id.ToString()
+                             select lb).ToList();
+                var reciever= (from lb in DB.DBLists.Leaderboard
+                               where lb.ID_User == member.Id.ToString()
+                               select lb).ToList();
+                DateTime? dailyused = null;
+                if (giver[0].Cookies_Used != null)
+                {
+                    dailyused = DateTime.ParseExact(giver[0].Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
+                }
+                if (dailyused == null || dailyused < DateTime.Now.Date)
+                {
+                    giver[0].Cookies_Used= DateTime.Now.ToString("ddMMyyyy");
+                    giver[0].Cookies_Given += 1;
+                    reciever[0].Cookies_Taken += 1;
+                    output = $"{member.Mention}, {ctx.Member.Username} has given you a :cookie:";
+                }
+                else
+                {
+                    DateTime now = DateTime.Now;
+
+                    output = $"Time untill you can use cookie command again - {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.";
+                }
+            }
+            await ctx.RespondAsync(output);
+        }
+        [Command("cookie")]
+        [Priority(9)]
+        public async Task Cookie(CommandContext ctx)
+        {
+            var user = (from lb in DB.DBLists.Leaderboard
+                         where lb.ID_User == ctx.Member.Id.ToString()
+                         select lb).ToList();
+            bool cookiecheck=false;
+            DateTime? dailyused = null;
+            if (user[0].Cookies_Used != null)
+            {
+                dailyused = DateTime.ParseExact(user[0].Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
+            }
+            if (dailyused == null || dailyused < DateTime.Now.Date)
+            {
+                cookiecheck = true;
+            }
+            await ctx.RespondAsync($"{ctx.Member.Mention} you have given out {user[0].Cookies_Given}, and received {user[0].Cookies_Taken} :cookies:\n" +
+                $"Can give cookie? {(cookiecheck ? "Yes" : "No")}.");
         }
 
         [Command("mhc")]

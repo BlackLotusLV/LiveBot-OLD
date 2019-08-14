@@ -21,5 +21,14 @@ namespace LiveBot.DB
 
         [Column("daily_used")]
         public string Daily_Used { get; set; }
+
+        [Column("cookie_given")]
+        public int Cookies_Given { get; set; }
+
+        [Column("cookie_taken")]
+        public int Cookies_Taken { get; set; }
+
+        [Column("cookie_used")]
+        public string Cookies_Used { get; set; }
     }
 }
