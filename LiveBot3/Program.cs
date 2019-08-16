@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190814_A";
+        public static string BotVersion = $"20190816_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -30,24 +30,15 @@ namespace LiveBot
 
         public List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
         public List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
-        public static List<DB.VehicleList> VehicleList = new List<DB.VehicleList>();
 
         //channels
         public DiscordChannel TC1Photomode;
-
         public DiscordChannel TC2Photomode;
-        public DiscordChannel deletelog;
-        public DiscordChannel modlog;
-        public DiscordChannel TCWelcome;
-        public DiscordChannel testchannel;
 
         // guild
         public static DiscordGuild TCGuild;
 
-        public DiscordGuild testserver;
-
         //roles
-        public DiscordRole Anonymous;
 
         private static void Main(string[] args)
         {
@@ -104,20 +95,10 @@ namespace LiveBot
 
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
-            DiscordGuild SPGuild = await Client.GetGuildAsync(325271225565970434); // Star Player server
-            testserver = await Client.GetGuildAsync(282478449539678210); //test server
-            DiscordGuild SavaGuild = await Client.GetGuildAsync(311533687756029953); // savas server
-            DiscordGuild test = await Client.GetGuildAsync(282478449539678210); // test
 
             // Channels
-            TCWelcome = TCGuild.GetChannel(430006884834213888);
             TC1Photomode = TCGuild.GetChannel(191567033064751104);
             TC2Photomode = TCGuild.GetChannel(447134224349134848);
-            deletelog = TCGuild.GetChannel(468315255986978816); // tc delete-log channel
-            modlog = TCGuild.GetChannel(440365270893330432); // tc modlog
-            // Roles - TC
-            Anonymous = TCGuild.GetRole(257865859823828995);
-            testchannel = testserver.GetChannel(438354175668256768);
             //*/
             void StreamListCheck(List<LiveStreamer> list)
             {
