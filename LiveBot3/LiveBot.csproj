@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00623" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00623" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00624" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00624" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00624" />
     <PackageReference Include="EntityFramework" Version="6.3.0-preview8-19405-04" />
     <PackageReference Include="Npgsql" Version="4.1.0-preview1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.0.0-preview8" />

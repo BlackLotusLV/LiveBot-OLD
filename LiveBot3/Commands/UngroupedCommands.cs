@@ -27,7 +27,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Fix] Cookie stats not saving";
+            string changelog = "Just some code improvements.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -983,6 +983,7 @@ namespace LiveBot.Commands
         }
 
         [Command("buy")]
+        [Cooldown(1,60,CooldownBucketType.User)]
         public async Task Buy(CommandContext ctx, string what, int id)
         {
             string output = "";
