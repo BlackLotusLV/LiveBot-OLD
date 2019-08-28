@@ -12,7 +12,7 @@ namespace LiveBot.Commands
     [Group("@")]
     [Description("Administrative commands")]
     [Hidden]
-    [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
+    [RequirePermissions(DSharpPlus.Permissions.KickMembers)]
     public class AdminCommands : BaseCommandModule
     {
         [Command("uptime")] //uptime command
@@ -200,29 +200,6 @@ namespace LiveBot.Commands
                     }
                 }
             }
-            /*
-            foreach (var row in DB.DBLists.UserWarnings)
-            {
-                if (row.ID_User.ToString() == uid)
-                {
-                    UserCheck = true;
-                    kcount = (int)row.Kick_Count;
-                    bcount = (int)row.Ban_Count;
-                    wcount = (int)row.Warning_Count;
-                    wlevel = (int)row.Warning_Level;
-                    foreach (var item in DB.DBLists.Warnings)
-                    {
-                        if (item.User_ID.ToString() == row.ID_User.ToString())
-                        {
-                            if ((bool)item.Active == true)
-                            {
-                                reason += $"By: <@{item.Admin_ID.ToString()}>\t Reason: {item.Reason.ToString()}\n";
-                            }
-                        }
-                    }
-                }
-            }
-            */
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
                 Color = new DiscordColor(0xFF6600),
@@ -310,6 +287,7 @@ namespace LiveBot.Commands
         }
 
         [Command("faq")]
+        [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
         public async Task FAQ(CommandContext ctx, DiscordMessage faqMsg, string type, params string[] input)
         {
             string str1 = CustomMethod.ParamsStringConverter(input);
@@ -330,6 +308,7 @@ namespace LiveBot.Commands
         }
 
         [Command("faq")]
+        [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
         public async Task FAQ(CommandContext ctx, params string[] input)
         {
             string str1 = CustomMethod.ParamsStringConverter(input);
@@ -337,75 +316,5 @@ namespace LiveBot.Commands
             await ctx.RespondAsync($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*");
             await ctx.Message.DeleteAsync();
         }
-
-        /*
-        [Command("event")]
-        [RequireRoles(RoleCheckMode.Any, "BotCMD1")]
-        public async Task Event(CommandContext ctx, string url)
-        {
-            await ctx.TriggerTypingAsync();
-            string newline = "\n";
-            List<string> titlelist = DataBase.WebToHTML(url, @"((Weekly|Special) Event: )(\w{1,}[ ]?){1,} [|]");
-            string titleone = DataBase.ParamsStringConverter(titlelist.ToArray());
-            string title = Regex.Replace(titleone, @"[|]", ""); // removes | from the title
-            List<string> stringlist = DataBase.WebToHTML(url, @"(<p>|<strong>|<em>){1,}(\w{1,}([ .#,-’!()]|.){0,}){1,}(<strong>|</strong>){0,}|(<br)");
-            string rawstring = DataBase.ParamsStringConverter(stringlist.ToArray());
-            string[] main = new string[8];
-            main[0] = Regex.Replace(rawstring, @"<p>For more information.{0,}", "");//removes not needed part from photo events
-            main[1] = Regex.Replace(main[0], @"</?strong>|</?b>", "**"); //html bold to markdown bold
-            main[2] = Regex.Replace(main[1], @"</?em>", "*"); // italics to italics
-            main[3] = Regex.Replace(main[2], @"<p>", newline); //paragraph to new line
-            main[4] = Regex.Replace(main[3], @"(<a href=(.https?://(\w{0,}[-./]){0,}\w{0,}.>))|</a>", "**"); //bolds the link words and removes the link
-            main[5] = Regex.Replace(main[4], @"[*][*]#TC2Weekly[*][*]", "`#TC2Weekly`");
-            main[6] = Regex.Replace(main[5], @"<u>|</u>", "__");
-            main[7] = Regex.Replace(main[6], @"</?sup>|</p>| <br ", "");//cleans up not used formating
-            DiscordGuild guild = await Program.Client.GetGuildAsync(150283740172517376);
-            DiscordRole EventsRole = guild.GetRole(486531401089417226);
-            string response = $"**--------------------------------------------------------------**" +
-                $"\n**{title}** {EventsRole.Mention}\n" +
-                $"{main[7]}\n" +
-                $"**--------------------------------------------------------------**";
-
-            await ctx.RespondAsync(response);
-            await ctx.Message.DeleteAsync();
-        }
-
-        [Command("event2")]
-        [RequireRoles(RoleCheckMode.Any, "BotCMD1")]
-        public async Task Event2(CommandContext ctx, string url)
-        {
-            int i = 0;
-            Console.WriteLine(i++);
-            string newline = "\n";
-            List<string> titlelist = DataBase.WebToHTML(url, @"((Weekly|Special) Event: )(\w{1,}[ ]?){1,} [|]");
-            string titleone = DataBase.ParamsStringConverter(titlelist.ToArray());
-            string title = Regex.Replace(titleone, @"[|]", ""); // removes | from the title
-            List<string> stringlist = DataBase.WebToHTML(url, @"(<td([ >="":;-]|\w){0,}|<strong>|<p>|<em>){1,}(\w{1,}([ -.#,'!()]|.){0,}){1,}(<strong>|</stron>){0,}(</td>)?");
-            Console.WriteLine(i++);
-            string rawstring = DataBase.ParamsStringConverter(stringlist.ToArray());
-            string[] main = new string[10];
-            main[0] = Regex.Replace(rawstring, @"<p>For more information.{0,}", "");//removes not needed part from photo events
-            main[1] = Regex.Replace(main[0], @"</?strong>|</?b>", "**"); //html bold to markdown bold
-            main[2] = Regex.Replace(main[1], @"</?em>", "*"); // italics to italics
-            main[3] = Regex.Replace(main[2], @"<p>", newline); //paragraph to new line
-            main[4] = Regex.Replace(main[3], @"(<a href=(.https?://(\w{0,}[-./]){0,}\w{0,}.>))|</a>", "**"); //bolds the link words and removes the link
-            main[5] = Regex.Replace(main[4], @"[*][*]#TC2Weekly[*][*]", "`#TC2Weekly`");
-            main[6] = Regex.Replace(main[5], @"<u>|</u>", "__");
-            main[7] = Regex.Replace(main[6], @".{2}Buy Now.{2}|<t(\w|[ :="";-]){1,}>|</?sup>|</p>| <br ", "");//cleans up not used formating
-            main[8] = Regex.Replace(main[7], @"</td>", "\t");//
-            main[9] = Regex.Replace(main[8], @"", "");
-            DiscordGuild guild = await Program.Client.GetGuildAsync(150283740172517376);
-            DiscordRole EventsRole = guild.GetRole(486531401089417226);
-            string response = $"**--------------------------------------------------------------**" +
-                $"\n**{title}** {EventsRole.Mention}\n" +
-                $"{main[9].Trim()}\n" +
-                $"**--------------------------------------------------------------**";
-
-            Console.WriteLine(i++);
-            Console.WriteLine(response);
-            await ctx.RespondAsync(response);
-            await ctx.Message.DeleteAsync();
-        }
-        //*/
     }
 }

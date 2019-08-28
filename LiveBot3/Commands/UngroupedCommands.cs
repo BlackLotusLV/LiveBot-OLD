@@ -27,7 +27,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Just some code improvements.";
+            string changelog = "[FIXED] Tries to give a role to someone in another server if the score is met.\n" +
+                "[CHANGED] Moderator command require ban permission(now kick). FAQ command still requires ban permission.\n" +
+                "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;

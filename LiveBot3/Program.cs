@@ -3,7 +3,6 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190820_A";
+        public static string BotVersion = $"20190828_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -404,20 +403,24 @@ namespace LiveBot
                 var rankedroles = (from rr in DB.DBLists.RankRoles
                                    where rr.Server_Rank != 0
                                    where rr.Server_Rank<=userrank
+                                   where rr.Server_ID==e.Guild.Id.ToString()
                                    select rr).ToList();
                 List<DiscordRole> roles = new List<DiscordRole>();
                 foreach (var item in rankedroles)
                 {
-                    roles.Add(e.Guild.GetRole(Convert.ToUInt64(item.Role_ID)));
+                    if (item.Server_ID==e.Guild.Id.ToString())
+                    {
+                        roles.Add(e.Guild.GetRole(Convert.ToUInt64(item.Role_ID)));
+                    }
                 }
                 DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                 for (int i = 0; i < roles.Count; i++)
                 {
-                    if (i!=roles.Count-1&&member.Roles.Contains(roles[i]))
+                    if (i!=roles.Count-1 && member.Roles.Contains(roles[i]))
                     {
                         await member.RevokeRoleAsync(roles[i]);
                     }
-                    else if (i==roles.Count-1&&!member.Roles.Contains(roles[i]))
+                    else if (i==roles.Count-1 && !member.Roles.Contains(roles[i]))
                     {
                         await member.GrantRoleAsync(roles[i]);
                     }
