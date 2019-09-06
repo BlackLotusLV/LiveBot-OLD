@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SixLabors.Fonts;
 
 namespace LiveBot
 {
@@ -20,7 +21,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190906_A";
+        public static string BotVersion = $"20190906_B";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -38,6 +39,9 @@ namespace LiveBot
         // guild
         public static DiscordGuild TCGuild;
 
+        // fonts
+        public static FontCollection fonts = new FontCollection();
+
         private static void Main(string[] args)
         {
             var prog = new Program();
@@ -48,6 +52,7 @@ namespace LiveBot
         {
             // fills all database lists
             DB.DBLists.LoadAllLists();
+            fonts.Install("Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
 
             var json = "";
             using (var fs = File.OpenRead("Config.json"))

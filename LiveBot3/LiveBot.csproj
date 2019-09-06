@@ -43,6 +43,9 @@
     <None Update="Config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Fonts\Hurme_Geometric_Sans_3_W03_Blk.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="ITC.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

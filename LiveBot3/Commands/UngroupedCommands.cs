@@ -1074,7 +1074,7 @@ namespace LiveBot.Commands
                     }
                 }
             }
-            using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Summit/pc.jpeg"))
+            using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Summit/PC.jpeg"))
             using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Summit/PS.jpg"))
             using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Summit/XB.png"))
             using (Image<Rgba32> BaseImg = new Image<Rgba32>(900, 643))
@@ -1088,8 +1088,8 @@ namespace LiveBot.Commands
                     {
                         Rgba32 TextColour = Rgba32.WhiteSmoke;
                         Point SummitLocation = new Point(0+(300 * i), 0);
-                        Font Basefont = SystemFonts.CreateFont("Consolas", 30, FontStyle.Bold);
-                        Font FooterFont = SystemFonts.CreateFont("Consolas", 15, FontStyle.Regular);
+                        Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
+                        Font FooterFont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                         FooterImg.Mutate(ctx => ctx
                         .Fill(Rgba32.Black)
                         .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
