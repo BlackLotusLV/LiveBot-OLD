@@ -27,8 +27,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIXED] Tries to give a role to someone in another server if the score is met.\n" +
-                "[CHANGED] Moderator command require ban permission(now kick). FAQ command still requires ban permission.\n" +
+            string changelog = "[FIXED] Some spelling mistakes in commands\n" +
+                "[CHANGE] Summit command now will display all platforms at once. Also now has 2 minute colldown instead of 1" +
                 "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
@@ -1040,87 +1040,76 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync(output);
         }
-
+        
         [Command("summit")]
-        [Cooldown(1, 60, CooldownBucketType.User)]
-        public async Task Summit(CommandContext ctx, string platform = "pc")
+        [Cooldown(1, 120, CooldownBucketType.User)]
+        public async Task Summit(CommandContext ctx)
         {
-            switch (platform.ToLower())
-            {
-                case "xbox":
-                case "xb1":
-                case "xb":
-                case "xbox1":
-                case "x1":
-                case "x":
-                    platform = "x1";
-                    break;
-
-                case "ps4":
-                case "ps":
-                case "playstation":
-                case "playstation4":
-                    platform = "ps4";
-                    break;
-
-                case "pc":
-                case null:
-                default:
-                    platform = "pc";
-                    break;
-            }
-            string EventJsonString = "";
+            string PCJson = "",XBJson="",PSJson="";
             byte[] SummitLogo;
             using (WebClient wc = new WebClient())
             {
                 string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
                 List<Json.Summit> JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
-                EventJsonString = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{platform}/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+
                 SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
             }
-            Json.Rank JEvent = JsonConvert.DeserializeObject<Json.Rank>(EventJsonString);
+            Json.Rank[] Events = new Json.Rank[3] { JsonConvert.DeserializeObject<Json.Rank>(PCJson), JsonConvert.DeserializeObject<Json.Rank>(PSJson), JsonConvert.DeserializeObject<Json.Rank>(XBJson) };
 
-            string[] pts = new string[4];
-            int i = 0;
-            foreach (var item in JEvent.Tier_entries)
+            string[,] pts = new string[3,4];
+            for (int i = 0; i < Events.Length; i++)
             {
-                if (item.Points == 4294967295)
+                for (int j = 0; j < Events[i].Tier_entries.Length; j++)
                 {
-                    pts[i] = "";
+                    if (Events[i].Tier_entries[j].Points == 4294967295)
+                    {
+                        pts[i, j] = "";
+                    }
+                    else
+                    {
+                        pts[i, j] = Events[i].Tier_entries[j].Points.ToString();
+                    }
                 }
-                else
-                {
-                    pts[i] = item.Points.ToString();
-                }
-                i++;
             }
-            using (Image<Rgba32> BaseImg = new Image<Rgba32>(300, 643))
-            using (Image<Rgba32> TierImg = Image.Load<Rgba32>("SummitBase.png"))
-            using (Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo))
-            using (Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30))
+            using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Summit/pc.jpeg"))
+            using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Summit/PS.jpg"))
+            using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Summit/XB.png"))
+            using (Image<Rgba32> BaseImg = new Image<Rgba32>(900, 643))
             {
-                Rgba32 TextColour = Rgba32.WhiteSmoke;
-                Point SummitLocation = new Point(0, 0);
-                Font Basefont = SystemFonts.CreateFont("Consolas", 30, FontStyle.Bold);
-                Font FooterFont = SystemFonts.CreateFont("Consolas", 15, FontStyle.Regular);
-                FooterImg.Mutate(ctx => ctx
-                .Fill(Rgba32.Black)
-                .DrawText($"TOTAL PARTICIPANTS: {JEvent.Player_Count}", FooterFont, TextColour, new PointF(10, 10))
-                );
-                BaseImg.Mutate(ctx => ctx
-                    .DrawImage(SummitImg, SummitLocation, 1)
-                    .DrawImage(TierImg, SummitLocation, 1)
-                    .DrawText(pts[3], Basefont, TextColour, new PointF(80, 370))
-                    .DrawText(pts[2], Basefont, TextColour, new PointF(80, 440))
-                    .DrawText(pts[1], Basefont, TextColour, new PointF(80, 510))
-                    .DrawText(pts[0], Basefont, TextColour, new PointF(80, 580))
-                    .DrawImage(FooterImg, new Point(0, 613), 1)
-                    );
-                BaseImg.Save("SummitUpload.png");
+                Image<Rgba32>[] PlatformImg = new Image<Rgba32>[3] { PCImg, PSImg, XBImg };
+                for (int i = 0; i < Events.Length; i++)
+                {
+                    using (Image<Rgba32> TierImg = Image.Load<Rgba32>("Summit/SummitBase.png"))
+                    using (Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo))
+                    using (Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30))
+                    {
+                        Rgba32 TextColour = Rgba32.WhiteSmoke;
+                        Point SummitLocation = new Point(0+(300 * i), 0);
+                        Font Basefont = SystemFonts.CreateFont("Consolas", 30, FontStyle.Bold);
+                        Font FooterFont = SystemFonts.CreateFont("Consolas", 15, FontStyle.Regular);
+                        FooterImg.Mutate(ctx => ctx
+                        .Fill(Rgba32.Black)
+                        .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
+                        );
+                        BaseImg.Mutate(ctx => ctx
+                            .DrawImage(SummitImg, SummitLocation, 1)
+                            .DrawImage(TierImg, SummitLocation, 1)
+                            .DrawText(pts[i,3], Basefont, TextColour, new PointF(80 + (300 * i), 370))
+                            .DrawText(pts[i,2], Basefont, TextColour, new PointF(80 + (300 * i), 440))
+                            .DrawText(pts[i,1], Basefont, TextColour, new PointF(80 + (300 * i), 510))
+                            .DrawText(pts[i,0], Basefont, TextColour, new PointF(80 + (300 * i), 580))
+                            .DrawImage(FooterImg, new Point(0 + (300 * i), 613), 1)
+                            .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
+                            );
+                    }
+                    BaseImg.Save("Summit/SummitUpload.png");
+                }
             }
-            using FileStream upFile = File.Open("SummitUpload.png", FileMode.Open);
-            string output = platform == "x1" ? "XBox One." : platform == "ps4" ? "Play Station 4." : platform == "pc" ? "PC" : "*error*";
-            await ctx.RespondWithFileAsync(upFile, $"Summit tier list for {output}");
+            using FileStream upFile = File.Open("Summit/SummitUpload.png", FileMode.Open);
+            await ctx.RespondWithFileAsync(upFile, $"Summit tier lists");
         }
 
         [Command("daily")]
@@ -1241,7 +1230,7 @@ namespace LiveBot.Commands
             {
                 member = ctx.Member;
             }
-            await ctx.RespondAsync($"{member.Mention}, the best even to farm money and followers is **Maine Highlands Cave** in the {JS} (JetSprint) discpline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
+            await ctx.RespondAsync($"{member.Mention}, the best even to farm money and followers is **Maine Highlands Cave** in the {JS} (JetSprint) discipline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
             await ctx.Message.DeleteAsync();
         }
     }

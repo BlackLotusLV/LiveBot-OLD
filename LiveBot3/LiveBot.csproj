@@ -11,14 +11,14 @@
     <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00624" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00624" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00624" />
-    <PackageReference Include="EntityFramework" Version="6.3.0-preview8-19405-04" />
-    <PackageReference Include="Npgsql" Version="4.1.0-preview1" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.0.0-preview8" />
-    <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0008" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0006" />
-    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0008" />
+    <PackageReference Include="EntityFramework" Version="6.3.0-preview9-19423-04" />
+    <PackageReference Include="Npgsql" Version="4.1.0-preview2" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.0.0-preview9" />
+    <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0008" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,11 +49,20 @@
     <None Update="live.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="SummitBase.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Update="Summit\PC.jpeg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SummitUpload.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Update="Summit\PS.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Summit\SummitBase.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Summit\SummitUpload.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Summit\XB.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="TextFiles\dutch\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -20,7 +20,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190828_A";
+        public static string BotVersion = $"20190906_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -37,8 +37,6 @@ namespace LiveBot
 
         // guild
         public static DiscordGuild TCGuild;
-
-        //roles
 
         private static void Main(string[] args)
         {
