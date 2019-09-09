@@ -18,6 +18,7 @@ namespace LiveBot.DB
 
         [Column("wkb_log")]
         public string WKB_Log { get; set; }
+
         [Column("welcome_cwb")]
         public string[] Welcome_Settings { get; set; }
     }

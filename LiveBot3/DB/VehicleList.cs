@@ -24,6 +24,7 @@ namespace LiveBot.DB
 
         [Column("type")]
         public string Type { get; set; }
+
         [Column("selected_count")]
         public int Selected_Count { get; set; }
     }

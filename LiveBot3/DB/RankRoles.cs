@@ -7,7 +7,7 @@ namespace LiveBot.DB
     internal class RankRoles
     {
         [Key]
-        [Column("id_rank_roles",TypeName ="serial")]
+        [Column("id_rank_roles", TypeName = "serial")]
         public int ID_Rank_Roles { get; set; }
 
         [Column("server_id")]

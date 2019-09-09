@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace LiveBot
 {
@@ -77,7 +77,7 @@ namespace LiveBot
             return $"Host={cfgjson.Host};Username={cfgjson.Username};Password={cfgjson.Password};Database={cfgjson.Database}";
         }
 
-        public static List<DB.VehicleList> UpdateVehicle(List<DB.VehicleList> Full, List<DB.VehicleList> Small,int row)
+        public static List<DB.VehicleList> UpdateVehicle(List<DB.VehicleList> Full, List<DB.VehicleList> Small, int row)
         {
             var vehicle = (from f in Full
                            where f.ID_Vehicle == Small[row].ID_Vehicle

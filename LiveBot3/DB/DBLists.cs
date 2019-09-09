@@ -112,12 +112,14 @@ namespace LiveBot.DB
             UserWarnings = (from c in ctx.UserWarnings
                             select c).ToList();
         }
+
         public static void LoadServerSettings()
         {
             using var ctx = new ServerSettingsContext();
             ServerSettings = (from c in ctx.ServerSettings
                               select c).ToList();
         }
+
         public static void LoadRankRoles()
         {
             using var ctx = new RankRolesContext();
@@ -166,18 +168,21 @@ namespace LiveBot.DB
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+
         public static void UpdateVehicleList(List<VehicleList> o)
         {
             using var ctx = new VehicleListContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+
         public static void UpdateServerSettings(List<ServerSettings> o)
         {
             using var ctx = new ServerSettingsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+
         public static void UpdateRankRoles(List<RankRoles> o)
         {
             using var ctx = new RankRolesContext();
@@ -232,6 +237,7 @@ namespace LiveBot.DB
             ctx.SaveChanges();
             LoadWarnings();
         }
+
         public static void InsertServerSettings(ServerSettings o)
         {
             using var ctx = new ServerSettingsContext();
@@ -239,6 +245,7 @@ namespace LiveBot.DB
             ctx.SaveChanges();
             LoadServerSettings();
         }
+
         public static void InsertRankRoles(RankRoles o)
         {
             using var ctx = new RankRolesContext();

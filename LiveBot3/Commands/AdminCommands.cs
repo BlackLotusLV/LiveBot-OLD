@@ -24,12 +24,18 @@ namespace LiveBot.Commands
             await ctx.Message.RespondAsync($"{time.Days} Days {time.Hours}:{time.Minutes}.{time.Seconds}");
         }
 
+        [Command("say"), Description("Bot repeats whatever you tell it to repeat")]
+        public async Task Say(CommandContext ctx, DiscordChannel channel, [Description("bot will repeat this")] [RemainingText] string word)
+        {
+            await ctx.Message.DeleteAsync();
+            await channel.SendMessageAsync(word);
+        }
+
         [Command("Warn")]
         public async Task Warning(CommandContext ctx, DiscordMember username, params string[] reason)
         {
             await ctx.Message.DeleteAsync();
             List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
-            //List<DB.Warnings> warnings = DB.DBLists.Warnings;
             DiscordChannel modlog = ctx.Guild.GetChannel(440365270893330432);
             string f = CustomMethod.ParamsStringConverter(reason);
             string modmsg, DM;
@@ -173,7 +179,7 @@ namespace LiveBot.Commands
         }
 
         [Command("getkicks")]
-        public async Task GetKicks(CommandContext ctx, DiscordMember username)
+        public async Task GetKicks(CommandContext ctx, DiscordUser username)
         {
             await ctx.Message.DeleteAsync();
             List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
@@ -183,7 +189,6 @@ namespace LiveBot.Commands
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
             var selectedUser = userWarnings.Where(w => w.ID_User == uid).ToList();
-            Console.WriteLine(selectedUser[0].ID_User);
             if (selectedUser.Count == 1)
             {
                 UserCheck = true;
@@ -245,8 +250,6 @@ namespace LiveBot.Commands
         [Description("creates a poll up to 10 choices. Delimiter \".\"")]
         public async Task Poll(CommandContext ctx, [Description("Options")]params string[] input)
         {
-            //var interactivity = ctx.Client.GetInteractivity();
-            //var interactivity = ctx.Client.GetInteractivityModule();
             await ctx.Message.DeleteAsync();
             string f = CustomMethod.ParamsStringConverter(input);
             char delimiter = '.';
@@ -288,9 +291,10 @@ namespace LiveBot.Commands
 
         [Command("faq")]
         [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
-        public async Task FAQ(CommandContext ctx, DiscordMessage faqMsg, string type, params string[] input)
+        [Description("Edits the existing FAQ message")]
+        [Priority(10)]
+        public async Task FAQ(CommandContext ctx, DiscordMessage faqMsg, string type, [RemainingText] string str1)
         {
-            string str1 = CustomMethod.ParamsStringConverter(input);
             string og = faqMsg.Content;
             og = og.Replace("*", string.Empty);
             og = og.Replace("\n", string.Empty);
@@ -309,9 +313,10 @@ namespace LiveBot.Commands
 
         [Command("faq")]
         [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
-        public async Task FAQ(CommandContext ctx, params string[] input)
+        [Description("Creates an FAQ post. Delimiter is `|`")]
+        [Priority(9)]
+        public async Task FAQ(CommandContext ctx, [RemainingText] string str1)
         {
-            string str1 = CustomMethod.ParamsStringConverter(input);
             string[] str2 = str1.Split('|');
             await ctx.RespondAsync($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*");
             await ctx.Message.DeleteAsync();

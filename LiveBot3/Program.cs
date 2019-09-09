@@ -4,6 +4,7 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
+using SixLabors.Fonts;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,7 +13,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SixLabors.Fonts;
 
 namespace LiveBot
 {
@@ -21,7 +21,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190906_B";
+        public static string BotVersion = $"20190909_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -34,6 +34,7 @@ namespace LiveBot
 
         //channels
         public DiscordChannel TC1Photomode;
+
         public DiscordChannel TC2Photomode;
 
         // guild
@@ -405,13 +406,13 @@ namespace LiveBot
                                 select sr).ToList()[0].Followers;
                 var rankedroles = (from rr in DB.DBLists.RankRoles
                                    where rr.Server_Rank != 0
-                                   where rr.Server_Rank<=userrank
-                                   where rr.Server_ID==e.Guild.Id.ToString()
+                                   where rr.Server_Rank <= userrank
+                                   where rr.Server_ID == e.Guild.Id.ToString()
                                    select rr).ToList();
                 List<DiscordRole> roles = new List<DiscordRole>();
                 foreach (var item in rankedroles)
                 {
-                    if (item.Server_ID==e.Guild.Id.ToString())
+                    if (item.Server_ID == e.Guild.Id.ToString())
                     {
                         roles.Add(e.Guild.GetRole(Convert.ToUInt64(item.Role_ID)));
                     }
@@ -419,11 +420,11 @@ namespace LiveBot
                 DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                 for (int i = 0; i < roles.Count; i++)
                 {
-                    if (i!=roles.Count-1 && member.Roles.Contains(roles[i]))
+                    if (i != roles.Count - 1 && member.Roles.Contains(roles[i]))
                     {
                         await member.RevokeRoleAsync(roles[i]);
                     }
-                    else if (i==roles.Count-1 && !member.Roles.Contains(roles[i]))
+                    else if (i == roles.Count - 1 && !member.Roles.Contains(roles[i]))
                     {
                         await member.GrantRoleAsync(roles[i]);
                     }
@@ -486,7 +487,7 @@ namespace LiveBot
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                  where ss.ID_Server == e.Guild.Id.ToString()
                                  select ss).ToList();
-            if (GuildSettings[0].Delete_Log!="0")
+            if (GuildSettings[0].Delete_Log != "0")
             {
                 DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
                 DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
@@ -545,22 +546,22 @@ namespace LiveBot
                             where rr.Server_Rank == 0
                             select rr).ToList();
             DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
-            if (GuildSettings[0].User_Traffic!="0")
+            if (GuildSettings[0].User_Traffic != "0")
             {
                 DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
                     Title = $"📥{e.Member.Username}({e.Member.Id}) has joined the server",
-                    Footer= new DiscordEmbedBuilder.EmbedFooter
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
                     {
-                        IconUrl=e.Member.AvatarUrl,
-                        Text=$"User joined ({e.Guild.MemberCount})"
+                        IconUrl = e.Member.AvatarUrl,
+                        Text = $"User joined ({e.Guild.MemberCount})"
                     },
-                    Color= new DiscordColor(0x00ff00),
+                    Color = new DiscordColor(0x00ff00),
                 };
-                await UserTraffic.SendMessageAsync(embed:embed);
+                await UserTraffic.SendMessageAsync(embed: embed);
             }
-            if (GuildSettings[0].Welcome_Settings[0]!="0")
+            if (GuildSettings[0].Welcome_Settings[0] != "0")
             {
                 DiscordChannel WelcomeChannel = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Welcome_Settings[0]));
                 if (GuildSettings[0].Welcome_Settings[1] != "0")
@@ -568,7 +569,7 @@ namespace LiveBot
                     string msg = GuildSettings[0].Welcome_Settings[1];
                     msg = msg.Replace("$Mention", $"{e.Member.Mention}");
                     await WelcomeChannel.SendMessageAsync(msg);
-                    if (JoinRole.Count!=0)
+                    if (JoinRole.Count != 0)
                     {
                         DiscordRole role = Guild.GetRole(Convert.ToUInt64(JoinRole[0].Role_ID));
                         await e.Member.GrantRoleAsync(role);
@@ -615,10 +616,10 @@ namespace LiveBot
                 }
             }
             var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Kick);
-            if (GuildSettings[0].WKB_Log!="0")
+            if (GuildSettings[0].WKB_Log != "0")
             {
                 DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].WKB_Log));
-                if (logs[0].CreationTimestamp>=beforetime && logs[0].CreationTimestamp<=aftertime)
+                if (logs[0].CreationTimestamp >= beforetime && logs[0].CreationTimestamp <= aftertime)
                 {
                     DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                     {
@@ -673,7 +674,7 @@ namespace LiveBot
                                 where ss.ID_Server == e.Guild.Id.ToString()
                                 select ss).ToList();
             DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
-            if (wkb_Settings[0].WKB_Log!="0")
+            if (wkb_Settings[0].WKB_Log != "0")
             {
                 await Task.Delay(1000);
                 var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
@@ -681,7 +682,7 @@ namespace LiveBot
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
                     Title = $"❌ {e.Member.Username} ({e.Member.Id}) has been banned",
-                    Description=$"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
+                    Description = $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
                     Footer = new DiscordEmbedBuilder.EmbedFooter
                     {
                         IconUrl = e.Member.AvatarUrl,
@@ -720,6 +721,7 @@ namespace LiveBot
             }
             await Task.Delay(0);
         }
+
         private async Task Ban_Removed(GuildBanRemoveEventArgs e)
         {
             var wkb_Settings = (from ss in DB.DBLists.ServerSettings
@@ -734,7 +736,7 @@ namespace LiveBot
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
                     Title = $"✓ {e.Member.Username} ({e.Member.Id}) has been unbanned",
-                    Description=$"*by {logs[0].UserResponsible.Mention}*",
+                    Description = $"*by {logs[0].UserResponsible.Mention}*",
                     Footer = new DiscordEmbedBuilder.EmbedFooter
                     {
                         IconUrl = e.Member.AvatarUrl,
@@ -745,6 +747,7 @@ namespace LiveBot
                 await wkbLog.SendMessageAsync(embed: embed);
             }
         }
+
         private Task Client_Ready(ReadyEventArgs e)
         {
             e.Client.DebugLogger.LogMessage(LogLevel.Info, "LiveBot", "Client is ready to process events.", DateTime.Now);
@@ -756,16 +759,16 @@ namespace LiveBot
             var list = (from ss in DB.DBLists.ServerSettings
                         where ss.ID_Server == e.Guild.Id.ToString()
                         select ss).ToList();
-            if (list.Count==0)
+            if (list.Count == 0)
             {
                 string[] arr = new string[] { "0", "0", "0" };
                 var newEntry = new DB.ServerSettings()
                 {
                     ID_Server = e.Guild.Id.ToString(),
-                    Delete_Log="0",
-                    User_Traffic="0",
+                    Delete_Log = "0",
+                    User_Traffic = "0",
                     Welcome_Settings = arr,
-                    WKB_Log="0"
+                    WKB_Log = "0"
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }

@@ -27,8 +27,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIXED] Some spelling mistakes in commands\n" +
-                "[CHANGE] Summit command now will display all platforms at once. Also now has 2 minute colldown instead of 1" +
+            string changelog = "[FIX] `/say` command now works again. Now is `/@ say`\n" +
+                "[UPDATE] FAQ Command now supports line splitting\n" +
+                "[FIX] Tentative fix for `/@ getkicks` command. If issues, please report.\n" +
                 "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
@@ -57,18 +58,6 @@ namespace LiveBot.Commands
         public async Task GetEmote(CommandContext ctx, DiscordEmoji emote)
         {
             await ctx.RespondAsync(emote.Id.ToString());
-        }
-
-        [Command("say"), Description("Bot repeats whatever you tell it to repeat"), RequireRoles(RoleCheckMode.Any, "BotCMD1")] //word repeat command
-        public async Task Say(CommandContext ctx, DiscordChannel channel = null, [Description("bot will repeat this")] params string[] word)
-        {
-            if (channel == null)
-            {
-                channel = ctx.Channel;
-            }
-            await ctx.Message.DeleteAsync();
-            string f = CustomMethod.ParamsStringConverter(word);
-            await channel.SendMessageAsync(f);
         }
 
         [Command("ping")]
@@ -430,7 +419,7 @@ namespace LiveBot.Commands
 
         [Command("private")]
         [Description("Creates a private voice chat, where only you can add and remove people from. Only patreons and Moderators can use this.")]
-        [RequireRoles(RoleCheckMode.Any, "Tier 2", "BotCMD1")]
+        [RequireRoles(RoleCheckMode.Any, "Tier 2")]
         public async Task Private(CommandContext ctx)
         {
             DiscordChannel category = ctx.Guild.GetChannel(477797862965772288);
@@ -559,21 +548,21 @@ namespace LiveBot.Commands
                                 where vl.Type == "bike"
                                 select vl).ToList();
                 int StreetMaxCountB = BikeList.Max(m => m.Selected_Count);
-                if (CarList.Min(m=>m.Selected_Count)!=StreetMaxCountC)
+                if (CarList.Min(m => m.Selected_Count) != StreetMaxCountC)
                 {
                     CarList = (from cl in CarList
                                where cl.Selected_Count < StreetMaxCountC
                                select cl).ToList();
                 }
-                if (BikeList.Min(m=>m.Selected_Count) != StreetMaxCountB)
+                if (BikeList.Min(m => m.Selected_Count) != StreetMaxCountB)
                 {
                     BikeList = (from bl in BikeList
-                               where bl.Selected_Count < StreetMaxCountB
-                               select bl).ToList();
+                                where bl.Selected_Count < StreetMaxCountB
+                                select bl).ToList();
                 }
                 row = r.Next(CarList.Count);
                 output = $"**Car:** {CarList[row].Brand} | {CarList[row].Model} | {CarList[row].Year}\n";
-                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList,CarList,row));
+                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, CarList, row));
                 row = r.Next(BikeList.Count);
                 output += $"**Bike:** {BikeList[row].Brand} | {BikeList[row].Model} | {BikeList[row].Year}";
 
@@ -586,7 +575,7 @@ namespace LiveBot.Commands
                              where dl.Discipline_Name == disciplinename
                              select vl).ToList();
                 Console.WriteLine(Vlist);
-                if (Vlist.Min(m=>m.Selected_Count) != maxCount)
+                if (Vlist.Min(m => m.Selected_Count) != maxCount)
                 {
                     Vlist = (from vl in Vlist
                              where vl.Selected_Count < maxCount
@@ -985,7 +974,7 @@ namespace LiveBot.Commands
         }
 
         [Command("buy")]
-        [Cooldown(1,60,CooldownBucketType.User)]
+        [Cooldown(1, 60, CooldownBucketType.User)]
         public async Task Buy(CommandContext ctx, string what, int id)
         {
             string output = "";
@@ -1017,7 +1006,7 @@ namespace LiveBot.Commands
                             {
                                 User_ID = ctx.User.Id.ToString(),
                                 BG_ID = id,
-                                ID_User_Images=idui+1
+                                ID_User_Images = idui + 1
                             };
                             DB.DBLists.InsertUserImages(newEntry);
                             DB.DBLists.UpdateLeaderboard(user);
@@ -1040,12 +1029,12 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync(output);
         }
-        
+
         [Command("summit")]
         [Cooldown(1, 120, CooldownBucketType.User)]
         public async Task Summit(CommandContext ctx)
         {
-            string PCJson = "",XBJson="",PSJson="";
+            string PCJson = "", XBJson = "", PSJson = "";
             byte[] SummitLogo;
             using (WebClient wc = new WebClient())
             {
@@ -1059,7 +1048,7 @@ namespace LiveBot.Commands
             }
             Json.Rank[] Events = new Json.Rank[3] { JsonConvert.DeserializeObject<Json.Rank>(PCJson), JsonConvert.DeserializeObject<Json.Rank>(PSJson), JsonConvert.DeserializeObject<Json.Rank>(XBJson) };
 
-            string[,] pts = new string[3,4];
+            string[,] pts = new string[3, 4];
             for (int i = 0; i < Events.Length; i++)
             {
                 for (int j = 0; j < Events[i].Tier_entries.Length; j++)
@@ -1087,7 +1076,7 @@ namespace LiveBot.Commands
                     using (Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30))
                     {
                         Rgba32 TextColour = Rgba32.WhiteSmoke;
-                        Point SummitLocation = new Point(0+(300 * i), 0);
+                        Point SummitLocation = new Point(0 + (300 * i), 0);
                         Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
                         Font FooterFont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                         FooterImg.Mutate(ctx => ctx
@@ -1097,10 +1086,10 @@ namespace LiveBot.Commands
                         BaseImg.Mutate(ctx => ctx
                             .DrawImage(SummitImg, SummitLocation, 1)
                             .DrawImage(TierImg, SummitLocation, 1)
-                            .DrawText(pts[i,3], Basefont, TextColour, new PointF(80 + (300 * i), 370))
-                            .DrawText(pts[i,2], Basefont, TextColour, new PointF(80 + (300 * i), 440))
-                            .DrawText(pts[i,1], Basefont, TextColour, new PointF(80 + (300 * i), 510))
-                            .DrawText(pts[i,0], Basefont, TextColour, new PointF(80 + (300 * i), 580))
+                            .DrawText(pts[i, 3], Basefont, TextColour, new PointF(80 + (300 * i), 370))
+                            .DrawText(pts[i, 2], Basefont, TextColour, new PointF(80 + (300 * i), 440))
+                            .DrawText(pts[i, 1], Basefont, TextColour, new PointF(80 + (300 * i), 510))
+                            .DrawText(pts[i, 0], Basefont, TextColour, new PointF(80 + (300 * i), 580))
                             .DrawImage(FooterImg, new Point(0 + (300 * i), 613), 1)
                             .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
                             );
@@ -1175,9 +1164,9 @@ namespace LiveBot.Commands
                 var giver = (from lb in DB.DBLists.Leaderboard
                              where lb.ID_User == ctx.Member.Id.ToString()
                              select lb).ToList();
-                var reciever= (from lb in DB.DBLists.Leaderboard
-                               where lb.ID_User == member.Id.ToString()
-                               select lb).ToList();
+                var reciever = (from lb in DB.DBLists.Leaderboard
+                                where lb.ID_User == member.Id.ToString()
+                                select lb).ToList();
                 DateTime? dailyused = null;
                 if (giver[0].Cookies_Used != null)
                 {
@@ -1185,7 +1174,7 @@ namespace LiveBot.Commands
                 }
                 if (dailyused == null || dailyused < DateTime.Now.Date)
                 {
-                    giver[0].Cookies_Used= DateTime.Now.ToString("ddMMyyyy");
+                    giver[0].Cookies_Used = DateTime.Now.ToString("ddMMyyyy");
                     giver[0].Cookies_Given += 1;
                     reciever[0].Cookies_Taken += 1;
                     output = $"{member.Mention}, {ctx.Member.Username} has given you a :cookie:";
@@ -1201,14 +1190,15 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync(output);
         }
+
         [Command("cookie")]
         [Priority(9)]
         public async Task Cookie(CommandContext ctx)
         {
             var user = (from lb in DB.DBLists.Leaderboard
-                         where lb.ID_User == ctx.Member.Id.ToString()
-                         select lb).ToList();
-            bool cookiecheck=false;
+                        where lb.ID_User == ctx.Member.Id.ToString()
+                        select lb).ToList();
+            bool cookiecheck = false;
             DateTime? dailyused = null;
             if (user[0].Cookies_Used != null)
             {
