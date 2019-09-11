@@ -23,14 +23,14 @@ namespace LiveBot.Commands
     public class UngroupedCommands : BaseCommandModule
     {
         [Command("bot")]//list of Live bot changes
+        [Description("Info about the bot. Latest changes, how to support, how long it has been up.")]
         public async Task Bot(CommandContext ctx)
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/say` command now works again. Now is `/@ say`\n" +
-                "[UPDATE] FAQ Command now supports line splitting\n" +
-                "[FIX] Tentative fix for `/@ getkicks` command. If issues, please report.\n" +
-                "";
+            string changelog = "[UPDATE] `/summit` command now shows time left on the current summit\n" +
+                "[REMOVED] `/magic` command removed.\n" +
+                "[UPDATE] Added missing and updated old command descriptions.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -55,20 +55,22 @@ namespace LiveBot.Commands
         }
 
         [Command("getemote")]
+        [Description("Returns the ID of an emote")]
         public async Task GetEmote(CommandContext ctx, DiscordEmoji emote)
         {
             await ctx.RespondAsync(emote.Id.ToString());
         }
 
         [Command("ping")]
-        [Description("Shows that the bot is live")]
+        [Description("Shows that the bots response time")]
         [Aliases("pong")]
         public async Task Ping(CommandContext ctx)
         {
             await ctx.RespondAsync($"Pong! {ctx.Client.Ping}ms");
         }
 
-        [Command("share"), Description("Informs the user about the content sharing channels and how to get the share role")] // photomode info command
+        [Command("share")]
+        [Description("Informs the user about the content sharing channels and how to get the share role")] // photomode info command
         public async Task Share(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             if (language == null)
@@ -97,7 +99,8 @@ namespace LiveBot.Commands
             }
         }
 
-        [Command("platform"), Description("Informs the user about the platform roles.")] //platform selection command
+        [Command("platform")]
+        [Description("Informs the user about the platform roles.")] //platform selection command
         public async Task Platform(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             if (language == null)
@@ -126,7 +129,8 @@ namespace LiveBot.Commands
             }
         }
 
-        [Command("maxlvl"), Description("Explains how to get maximum car level in The Crew 1.")] // how to get max level for cars in TC1
+        [Command("maxlvl")]
+        [Description("Explains how to get maximum car level in The Crew 1.")] // how to get max level for cars in TC1
         public async Task MaxCarlvl(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             if (language == null)
@@ -257,13 +261,6 @@ namespace LiveBot.Commands
             }
         }
 
-        [Command("magic"), RequireRoles(RoleCheckMode.Any, "TCE Patreon")] //tce patreon special command :D
-        public async Task Magic(CommandContext ctx)
-        {
-            await ctx.Message.DeleteAsync();
-            await ctx.Message.RespondAsync($"{ctx.Member.Mention} loves TheCrew-Exhange and is a wonderful person because of it.");
-        }
-
         [Command("quote")]
         [Description("Quotes a message using its ID")]
         [Priority(10)]
@@ -312,7 +309,8 @@ namespace LiveBot.Commands
             }
         }
 
-        [Command("info"), Description("Shows user info")]
+        [Command("info")]
+        [Description("Shows users discord info")]
         public async Task Info(CommandContext ctx, [Description("users ID or mention")] DiscordMember user = null)
         {
             await Task.Delay(5);
@@ -392,7 +390,9 @@ namespace LiveBot.Commands
 
         [Command("convert")]
         [Description("Converts M to KM and KM to M")]
-        public async Task Convert(CommandContext ctx, double value, string mesurement)
+        public async Task Convert(CommandContext ctx,
+            [Description("value of the speed you want to convert")] double value,
+            [Description("Mesurment of speed from what you convert")]string mesurement)
         {
             double result;
             mesurement = mesurement.ToLower();
@@ -497,8 +497,9 @@ namespace LiveBot.Commands
 
         [Command("rvehicle")]
         [Aliases("rv")]
-        [Description("Gives a random vehicle from a discipline, if discipline allows both bikes and cars, it will give two vehicles")]
-        public async Task RVehicle(CommandContext ctx, DiscordEmoji discipline = null)
+        [Description("Gives a random vehicle from a discipline. Street race gives both a bike and a car")]
+        public async Task RVehicle(CommandContext ctx,
+            [Description("Emoji of the discipline")]DiscordEmoji discipline = null)
         {
             string disciplinename;
             if (discipline == null)
@@ -589,6 +590,7 @@ namespace LiveBot.Commands
         }
 
         [Command("rank")]
+        [Description("Displays user server rank.")]
         public async Task Rank(CommandContext ctx, DiscordMember user = null)
         {
             if (user == null)
@@ -612,6 +614,7 @@ namespace LiveBot.Commands
 
         [Command("globalrank")]
         [Aliases("grank")]
+        [Description("Displays users global rank")]
         public async Task GlobalRank(CommandContext ctx, DiscordMember user = null)
         {
             if (user == null)
@@ -634,7 +637,7 @@ namespace LiveBot.Commands
         }
 
         [Command("profile")]
-        [Description("User profile command")]
+        [Description("Shows users live bot profile.")]
         [Priority(10)]
         public async Task Profile(CommandContext ctx,
             [Description("Specify which user to show, if left empty, will take command caster")]DiscordMember user = null)
@@ -790,9 +793,10 @@ namespace LiveBot.Commands
             await ctx.RespondWithFileAsync(upFile);
         }
 
-        [Command("profile")] // needs to be tested
+        [Command("profile")]
+        [Description("Profile customisation command")]
         [Priority(9)]
-        public async Task Profile(CommandContext ctx, [Description("profile settings command input, write help for info")] params string[] input)
+        public async Task Profile(CommandContext ctx, [Description("profile settings command input, write `/profile help` for info")] params string[] input)
         {
             string output = "";
             if (input[0] == "update" && input.Length > 1)
@@ -935,6 +939,7 @@ namespace LiveBot.Commands
 
         [Command("background")]
         [Aliases("bg")]
+        [Description("Shows a list of backgrounds")]
         public async Task Background(CommandContext ctx, int? page = null)
         {
             if (page == null || page <= 0)
@@ -975,7 +980,10 @@ namespace LiveBot.Commands
 
         [Command("buy")]
         [Cooldown(1, 60, CooldownBucketType.User)]
-        public async Task Buy(CommandContext ctx, string what, int id)
+        [Description("Command to buy profile customisation.")]
+        public async Task Buy(CommandContext ctx,
+            [Description("What you want to buy")] string what,
+            [Description("ID of what you want to buy")]int id)
         {
             string output = "";
             if (what == "background" || what == "bg")
@@ -1032,10 +1040,12 @@ namespace LiveBot.Commands
 
         [Command("summit")]
         [Cooldown(1, 120, CooldownBucketType.User)]
+        [Description("Shows summit tier list and time left.")]
         public async Task Summit(CommandContext ctx)
         {
             string PCJson = "", XBJson = "", PSJson = "";
             byte[] SummitLogo;
+            DateTime endtime;
             using (WebClient wc = new WebClient())
             {
                 string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
@@ -1045,6 +1055,9 @@ namespace LiveBot.Commands
                 PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
 
                 SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
+
+                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date*1000);
+                Console.WriteLine(JSummit[0].End_Date*1000);
             }
             Json.Rank[] Events = new Json.Rank[3] { JsonConvert.DeserializeObject<Json.Rank>(PCJson), JsonConvert.DeserializeObject<Json.Rank>(PSJson), JsonConvert.DeserializeObject<Json.Rank>(XBJson) };
 
@@ -1098,11 +1111,15 @@ namespace LiveBot.Commands
                 }
             }
             using FileStream upFile = File.Open("Summit/SummitUpload.png", FileMode.Open);
-            await ctx.RespondWithFileAsync(upFile, $"Summit tier lists");
+            Console.WriteLine(endtime);
+            Console.WriteLine(DateTime.Now);
+            TimeSpan timeleft = endtime - DateTime.Now;
+            await ctx.RespondWithFileAsync(upFile, $"Summit tier lists.\n *Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes.*");
         }
 
         [Command("daily")]
         [Cooldown(1, 60, CooldownBucketType.User)]
+        [Description("Gives 200 bucks to yourself, or 200-400 if you give someone else.")]
         public async Task Daily(CommandContext ctx, DiscordMember member = null)
         {
             int money = 200;
@@ -1152,6 +1169,7 @@ namespace LiveBot.Commands
 
         [Command("cookie")]
         [Priority(10)]
+        [Description("Gives a cookie to someone.")]
         public async Task Cookie(CommandContext ctx, DiscordMember member)
         {
             string output = "";
@@ -1193,6 +1211,7 @@ namespace LiveBot.Commands
 
         [Command("cookie")]
         [Priority(9)]
+        [Description("See your cookie stats")]
         public async Task Cookie(CommandContext ctx)
         {
             var user = (from lb in DB.DBLists.Leaderboard
@@ -1213,6 +1232,7 @@ namespace LiveBot.Commands
         }
 
         [Command("mhc")]
+        [Description("Shows the best money grinding method")]
         public async Task MHC(CommandContext ctx, DiscordMember member = null)
         {
             DiscordEmoji JS = await Program.TCGuild.GetEmojiAsync(449686964950794240);

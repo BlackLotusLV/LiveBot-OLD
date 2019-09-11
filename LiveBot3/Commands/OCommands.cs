@@ -57,12 +57,17 @@ namespace LiveBot.Commands
                     msgcontent = "Vehicle list updated";
                     break;
 
+                case "server":
+                    DB.DBLists.LoadServerSettings();
+                    msgcontent = "Server settings list updated";
+                    break;
+
                 case null:
                 default:
                     msgcontent = "Couldn't find this table. Nothing was updated\n" +
                         "all - updates all tables\n" +
                         "vehicle - updates the **vehicle list**\n" +
-                        "";
+                        "server - updates Server Settings";
                     break;
             }
             DiscordMessage msg = await ctx.RespondAsync(msgcontent);

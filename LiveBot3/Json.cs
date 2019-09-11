@@ -64,10 +64,10 @@ namespace LiveBot
             public string Color2 { get; private set; }
 
             [JsonProperty("start_date")]
-            public string Start_Date { get; private set; }
+            public long Start_Date { get; private set; }
 
             [JsonProperty("end_date")]
-            public string End_Date { get; private set; }
+            public long End_Date { get; private set; }
 
             [JsonProperty("ticket_full")]
             public string Cover_Big { get; private set; }

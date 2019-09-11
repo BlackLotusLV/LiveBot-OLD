@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System;
 
 namespace LiveBot
 {
@@ -84,6 +85,12 @@ namespace LiveBot
                            select f).ToList();
             vehicle[0].Selected_Count++;
             return vehicle;
+        }
+
+        public static DateTime EpochConverter(long ms)
+        {
+            DateTime f = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return f.ToLocalTime().AddMilliseconds(ms);
         }
     }
 }

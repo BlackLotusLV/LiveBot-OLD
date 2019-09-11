@@ -24,7 +24,8 @@ namespace LiveBot.Commands
             await ctx.Message.RespondAsync($"{time.Days} Days {time.Hours}:{time.Minutes}.{time.Seconds}");
         }
 
-        [Command("say"), Description("Bot repeats whatever you tell it to repeat")]
+        [Command("say")]
+        [Description("Bot repeats whatever you tell it to repeat")]
         public async Task Say(CommandContext ctx, DiscordChannel channel, [Description("bot will repeat this")] [RemainingText] string word)
         {
             await ctx.Message.DeleteAsync();
@@ -32,6 +33,7 @@ namespace LiveBot.Commands
         }
 
         [Command("Warn")]
+        [Description("Warns a user")]
         public async Task Warning(CommandContext ctx, DiscordMember username, params string[] reason)
         {
             await ctx.Message.DeleteAsync();
@@ -118,6 +120,7 @@ namespace LiveBot.Commands
         }
 
         [Command("unwarn")]
+        [Description("Removes a warning from a user")]
         public async Task Unwarning(CommandContext ctx, DiscordMember username)
         {
             await ctx.Message.DeleteAsync();
@@ -179,6 +182,7 @@ namespace LiveBot.Commands
         }
 
         [Command("getkicks")]
+        [Description("Shows user warning, kick and ban history")]
         public async Task GetKicks(CommandContext ctx, DiscordUser username)
         {
             await ctx.Message.DeleteAsync();
