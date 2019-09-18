@@ -28,9 +28,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[UPDATE] `/summit` command now shows time left on the current summit\n" +
-                "[REMOVED] `/magic` command removed.\n" +
-                "[UPDATE] Added missing and updated old command descriptions.";
+            string changelog = "[FIX] `/summit` now shows correct time left";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1057,7 +1055,6 @@ namespace LiveBot.Commands
                 SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
 
                 endtime = CustomMethod.EpochConverter(JSummit[0].End_Date*1000);
-                Console.WriteLine(JSummit[0].End_Date*1000);
             }
             Json.Rank[] Events = new Json.Rank[3] { JsonConvert.DeserializeObject<Json.Rank>(PCJson), JsonConvert.DeserializeObject<Json.Rank>(PSJson), JsonConvert.DeserializeObject<Json.Rank>(XBJson) };
 
@@ -1111,9 +1108,7 @@ namespace LiveBot.Commands
                 }
             }
             using FileStream upFile = File.Open("Summit/SummitUpload.png", FileMode.Open);
-            Console.WriteLine(endtime);
-            Console.WriteLine(DateTime.Now);
-            TimeSpan timeleft = endtime - DateTime.Now;
+            TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             await ctx.RespondWithFileAsync(upFile, $"Summit tier lists.\n *Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes.*");
         }
 

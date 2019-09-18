@@ -90,7 +90,7 @@ namespace LiveBot
         public static DateTime EpochConverter(long ms)
         {
             DateTime f = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return f.ToLocalTime().AddMilliseconds(ms);
+            return f.AddMilliseconds(ms);
         }
     }
 }
