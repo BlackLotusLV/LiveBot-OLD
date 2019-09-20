@@ -28,7 +28,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/summit` now shows correct time left";
+            string changelog = "[FIX] `/summit` now shows correct time left\n" +
+                "[NEW] Command error now shows different message between cooldown error, role error and permission error.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;

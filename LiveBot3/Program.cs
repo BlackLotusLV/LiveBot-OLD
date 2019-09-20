@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.CommandsNext.Attributes;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using System;
@@ -21,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190911_A";
+        public static string BotVersion = $"20190920_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -55,6 +56,8 @@ namespace LiveBot
             DB.DBLists.LoadAllLists();
             fonts.Install("Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
 
+            bool TestBuild = true;
+
             var json = "";
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
@@ -62,10 +65,11 @@ namespace LiveBot
             Json.Bot cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).DevBot;
             if (args.Length == 1)
             {
-                if (args[0] == "live")
+                if (args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
                 {
                     cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).LiveBot;
                     Console.WriteLine($"Running live version: {BotVersion}");
+                    TestBuild = false;
                 }
             }
             var cfg = new DiscordConfiguration
@@ -123,17 +127,19 @@ namespace LiveBot
                 }
             }
             Timer StreamTimer = new Timer(e => StreamListCheck(LiveStreamerList), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
-            //*/ comment this when testing features
-            Client.PresenceUpdated += this.Presence_Updated;
-            Client.MessageCreated += this.Message_Created;
-            Client.MessageReactionAdded += this.Reaction_Role_Added;
-            Client.MessageReactionRemoved += this.Reaction_Roles_Removed;
-            Client.MessageDeleted += this.Message_Deleted;
-            Client.GuildMemberAdded += this.Member_Joined;
-            Client.GuildMemberRemoved += this.Memmber_Leave;
-            Client.GuildBanAdded += this.Ban_Counter;
-            Client.GuildBanRemoved += this.Ban_Removed;
-            //*/
+
+            if (!TestBuild) //Only enables these when using live version
+            {
+                Client.PresenceUpdated += this.Presence_Updated;
+                Client.MessageCreated += this.Message_Created;
+                Client.MessageReactionAdded += this.Reaction_Role_Added;
+                Client.MessageReactionRemoved += this.Reaction_Roles_Removed;
+                Client.MessageDeleted += this.Message_Deleted;
+                Client.GuildMemberAdded += this.Member_Joined;
+                Client.GuildMemberRemoved += this.Memmber_Leave;
+                Client.GuildBanAdded += this.Ban_Counter;
+                Client.GuildBanRemoved += this.Ban_Removed;
+            }
             await Client.ConnectAsync();
             await Task.Delay(-1);
         }
@@ -799,11 +805,29 @@ namespace LiveBot
             if (e.Exception is ChecksFailedException ex)
 #pragma warning restore IDE0059 // Value assigned to symbol is never used
             {
-                var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+                foreach (var item in ex.FailedChecks)
+                {
+                    Console.WriteLine(item);
+                }
+                var no_entry = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+                var clock = DiscordEmoji.FromName(e.Context.Client, ":clock:");
+                string msgContent = "";
+                if (ex.FailedChecks[0].GetType() == typeof(CooldownAttribute))
+                {
+                    msgContent = $"{clock} You tried to execute the command too fast, wait a bit and try again.";
+                }
+                else if (ex.FailedChecks[0].GetType()==typeof(RequireRolesAttribute))
+                {
+                    msgContent = $"{no_entry} You don't have the required role for this command";
+                }
+                else
+                {
+                    msgContent = $"{no_entry} You do not have the permissions required to execute this command.";
+                }
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = "Access denied",
-                    Description = $"{emoji} You do not have the permissions required to execute this command.",
+                    Description = msgContent,
                     Color = new DiscordColor(0xFF0000) // red
                 };
                 await e.Context.RespondAsync("", embed: embed);
