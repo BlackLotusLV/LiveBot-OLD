@@ -28,8 +28,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/summit` now shows correct time left\n" +
-                "[NEW] Command error now shows different message between cooldown error, role error and permission error.";
+            string changelog = "[FIX] `/mhq` command typo\n" +
+                "[FIX] `/faq` command linesplitting issues\n" +
+                "[UPDATE] Bot running on latest .net core 3. No longer preview versions.\n" +
+                "[NEW] `/warncount` command for admins";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -861,13 +863,16 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
+            StringBuilder sb = new StringBuilder();
             string list = "", personalscore = "";
             List<DB.Leaderboard> leaderboard = DB.DBLists.Leaderboard;
             var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
+            sb.AppendLine("```csharp\n📋 Rank | Username");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
                 var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].ID_User.ToString()));
                 list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}\n";
+                sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}");
                 if (i == user.Count - 1)
                 {
                     i = (int)page * 10;
@@ -884,12 +889,8 @@ namespace LiveBot.Commands
                     personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t Level {item.Level}";
                 }
             }
-            await ctx.RespondAsync("```csharp\n" +
-                "📋 Rank | Username\n" +
-                $"{list}\n" +
-                $"# Your Global Ranking\n" +
-                $"{personalscore}" +
-                "```");
+            sb.AppendLine($"\n# Your Global Ranking\n{personalscore}\n```");
+            await ctx.RespondAsync(sb.ToString());
         }
 
         [Command("servertop")]
@@ -902,14 +903,16 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            string list = "", personalscore = "";
+            StringBuilder sb = new StringBuilder();
+            string personalscore = "";
             List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
             var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
             user = user.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
+            sb.AppendLine("```csharp\n📋 Rank | Username");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
                 var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].User_ID.ToString()));
-                list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\n";
+                sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}");
                 if (i == user.Count - 1)
                 {
                     i = (int)page * 10;
@@ -928,12 +931,8 @@ namespace LiveBot.Commands
                     break;
                 }
             }
-            await ctx.RespondAsync("```csharp\n" +
-                "📋 Rank | Username\n" +
-                $"{list}\n" +
-                $"# Your Server Ranking\n" +
-                $"{personalscore}" +
-                "```");
+            sb.AppendLine($"\n# Your Server Ranking\n{personalscore}\n```");
+            await ctx.RespondAsync(sb.ToString());
         }
 
         [Command("background")]
@@ -1236,7 +1235,7 @@ namespace LiveBot.Commands
             {
                 member = ctx.Member;
             }
-            await ctx.RespondAsync($"{member.Mention}, the best even to farm money and followers is **Maine Highlands Cave** in the {JS} (JetSprint) discipline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
+            await ctx.RespondAsync($"{member.Mention}, the best event to farm money and followers is **Maine Highlands Cave** in the {JS} (JetSprint) discipline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
             await ctx.Message.DeleteAsync();
         }
     }

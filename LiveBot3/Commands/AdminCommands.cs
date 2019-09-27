@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace LiveBot.Commands
 {
@@ -301,8 +302,8 @@ namespace LiveBot.Commands
         {
             string og = faqMsg.Content;
             og = og.Replace("*", string.Empty);
-            og = og.Replace("\n", string.Empty);
             string[] str2 = og.Split("A: ");
+            str2[0] = str2[0].Remove(str2[0].Length - 2, 2);
             if (type.ToLower() == "q")
             {
                 str2[0] = $"Q: {str1}";
@@ -324,6 +325,27 @@ namespace LiveBot.Commands
             string[] str2 = str1.Split('|');
             await ctx.RespondAsync($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*");
             await ctx.Message.DeleteAsync();
+        }
+        [Command("warncount")]
+        [Description("Shows the count of warnings issues by each admin")]
+        public async Task WarnCount(CommandContext ctx)
+        {
+            StringBuilder sb = new StringBuilder();
+            int i = 0;
+            sb.AppendLine("```csharp\n\t\tUsername");
+            foreach (var item in DB.DBLists.Warnings.GroupBy(w=>w.Admin_ID)
+                .Select(s=>new { 
+                    Admin_ID = s.Key,
+                    Count = s.Count() 
+                })
+                .OrderByDescending(o=>o.Count))
+            {
+                i++;
+                DiscordUser user = await Program.Client.GetUserAsync(Convert.ToUInt64(item.Admin_ID));
+                sb.AppendLine($"[{i}]\t# {user.Username}\n\tWarnings Given {item.Count}");
+            }
+            sb.AppendLine("```");
+            await ctx.RespondAsync(sb.ToString());
         }
     }
 }

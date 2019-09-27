@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190920_A";
+        public static string BotVersion = $"20190927_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -811,7 +811,7 @@ namespace LiveBot
                 }
                 var no_entry = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
                 var clock = DiscordEmoji.FromName(e.Context.Client, ":clock:");
-                string msgContent = "";
+                string msgContent;
                 if (ex.FailedChecks[0].GetType() == typeof(CooldownAttribute))
                 {
                     msgContent = $"{clock} You tried to execute the command too fast, wait a bit and try again.";
