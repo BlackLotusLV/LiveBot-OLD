@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20190927_A";
+        public static string BotVersion = $"20190929_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -589,7 +589,6 @@ namespace LiveBot
             DateTimeOffset time = DateTimeOffset.Now.UtcDateTime;
             DateTimeOffset beforetime = time.AddSeconds(-5);
             DateTimeOffset aftertime = time.AddSeconds(10);
-            List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
             string uid = e.Member.Id.ToString();
             bool UserCheck = false;
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
@@ -641,34 +640,28 @@ namespace LiveBot
                     await wkbLog.SendMessageAsync(embed: embed);
                 }
             }
-            if (e.Guild == TCGuild)
+            // Checks if user was kicked.
+            foreach (var item in logs)
             {
-                // Checks if user was kicked.
-                foreach (var item in logs)
+                if (item.CreationTimestamp >= beforetime && item.CreationTimestamp <= aftertime)
                 {
-                    if (item.CreationTimestamp >= beforetime && item.CreationTimestamp <= aftertime)
+                    var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
+                    Console.WriteLine(UserSettings.Kick_Count);
+                    UserCheck = true;
+                    UserSettings.Kick_Count++;
+                    Console.WriteLine(UserSettings.Kick_Count);
+                    DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
+                    if (!UserCheck)
                     {
-                        foreach (var rows in userWarnings)
+                        DB.ServerRanks newEntry = new DB.ServerRanks
                         {
-                            if (rows.ID_User.ToString() == uid)
-                            {
-                                UserCheck = true;
-                                rows.Kick_Count = (int)rows.Kick_Count + 1;
-                                DB.DBLists.UpdateUserWarnings(userWarnings);
-                            }
-                        }
-                        if (!UserCheck)
-                        {
-                            DB.UserWarnings newEntry = new DB.UserWarnings
-                            {
-                                Warning_Level = 0,
-                                Warning_Count = 0,
-                                Kick_Count = 1,
-                                Ban_Count = 0,
-                                ID_User = uid
-                            };
-                            DB.DBLists.InsertUserWarnings(newEntry);
-                        }
+                            Server_ID = e.Guild.Id.ToString(),
+                            Ban_Count = 0,
+                            Kick_Count = 1,
+                            Warning_Level = 0,
+                            User_ID = uid
+                        };
+                        DB.DBLists.InsertServerRanks(newEntry);
                     }
                 }
             }
@@ -698,32 +691,22 @@ namespace LiveBot
                 };
                 await wkbLog.SendMessageAsync(embed: embed);
             }
-            List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
-            string uid = e.Member.Id.ToString();
+            var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
             bool UserCheck = false;
-            if (e.Guild == TCGuild)
+            UserCheck = true;
+            UserSettings.Ban_Count += 1;
+            DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
+            if (!UserCheck)
             {
-                foreach (var rows in userWarnings)
+                DB.ServerRanks newEntry = new DB.ServerRanks
                 {
-                    if (rows.ID_User.ToString() == uid)
-                    {
-                        UserCheck = true;
-                        rows.Ban_Count = (int)rows.Ban_Count + 1;
-                        DB.DBLists.UpdateUserWarnings(userWarnings);
-                    }
-                }
-                if (!UserCheck)
-                {
-                    DB.UserWarnings newEntry = new DB.UserWarnings
-                    {
-                        Warning_Level = 0,
-                        Warning_Count = 0,
-                        Kick_Count = 0,
-                        Ban_Count = 1,
-                        ID_User = uid
-                    };
-                    DB.DBLists.InsertUserWarnings(newEntry);
-                }
+                    Server_ID = e.Guild.Id.ToString(),
+                    Ban_Count = 1,
+                    Kick_Count = 0,
+                    Warning_Level = 0,
+                    User_ID = e.Member.Id.ToString()
+                };
+                DB.DBLists.InsertServerRanks(newEntry);
             }
             await Task.Delay(0);
         }

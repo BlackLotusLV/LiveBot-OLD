@@ -14,7 +14,6 @@ namespace LiveBot.DB
         public static List<ServerRanks> ServerRanks;
         public static List<UserImages> UserImages;
         public static List<UserSettings> UserSettings;
-        public static List<UserWarnings> UserWarnings;
         public static List<Warnings> Warnings;
         public static List<ServerSettings> ServerSettings;
         public static List<RankRoles> RankRoles;
@@ -30,7 +29,6 @@ namespace LiveBot.DB
             LoadServerRanks();
             LoadUserImages();
             LoadUserSettings();
-            LoadUserWarnings();
             LoadWarnings();
             LoadServerSettings();
             LoadRankRoles();
@@ -106,13 +104,6 @@ namespace LiveBot.DB
                         select c).ToList();
         }
 
-        public static void LoadUserWarnings()
-        {
-            using var ctx = new UserWarningsContext();
-            UserWarnings = (from c in ctx.UserWarnings
-                            select c).ToList();
-        }
-
         public static void LoadServerSettings()
         {
             using var ctx = new ServerSettingsContext();
@@ -151,13 +142,6 @@ namespace LiveBot.DB
         public static void UpdateUserImages(List<UserImages> o)
         {
             using var ctx = new UserImagesContext();
-            ctx.UpdateRange(o);
-            ctx.SaveChanges();
-        }
-
-        public static void UpdateUserWarnings(List<UserWarnings> o)
-        {
-            using var ctx = new UserWarningsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
@@ -220,14 +204,6 @@ namespace LiveBot.DB
             ctx.ServerRanks.Add(o);
             ctx.SaveChanges();
             LoadServerRanks();
-        }
-
-        public static void InsertUserWarnings(UserWarnings o)
-        {
-            using var ctx = new UserWarningsContext();
-            ctx.UserWarnings.Add(o);
-            ctx.SaveChanges();
-            LoadUserWarnings();
         }
 
         public static void InsertWarnings(Warnings o)

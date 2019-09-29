@@ -18,5 +18,14 @@ namespace LiveBot.DB
 
         [Column("followers")]
         public long Followers { get; set; }
+
+        [Column("warning_level")]
+        public int Warning_Level { get; set; }
+
+        [Column("kick_count")]
+        public int Kick_Count { get; set; }
+
+        [Column("ban_count")]
+        public int Ban_Count { get; set; }
     }
 }

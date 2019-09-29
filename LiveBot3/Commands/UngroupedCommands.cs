@@ -28,10 +28,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/mhq` command typo\n" +
-                "[FIX] `/faq` command linesplitting issues\n" +
-                "[UPDATE] Bot running on latest .net core 3. No longer preview versions.\n" +
-                "[NEW] `/warncount` command for admins";
+            string changelog = "Internal system changes";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -435,65 +432,6 @@ namespace LiveBot.Commands
             string name = $"{ctx.Member.Username} channel";
             await ctx.Guild.CreateVoiceChannelAsync(name, category, overwrites: builder);
             await ctx.RespondAsync($"Private \"{name}\" created.");
-        }
-
-        [Command("getkicks")]
-        [Description("Informs user of how many times they have been warned, kicked, banned and the reasons of warnings if there are any active warnings.")]
-        public async Task GetKicks(CommandContext ctx)
-        {
-            await ctx.Message.DeleteAsync();
-            List<DB.UserWarnings> UWarnings = DB.DBLists.UserWarnings;
-            List<DB.Warnings> Warn = DB.DBLists.Warnings;
-            string uid = ctx.User.Id.ToString();
-            bool UserCheck = false;
-            int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
-            string reason = "";
-            var UserWarnings = (from uw in UWarnings
-                                where uw.ID_User == ctx.User.Id.ToString()
-                                select uw).ToList();
-            var WarningList = (from w in Warn
-                               where w.User_ID == ctx.User.Id.ToString()
-                               select w).ToList();
-            if (UserWarnings.Count == 1)
-            {
-                UserCheck = true;
-                kcount = (int)UserWarnings[0].Kick_Count;
-                bcount = (int)UserWarnings[0].Ban_Count;
-                wcount = (int)UserWarnings[0].Warning_Count;
-                wlevel = (int)UserWarnings[0].Warning_Level;
-                foreach (var warning in WarningList)
-                {
-                    if (warning.Active == true)
-                    {
-                        reason += $"By: <@{warning.Admin_ID}>\t Reason: {warning.Reason}\n";
-                    }
-                }
-            }
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xFF6600),
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    Name = ctx.Member.Username,
-                    IconUrl = ctx.Member.AvatarUrl
-                },
-                Description = $"",
-                Title = "User kick Count",
-                ThumbnailUrl = ctx.Member.AvatarUrl
-            };
-            embed.AddField("Warning level: ", $"{wlevel}", true);
-            embed.AddField("Times warned: ", $"{wcount}", true);
-            embed.AddField("Times banned: ", $"{bcount}", true);
-            embed.AddField("Times kicked: ", $"{kcount}", true);
-            embed.AddField("Warning reasons: ", $"-{reason}-", true);
-            if (!UserCheck)
-            {
-                await ctx.RespondAsync($"{ctx.User.Mention}, This user has no warning, kick and/or ban history.");
-            }
-            else
-            {
-                await ctx.RespondAsync(embed: embed);
-            }
         }
 
         [Command("rvehicle")]
@@ -1122,35 +1060,30 @@ namespace LiveBot.Commands
             {
                 member = ctx.Member;
             }
-            List<DB.Leaderboard> dbase = DB.DBLists.Leaderboard;
-            var user = (from db in dbase
-                        where db.ID_User == ctx.Member.Id.ToString()
-                        select db).ToList();
-            var receiver = (from db in dbase
-                            where db.ID_User == member.Id.ToString()
-                            select db).ToList();
+            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(ctx.Member.Id.ToString()));
+            var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(member.Id.ToString()));
             DateTime? dailyused = null;
-            if (user[0].Daily_Used != null)
+            if (user.Daily_Used != null)
             {
-                dailyused = DateTime.ParseExact(user[0].Daily_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
+                dailyused = DateTime.ParseExact(user.Daily_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
             }
             if (dailyused == null || dailyused < DateTime.Now.Date)
             {
                 if (member.Id == ctx.Member.Id)
                 {
-                    user[0].Daily_Used = DateTime.Now.ToString("ddMMyyyy");
-                    user[0].Bucks += money;
-                    DB.DBLists.UpdateLeaderboard(user);
+                    user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
+                    user.Bucks += money;
+                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { user });
                     await ctx.RespondAsync($"{ctx.Member.Mention}, You have received {money} bucks");
                 }
                 else
                 {
                     Random r = new Random();
                     money += r.Next(200);
-                    user[0].Daily_Used = DateTime.Now.ToString("ddMMyyyy");
-                    receiver[0].Bucks += money;
-                    DB.DBLists.UpdateLeaderboard(user);
-                    DB.DBLists.UpdateLeaderboard(receiver);
+                    user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
+                    reciever.Bucks += money;
+                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { user });
+                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { reciever });
                     await ctx.RespondAsync($"{member.Mention}, You were given {money} bucks by {ctx.Member.Username}");
                 }
             }
@@ -1174,25 +1107,21 @@ namespace LiveBot.Commands
             }
             else
             {
-                var giver = (from lb in DB.DBLists.Leaderboard
-                             where lb.ID_User == ctx.Member.Id.ToString()
-                             select lb).ToList();
-                var reciever = (from lb in DB.DBLists.Leaderboard
-                                where lb.ID_User == member.Id.ToString()
-                                select lb).ToList();
+                var giver = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(ctx.Member.Id.ToString()));
+                var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(member.Id.ToString()));
                 DateTime? dailyused = null;
-                if (giver[0].Cookies_Used != null)
+                if (giver.Cookies_Used != null)
                 {
-                    dailyused = DateTime.ParseExact(giver[0].Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
+                    dailyused = DateTime.ParseExact(giver.Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
                 }
                 if (dailyused == null || dailyused < DateTime.Now.Date)
                 {
-                    giver[0].Cookies_Used = DateTime.Now.ToString("ddMMyyyy");
-                    giver[0].Cookies_Given += 1;
-                    reciever[0].Cookies_Taken += 1;
+                    giver.Cookies_Used = DateTime.Now.ToString("ddMMyyyy");
+                    giver.Cookies_Given += 1;
+                    reciever.Cookies_Taken += 1;
                     output = $"{member.Mention}, {ctx.Member.Username} has given you a :cookie:";
-                    DB.DBLists.UpdateLeaderboard(giver);
-                    DB.DBLists.UpdateLeaderboard(reciever);
+                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { giver });
+                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { reciever });
                 }
                 else
                 {
@@ -1209,20 +1138,18 @@ namespace LiveBot.Commands
         [Description("See your cookie stats")]
         public async Task Cookie(CommandContext ctx)
         {
-            var user = (from lb in DB.DBLists.Leaderboard
-                        where lb.ID_User == ctx.Member.Id.ToString()
-                        select lb).ToList();
+            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(ctx.Member.Id.ToString()));
             bool cookiecheck = false;
             DateTime? dailyused = null;
-            if (user[0].Cookies_Used != null)
+            if (user.Cookies_Used != null)
             {
-                dailyused = DateTime.ParseExact(user[0].Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
+                dailyused = DateTime.ParseExact(user.Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
             }
             if (dailyused == null || dailyused < DateTime.Now.Date)
             {
                 cookiecheck = true;
             }
-            await ctx.RespondAsync($"{ctx.Member.Mention} you have given out {user[0].Cookies_Given}, and received {user[0].Cookies_Taken} :cookie:\n" +
+            await ctx.RespondAsync($"{ctx.Member.Mention} you have given out {user.Cookies_Given}, and received {user.Cookies_Taken} :cookie:\n" +
                 $"Can give cookie? {(cookiecheck ? "Yes" : "No")}.");
         }
 

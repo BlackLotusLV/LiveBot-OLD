@@ -35,27 +35,35 @@ namespace LiveBot.Commands
 
         [Command("Warn")]
         [Description("Warns a user")]
-        public async Task Warning(CommandContext ctx, DiscordMember username, params string[] reason)
+        public async Task Warning(CommandContext ctx, DiscordMember username, [RemainingText] string reason="Reason not specified")
         {
-            await ctx.Message.DeleteAsync();
-            List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
-            DiscordChannel modlog = ctx.Guild.GetChannel(440365270893330432);
-            string f = CustomMethod.ParamsStringConverter(reason);
-            string modmsg, DM;
+            var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID));
+            var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
+            string modmsg,DM;
             string uid = username.Id.ToString(), aid = ctx.User.Id.ToString();
-            bool UserCheck = false, kick = false;
-            int level = 1, count = 1;
-            foreach (var item in userWarnings)
+            bool kick = false;
+            if (ServerSettings.WKB_Log!="0")
             {
-                if (item.ID_User.ToString() == uid)
+                DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
+                if (WarnedUserStats is null) // creates new entry in DB (Followers set to default value)
                 {
-                    UserCheck = true;
-                    level = (int)item.Warning_Level + 1;
-                    count = (int)item.Warning_Count + 1;
-                    if (level > 2)
+                    DB.ServerRanks newEntry = new DB.ServerRanks
                     {
-                        DM = $"You have been kicked by {ctx.User.Mention} for exceeding the warning level(2). Your level: {level}\n" +
-                            $"Warning reason: {f}";
+                        Server_ID = ctx.Guild.Id.ToString(),
+                        Ban_Count = 0,
+                        Kick_Count = 0,
+                        Warning_Level = 1,
+                        User_ID = username.Id.ToString()
+                    };
+                    DB.DBLists.InsertServerRanks(newEntry);
+                }
+                else
+                {
+                    WarnedUserStats.Warning_Level++;
+                    if (WarnedUserStats.Warning_Level>2)
+                    {
+                        DM = $"You have been kicked by {ctx.User.Mention} for exceeding the warning level(2). Your level: {WarnedUserStats.Warning_Level}\n" +
+                            $"Warning reason: {reason}";
                         try
                         {
                             await username.SendMessageAsync(DM);
@@ -64,150 +72,149 @@ namespace LiveBot.Commands
                         {
                             await modlog.SendMessageAsync($"{username.Mention} could not be contacted via DM. Reason not sent");
                         }
-                        await username.RemoveAsync();
                         kick = true;
+                        await username.RemoveAsync("Exceeded warning limit!");
                     }
-                    item.Warning_Level = level;
-                    item.Warning_Count = count;
-                    DB.DBLists.UpdateUserWarnings(userWarnings);
-                }
-            }
-            if (!UserCheck)
-            {
-                DB.UserWarnings newEntry = new DB.UserWarnings
-                {
-                    Warning_Level = level,
-                    Warning_Count = level,
-                    Kick_Count = 0,
-                    Ban_Count = 0,
-                    ID_User = uid
-                };
-                DB.DBLists.InsertUserWarnings(newEntry);
-            }
-            DB.Warnings newWarning = new DB.Warnings
-            {
-                Reason = f,
-                Active = true,
-                Date = DateTime.Now.ToString("yyyy-MM-dd"),
-                Admin_ID = aid,
-                User_ID = uid
-            };
-            DB.DBLists.InsertWarnings(newWarning);
 
-            modmsg = $"**Warned user:**\t{username.Mention}\n**Warning level:**\t {level}\t**Warning count:\t {count}\n**Warned by**\t{ctx.User.Username}\n**Reason:** {f}";
-            DM = $"You have been warned by <@{ctx.User.Id}>.\n**Warning Reason:**\t{f}\n**Warning Level:** {level}";
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xf90707),
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    IconUrl = username.AvatarUrl,
-                    Name = username.Username
-                },
-                Description = modmsg
-            };
-            if (!kick)
-            {
-                try
-                {
-                    await username.SendMessageAsync(DM);
+                    DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { WarnedUserStats });
                 }
-                catch
+                DB.Warnings newWarning = new DB.Warnings
                 {
-                    await modlog.SendMessageAsync($":exclamation::exclamation:{username.Mention} could not be contacted via DM. Reason not sent");
+                    Reason = reason,
+                    Active = true,
+                    Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                    Admin_ID = aid,
+                    User_ID = uid,
+                    Server_ID = ctx.Guild.Id.ToString()
+                };
+                DB.DBLists.InsertWarnings(newWarning);
+
+                int warning_count = DB.DBLists.Warnings.Where(w => w.User_ID == username.Id.ToString() && w.Server_ID==ctx.Guild.Id.ToString()).Count();
+
+                modmsg = $"**Warned user:**\t{username.Mention}\n**Warning level:**\t {WarnedUserStats.Warning_Level}\t**Warning count:\t {warning_count}\n**Warned by**\t{ctx.User.Username}\n**Reason:** {reason}";
+                DM = $"You have been warned by <@{ctx.User.Id}>.\n**Warning Reason:**\t{reason}\n**Warning Level:** {WarnedUserStats.Warning_Level}";
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                {
+                    Color = new DiscordColor(0xf90707),
+                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                    {
+                        IconUrl = username.AvatarUrl,
+                        Name = username.Username
+                    },
+                    Description = modmsg
+                };
+                if (!kick)
+                {
+                    try
+                    {
+                        await username.SendMessageAsync(DM);
+                    }
+                    catch
+                    {
+                        await modlog.SendMessageAsync($":exclamation::exclamation:{username.Mention} could not be contacted via DM. Reason not sent");
+                    }
                 }
+                await modlog.SendMessageAsync(embed: embed);
             }
-            await modlog.SendMessageAsync(embed: embed);
+            else
+            {
+                await ctx.RespondAsync("This server has not set up this feature!");
+            }
         }
 
         [Command("unwarn")]
         [Description("Removes a warning from a user")]
         public async Task Unwarning(CommandContext ctx, DiscordMember username)
         {
-            await ctx.Message.DeleteAsync();
-
-            List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
-            List<DB.Warnings> warnings = DB.DBLists.Warnings;
-            DiscordChannel modlog = ctx.Guild.GetChannel(440365270893330432);
-            string modmsg;
-            string uid = username.Id.ToString(), aid = ctx.User.Id.ToString();
-            bool UserCheck = false;
-            int level = 0;
-            foreach (var item in userWarnings)
+            var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID));
+            var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
+            var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID)).ToList();
+            string MSGOut,modmsg;
+            bool check = true;
+            if (ServerSettings.WKB_Log!="0")
             {
-                if (item.ID_User.ToString() == uid && (int)item.Warning_Level > 0)
+                DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
+                if (WarnedUserStats is null)
                 {
-                    level = (int)item.Warning_Level - 1;
-                    item.Warning_Level = level;
-                    bool check = false;
-                    DB.DBLists.UpdateUserWarnings(userWarnings);
-                    foreach (var row in warnings)
+                    MSGOut = $"This user, {username.Username}, has no warning history.";
+                }
+                else
+                {
+                    if (WarnedUserStats.Warning_Level is 0)
                     {
-                        if (check == false && row.User_ID.ToString() == uid && (bool)row.Active == true)
-                        {
-                            row.Active = false;
-                            check = true;
-                            DB.DBLists.UpdateWarnings(warnings);
-                        }
+                        MSGOut = "This user warning level is already 0";
+                        check = false;
                     }
-                }
-                else if (item.ID_User.ToString() == uid && (int)item.Warning_Level == 0)
-                {
-                    await ctx.RespondAsync($"{ctx.User.Mention}, this user warning level is already at 0");
-                    UserCheck = true;
+                    else
+                    {
+                        WarnedUserStats.Warning_Level-=1;
+                        MSGOut = $"Warning level lowered for {username.Username}";
+                        var entry = Warnings.Where(f=>f.Active is true).OrderBy(f => f.ID_Warning).FirstOrDefault();
+                        entry.Active = false;
+                        DB.DBLists.UpdateWarnings(new List<DB.Warnings> { entry });
+                        DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { WarnedUserStats });
+                    }
+                    if (check)
+                    {
+                        modmsg = $"{username.Mention} has been unwarned by {ctx.User.Mention}. Warning level now {WarnedUserStats.Warning_Level}";
+                        DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                        {
+                            Color = new DiscordColor(0xf90707),
+                            Author = new DiscordEmbedBuilder.EmbedAuthor
+                            {
+                                IconUrl = username.AvatarUrl,
+                                Name = username.Username
+                            },
+                            Description = modmsg
+                        };
+                        try
+                        {
+                            await username.SendMessageAsync($"Your warning level has been lowerd to {WarnedUserStats.Warning_Level} by {ctx.User.Mention}");
+                        }
+                        catch
+                        {
+                            await modlog.SendMessageAsync($":exclamation::exclamation:{username.Mention} could not be contacted via DM. Reason not sent");
+                        }
+                        await modlog.SendMessageAsync(embed: embed);
+                    }
+                    DiscordMessage msg = await ctx.RespondAsync(MSGOut);
+                    await Task.Delay(10000);
+                    await msg.DeleteAsync();
                 }
             }
-            modmsg = $"{username.Mention} has been unwarned by <@{aid}>. Warning level now {level}";
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            else
             {
-                Color = new DiscordColor(0xf90707),
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    IconUrl = username.AvatarUrl,
-                    Name = username.Username
-                },
-                Description = modmsg
-            };
-            if (!UserCheck)
-            {
-                try
-                {
-                    await username.SendMessageAsync($"Your warning level has been lowerd to {level} by {ctx.User.Mention}");
-                }
-                catch
-                {
-                    await modlog.SendMessageAsync($":exclamation::exclamation:{username.Mention} could not be contacted via DM. Reason not sent");
-                }
+                await ctx.RespondAsync("This server has not set up this feature!");
             }
-            await modlog.SendMessageAsync(embed: embed);
         }
-
         [Command("getkicks")]
         [Description("Shows user warning, kick and ban history")]
         public async Task GetKicks(CommandContext ctx, DiscordUser username)
         {
             await ctx.Message.DeleteAsync();
-            List<DB.UserWarnings> userWarnings = DB.DBLists.UserWarnings;
+            DB.DBLists.LoadServerRanks();
+            DB.DBLists.LoadWarnings();
+            List<DB.ServerRanks> ServerRanks = DB.DBLists.ServerRanks;
             List<DB.Warnings> warnings = DB.DBLists.Warnings;
             string uid = username.Id.ToString();
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
-            var selectedUser = userWarnings.Where(w => w.ID_User == uid).ToList();
-            if (selectedUser.Count == 1)
+            var UserStats = ServerRanks.FirstOrDefault(f => uid.Equals(f.User_ID) && ctx.Guild.Id.ToString().Equals(f.Server_ID));
+            if (UserStats != null)
             {
                 UserCheck = true;
-                kcount = (int)selectedUser[0].Kick_Count;
-                bcount = (int)selectedUser[0].Ban_Count;
-                wcount = (int)selectedUser[0].Warning_Count;
-                wlevel = (int)selectedUser[0].Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == uid).ToList();
+                kcount = UserStats.Kick_Count;
+                bcount = UserStats.Ban_Count;
+                wlevel = UserStats.Warning_Level;
+                var WarningsList = warnings.Where(w => w.User_ID == uid && w.Server_ID==ctx.Guild.Id.ToString()).ToList();
                 foreach (var item in WarningsList)
                 {
                     if ((bool)item.Active == true)
                     {
                         reason += $"By: <@{item.Admin_ID.ToString()}>\t Reason: {item.Reason.ToString()}\n";
                     }
+                    wcount++;
                 }
             }
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -229,7 +236,7 @@ namespace LiveBot.Commands
             embed.AddField("Warning reasons: ", $"-{reason}-", true);
             if (!UserCheck)
             {
-                await ctx.RespondAsync($"{ctx.User.Mention}, This user has no warning, kick and/or ban history.");
+                await ctx.RespondAsync($"{ctx.User.Mention}, This user has no warning, kick and/or ban history in this server.");
             }
             else
             {
