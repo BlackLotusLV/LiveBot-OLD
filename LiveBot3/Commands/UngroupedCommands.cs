@@ -8,6 +8,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
+using SixLabors.ImageSharp.Advanced;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,6 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace LiveBot.Commands
 {
@@ -28,7 +30,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Internal system changes";
+            string changelog = "[FIX] People with 32-bit characters in thier username can now view their live bot profile\n" +
+                "[Fix] People with very long usernames can now view ther live bot profile, it now cuts the name to 40 characters, and linesplits if over 20 characters\n" +
+                "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -616,8 +620,30 @@ namespace LiveBot.Commands
             byte[] baseBG = (byte[])UserSettings[0].bi.Image;
             var webclinet = new WebClient();
             byte[] profilepic = webclinet.DownloadData(user.AvatarUrl);
-
-            string username = user.Username;
+            string username;
+            StringBuilder sb = new StringBuilder();
+            int usernameSize=21;
+            for (int i = 0; i < user.Username.Length; i++)
+            {
+                if (i==20)
+                {
+                    sb.AppendLine();
+                    usernameSize = 15;
+                }
+                else if (i==41)
+                {
+                    break;
+                }
+                if ((int)user.Username[i]>short.MaxValue)
+                {
+                    sb.Append("?");
+                }
+                else
+                {
+                    sb.Append(user.Username[i]);
+                }
+            }
+            username = sb.ToString();
             string level = global[0].Level.ToString();
             string followers = $"{global[0].Followers.ToString()}/{(int)global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)}";
             string bucks = global[0].Bucks.ToString();
@@ -630,10 +656,16 @@ namespace LiveBot.Commands
             using Image<Rgba32> picture = new Image<Rgba32>(600, 600);
             using Image<Rgba32> background = new Image<Rgba32>(560, 360);
             using Image<Rgba32> bg = Image.Load<Rgba32>(baseBG);
+            Font UsernameFont = SystemFonts.CreateFont("Consolas", usernameSize, FontStyle.Bold);
             Font Basefont = SystemFonts.CreateFont("Consolas", 21, FontStyle.Bold);
             Font LevelText = SystemFonts.CreateFont("Consolas", 30, FontStyle.Regular);
             Font LevelNumber = SystemFonts.CreateFont("Consolas", 50, FontStyle.Regular);
             Font InfoTextFont = SystemFonts.CreateFont("Consolas", 19, FontStyle.Regular);
+            var AllignCenter = new TextGraphicsOptions(true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment=VerticalAlignment.Top
+            };
             Point bglocation = new Point(10, 10);
             Point pfplocation = new Point(440, 230);
             Point bgcolourlocation = new Point(20, 220);
@@ -682,7 +714,7 @@ namespace LiveBot.Commands
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y),
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y + pfp.Height),
                 new PointF(pfplocation.X, pfplocation.Y + pfp.Height)) //profile picture border
-                .DrawText(username, Basefont, textcolour, new PointF(200, 230)) // username
+                .DrawText(AllignCenter,username, UsernameFont, textcolour, new PointF(270, 225)) // username
                 .DrawText($"LEVEL", LevelText, textcolour, new PointF(40, 230)) // levels
                 .DrawText(level, LevelNumber, textcolour, new PointF(40, 260))
                 .DrawText($"Followers:", Basefont, textcolour, new PointF(40, 320))
