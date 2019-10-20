@@ -29,8 +29,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Mod log command fixes\n" +
-                "Prune command added. Can be used once every 3 minutes in each channel";
+            string changelog = "Backgrounds now ordered properly in `/bg` command.\n" +
+                "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -914,11 +914,12 @@ namespace LiveBot.Commands
                 page = 1;
             }
             List<DB.UserImages> userImages = DB.DBLists.UserImages;
-            List<DB.BackgroundImage> Backgrounds = DB.DBLists.BackgroundImage;
+            List<DB.BackgroundImage> Backgrounds = DB.DBLists.BackgroundImage.OrderBy(o => o.ID_BG).ToList();
             var List = (from bi in Backgrounds
                         join ui in userImages on bi.ID_BG equals ui.BG_ID
                         where ui.User_ID == ctx.User.Id.ToString()
                         select bi).ToList();
+            
             StringBuilder sb = new StringBuilder();
             sb.Append("Visual representation of the backgrounds can be viewed here: <http://bit.ly/LiveBG>\n```csharp\n[ID]\tBackground Name\n");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
