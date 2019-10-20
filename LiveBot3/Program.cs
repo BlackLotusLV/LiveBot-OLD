@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191017_A";
+        public static string BotVersion = $"20191020_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -319,36 +319,7 @@ namespace LiveBot
                                   select lb).ToList();
                     if (global.Count == 0)
                     {
-                        DB.Leaderboard newEntry = new DB.Leaderboard
-                        {
-                            ID_User = e.Author.Id.ToString(),
-                            Followers = (long)0,
-                            Level = 0,
-                            Bucks = (long)0
-                        };
-                        DB.DBLists.InsertLeaderboard(newEntry);
-                        List<DB.UserImages> UserImg = DB.DBLists.UserImages;
-                        var idui = UserImg.Max(m => m.ID_User_Images);
-                        DB.UserImages newUImage = new DB.UserImages
-                        {
-                            User_ID = e.Author.Id.ToString(),
-                            BG_ID = 1,
-                            ID_User_Images = idui + 1
-                        };
-                        DB.DBLists.InsertUserImages(newUImage);
-                        List<DB.UserSettings> UserSet = DB.DBLists.UserSettings;
-                        var us = UserSet.Max(m => m.ID_User_Settings);
-                        DB.UserSettings newUSettings = new DB.UserSettings
-                        {
-                            User_ID = e.Author.Id.ToString(),
-                            Background_Colour = "white",
-                            Text_Colour = "black",
-                            Border_Colour = "black",
-                            User_Info = "Just a flesh wound",
-                            Image_ID = newUImage.ID_User_Images,
-                            ID_User_Settings = us + 1
-                        };
-                        DB.DBLists.InsertUserSettings(newUSettings);
+                        CustomMethod.AddUserToLeaderboard(e.Author);
                     }
                     global = (from lb in Leaderboard
                               where lb.ID_User == e.Author.Id.ToString()
@@ -374,21 +345,8 @@ namespace LiveBot
                 if (!checklocal)
                 {
                     List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
+                    CustomMethod.AddUserToServerRanks(e.Author, e.Guild);
                     var local = (from lb in Leaderboard
-                                 where lb.User_ID == e.Author.Id.ToString()
-                                 where lb.Server_ID == e.Channel.Guild.Id.ToString()
-                                 select lb).ToList();
-                    if (local.Count == 0)
-                    {
-                        DB.ServerRanks newEntry = new DB.ServerRanks
-                        {
-                            User_ID = e.Author.Id.ToString(),
-                            Server_ID = e.Channel.Guild.Id.ToString(),
-                            Followers = 0
-                        };
-                        DB.DBLists.InsertServerRanks(newEntry);
-                    }
-                    local = (from lb in Leaderboard
                              where lb.User_ID == e.Author.Id.ToString()
                              where lb.Server_ID == e.Channel.Guild.Id.ToString()
                              select lb).ToList();
@@ -581,6 +539,23 @@ namespace LiveBot
                         await e.Member.GrantRoleAsync(role);
                     }
                 }
+            }
+
+            var global = (from lb in DB.DBLists.Leaderboard
+                          where lb.ID_User == e.Member.Id.ToString()
+                          select lb).ToList();
+            if (global.Count == 0)
+            {
+                CustomMethod.AddUserToLeaderboard(e.Member);
+            }
+            var local = (from lb in DB.DBLists.ServerRanks
+                         where lb.User_ID == e.Member.Id.ToString()
+                         where lb.Server_ID == e.Guild.Id.ToString()
+                         select lb).ToList();
+            if (local.Count==0)
+            {
+
+                CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
             }
         }
 

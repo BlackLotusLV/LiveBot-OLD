@@ -37,6 +37,8 @@ namespace LiveBot.Commands
         [Description("Warns a user")]
         public async Task Warning(CommandContext ctx, DiscordMember username, [RemainingText] string reason="Reason not specified")
         {
+            await ctx.TriggerTypingAsync();
+            await ctx.Message.DeleteAsync();
             var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID));
             var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
             string modmsg,DM;
@@ -91,7 +93,7 @@ namespace LiveBot.Commands
 
                 int warning_count = DB.DBLists.Warnings.Where(w => w.User_ID == username.Id.ToString() && w.Server_ID==ctx.Guild.Id.ToString()).Count();
 
-                modmsg = $"**Warned user:**\t{username.Mention}\n**Warning level:**\t {WarnedUserStats.Warning_Level}\t**Warning count:\t {warning_count}\n**Warned by**\t{ctx.User.Username}\n**Reason:** {reason}";
+                modmsg = $"**Warned user:**\t{username.Mention}\n**Warning level:**\t {WarnedUserStats.Warning_Level}\t**Warning count:**\t {warning_count}\n**Warned by**\t{ctx.User.Username}\n**Reason:** {reason}";
                 DM = $"You have been warned by <@{ctx.User.Id}>.\n**Warning Reason:**\t{reason}\n**Warning Level:** {WarnedUserStats.Warning_Level}";
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
@@ -120,12 +122,16 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondAsync("This server has not set up this feature!");
             }
+            DiscordMessage info = await ctx.Channel.SendMessageAsync($"{username.Username}, Has been warned!");
+            await Task.Delay(10000).ContinueWith(t => info.DeleteAsync());
         }
 
         [Command("unwarn")]
         [Description("Removes a warning from a user")]
         public async Task Unwarning(CommandContext ctx, DiscordMember username)
         {
+            await ctx.TriggerTypingAsync();
+            await ctx.Message.DeleteAsync();
             var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID));
             var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
             var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID)).ToList();
@@ -186,6 +192,8 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondAsync("This server has not set up this feature!");
             }
+            DiscordMessage info = await ctx.Channel.SendMessageAsync($"{username.Username}, Has been un-warned!");
+            await Task.Delay(10000).ContinueWith(t => info.DeleteAsync());
         }
         [Command("getkicks")]
         [Description("Shows user warning, kick and ban history")]
@@ -353,6 +361,30 @@ namespace LiveBot.Commands
             }
             sb.AppendLine("```");
             await ctx.RespondAsync(sb.ToString());
+        }
+        [Command("prune")]
+        [Description("Deletes chat history, up to 100 messages per use")]
+        [Cooldown(1,180,CooldownBucketType.Channel)]
+        public async Task Prune(CommandContext ctx, int MessageCount = 1)
+        {
+            await ctx.Message.DeleteAsync().ContinueWith(t => ctx.TriggerTypingAsync());
+            var lid = 0ul;
+            int count = 0;
+            Console.WriteLine(0);
+            for (int i = 0; i < MessageCount; i+=100)
+            {
+                var msgs = await ctx.Channel.GetMessagesBeforeAsync(lid != 0 ? lid : ctx.Message.Id, Math.Min(MessageCount - i, 100)).ConfigureAwait(false);
+                var lmsg = msgs.FirstOrDefault();
+                if (lmsg==null)
+                {
+                    break;
+                }
+                lid = lmsg.Id;
+                count++;
+                await ctx.Channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
+            }
+            DiscordMessage info = await ctx.RespondAsync($"{MessageCount} messages deleted");
+            await Task.Delay(5000).ContinueWith(t => info.DeleteAsync());
         }
     }
 }

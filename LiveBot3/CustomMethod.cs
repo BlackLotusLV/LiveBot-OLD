@@ -92,5 +92,57 @@ namespace LiveBot
             DateTime f = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return f.AddMilliseconds(ms);
         }
+
+        public static void AddUserToLeaderboard(DiscordUser user)
+        {
+            DB.Leaderboard newEntry = new DB.Leaderboard
+            {
+                ID_User = user.Id.ToString(),
+                Followers = (long)0,
+                Level = 0,
+                Bucks = (long)0
+            };
+            DB.DBLists.InsertLeaderboard(newEntry);
+            List<DB.UserImages> UserImg = DB.DBLists.UserImages;
+            var idui = UserImg.Max(m => m.ID_User_Images);
+            DB.UserImages newUImage = new DB.UserImages
+            {
+                User_ID = user.Id.ToString(),
+                BG_ID = 1,
+                ID_User_Images = idui + 1
+            };
+            DB.DBLists.InsertUserImages(newUImage);
+            List<DB.UserSettings> UserSet = DB.DBLists.UserSettings;
+            var us = UserSet.Max(m => m.ID_User_Settings);
+            DB.UserSettings newUSettings = new DB.UserSettings
+            {
+                User_ID = user.Id.ToString(),
+                Background_Colour = "white",
+                Text_Colour = "black",
+                Border_Colour = "black",
+                User_Info = "Just a flesh wound",
+                Image_ID = newUImage.ID_User_Images,
+                ID_User_Settings = us + 1
+            };
+            DB.DBLists.InsertUserSettings(newUSettings);
+        }
+        public static void AddUserToServerRanks(DiscordUser user, DiscordGuild guild)
+        {
+            List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
+            var local = (from lb in Leaderboard
+                         where lb.User_ID == user.Id.ToString()
+                         where lb.Server_ID == guild.Id.ToString()
+                         select lb).ToList();
+            if (local.Count == 0)
+            {
+                DB.ServerRanks newEntry = new DB.ServerRanks
+                {
+                    User_ID = user.Id.ToString(),
+                    Server_ID = guild.Id.ToString(),
+                    Followers = 0
+                };
+                DB.DBLists.InsertServerRanks(newEntry);
+            }
+        }
     }
 }

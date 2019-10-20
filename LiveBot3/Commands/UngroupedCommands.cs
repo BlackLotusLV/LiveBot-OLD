@@ -8,7 +8,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
-using SixLabors.ImageSharp.Advanced;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -30,9 +29,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] People with 32-bit characters in thier username can now view their live bot profile\n" +
-                "[Fix] People with very long usernames can now view ther live bot profile, it now cuts the name to 40 characters, and linesplits if over 20 characters\n" +
-                "";
+            string changelog = "Mod log command fixes\n" +
+                "Prune command added. Can be used once every 3 minutes in each channel";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -585,6 +583,7 @@ namespace LiveBot.Commands
         public async Task Profile(CommandContext ctx,
             [Description("Specify which user to show, if left empty, will take command caster")]DiscordMember user = null)
         {
+            await ctx.TriggerTypingAsync();
             string json = "";
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
@@ -1011,6 +1010,7 @@ namespace LiveBot.Commands
         [Description("Shows summit tier list and time left.")]
         public async Task Summit(CommandContext ctx)
         {
+            await ctx.TriggerTypingAsync();
             string PCJson = "", XBJson = "", PSJson = "";
             byte[] SummitLogo;
             DateTime endtime;
