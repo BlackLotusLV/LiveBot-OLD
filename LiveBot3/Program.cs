@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191020_A";
+        public static string BotVersion = $"20191027_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -261,6 +261,10 @@ namespace LiveBot
                         await m.DeleteAsync();
                     }
                 }
+            }
+            if (e.Author.IsBot && e.Author.Id.Equals(202440605123477505) && e.Message.Content.Equals("Hey Live!"))
+            {
+                await e.Channel.SendMessageAsync("Hey!");
             }
             if (!e.Author.IsBot)
             {
