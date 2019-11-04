@@ -84,6 +84,9 @@ namespace LiveBot
 
         public struct Event
         {
+            [JsonProperty("summit_id")]
+            public string Summit_ID { get; private set; }
+
             [JsonProperty("is_mission")]
             public bool Is_Mission { get; private set; }
 
@@ -153,11 +156,65 @@ namespace LiveBot
 
         public struct Rank
         {
+            [JsonProperty("points")]
+            public int Points { get; private set; }
+
+            [JsonProperty("rank")]
+            public int UserRank { get; private set; }
+
             [JsonProperty("total_players")]
             public string Player_Count { get; private set; }
 
+            [JsonProperty("activities")]
+            public Activities[] Activities { get; private set; }
+
             [JsonProperty("tier_entries")]
             public Tier_Entries[] Tier_entries { get; private set; }
+        }
+        public struct Tier_Entries
+        {
+            [JsonProperty("points")]
+            public ulong Points { get; set; }
+
+            [JsonProperty("rank")]
+            public ulong Rank { get; set; }
+        }
+
+        public struct Activities
+        {
+            [JsonProperty("activity_id")]
+            public string Activity_ID { get; private set; }
+
+            [JsonProperty("points")]
+            public int Points { get; private set; }
+
+            [JsonProperty("score")]
+            public int Score { get; private set; }
+
+            [JsonProperty("rank")]
+            public int Rank { get; private set; }
+
+        }
+
+        public struct TCESummit
+        {
+            [JsonProperty("discord_id")]
+            public ulong Discord_ID { get; private set; }
+
+            [JsonProperty("subs")]
+            public TCESummitSubs[] Subs { get; private set; }
+
+            [JsonProperty("error")]
+            public string Error { get; private set; }
+        }
+
+        public struct TCESummitSubs
+        {
+            [JsonProperty("platform")]
+            public string Platform { get; private set; }
+
+            [JsonProperty("profile_id")]
+            public string Profile_ID { get; private set; }
         }
     }
 }

@@ -1082,6 +1082,109 @@ namespace LiveBot.Commands
             await ctx.RespondWithFileAsync(upFile, $"Summit tier lists.\n *Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes.*");
         }
 
+        [Command("mysummit")]
+        [Cooldown(1, 120, CooldownBucketType.User)]
+        [Aliases("sinfo","summitinfo")]
+        [RequireRoles(RoleCheckMode.Any,"Patreon","Moderator","Trial Moderator","Ubisoft / IVT","TCE Patreon")]
+        public async Task MySummit(CommandContext ctx, string platform = null)
+        {
+            await ctx.TriggerTypingAsync();
+
+            string OutMessage="";
+
+            string json = "";
+            using (var fs = File.OpenRead("Config.json"))
+            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+                json = await sr.ReadToEndAsync();
+            Json.TCE tcejson = JsonConvert.DeserializeObject<Json.Config>(json).TCE;
+            string link = $"https://thecrew-exchange.com/api/tchub/profileId/{tcejson.Key}/{ctx.Member.Id}";
+
+            Json.TCESummit JTCE;
+            using (WebClient wc=new WebClient())
+            {
+                string Jdown = wc.DownloadString(link);
+                JTCE = JsonConvert.DeserializeObject<Json.TCESummit>(Jdown);
+            }
+
+            Json.TCESummitSubs UserInfo = new Json.TCESummitSubs();
+
+            if (JTCE.Error!=null)
+            {
+                if (JTCE.Error== "Unregistered user")
+                {
+                    OutMessage = $"{ctx.Member.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
+                }
+                else if (JTCE.Error == "Invalid API key !")
+                {
+                    OutMessage = $"{ctx.Member.Mention}, the API is down, please try again later.";
+                }
+            }
+            else if (JTCE.Subs.Length==1)
+            {
+                UserInfo = JTCE.Subs[0];
+            }
+            else if (JTCE.Subs.Length>1)
+            {
+                string search="";
+                switch (platform.ToLower())
+                {
+                    case null:
+                    case "pc":
+                    case "computer":
+                        search = "pc";
+                        break;
+                    case "xbox":
+                    case "xb1":
+                    case "xb":
+                    case "x1":
+                        search = "x1";
+                        break;
+                    case "ps4":
+                    case "playstation":
+                    case "ps":
+                        search = "ps4";
+                        break;
+                }
+                if (JTCE.Subs.Where(w=>w.Platform.Equals(search)).Count()==1)
+                {
+                    UserInfo = JTCE.Subs.Where(w => w.Platform.Equals(search)).FirstOrDefault();
+                }
+                else if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() != 1)
+                {
+                    UserInfo = JTCE.Subs[0];
+                }
+            }
+
+            if (UserInfo.Profile_ID!=null)
+            {
+                string SJson;
+                StringBuilder sb = new StringBuilder();
+                List<Json.Summit> JSummit;
+                using (WebClient wc = new WebClient())
+                {
+                    string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
+                    JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
+                    SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
+                }
+                Json.Rank[] Events = new Json.Rank[1] { JsonConvert.DeserializeObject<Json.Rank>(SJson) };
+                foreach (var item in JSummit[0].Events)
+                {
+                    var Activity = Events[0].Activities.Where(w => w.Activity_ID.Equals(item.ID.ToString())).ToArray();
+                    if (Activity.Length > 0)
+                    {
+                        sb.AppendLine($"{item.Img_Path} | Score {Activity[0].Score} | Points {Activity[0].Points} | Rank {Activity[0].Rank}");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"{item.Img_Path} | Event not completed yet!");
+                    }
+                }
+                OutMessage = sb.ToString();
+            }
+            
+            await ctx.RespondAsync(OutMessage);
+        }
+
         [Command("daily")]
         [Cooldown(1, 60, CooldownBucketType.User)]
         [Description("Gives 200 bucks to yourself, or 200-400 if you give someone else.")]

@@ -351,9 +351,9 @@ namespace LiveBot
                     List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
                     CustomMethod.AddUserToServerRanks(e.Author, e.Guild);
                     var local = (from lb in Leaderboard
-                             where lb.User_ID == e.Author.Id.ToString()
-                             where lb.Server_ID == e.Channel.Guild.Id.ToString()
-                             select lb).ToList();
+                                 where lb.User_ID == e.Author.Id.ToString()
+                                 where lb.Server_ID == e.Channel.Guild.Id.ToString()
+                                 select lb).ToList();
                     if (local.Count > 0)
                     {
                         local[0].Followers = (long)local[0].Followers + points_added;
@@ -556,7 +556,7 @@ namespace LiveBot
                          where lb.User_ID == e.Member.Id.ToString()
                          where lb.Server_ID == e.Guild.Id.ToString()
                          select lb).ToList();
-            if (local.Count==0)
+            if (local.Count == 0)
             {
 
                 CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
@@ -778,7 +778,7 @@ namespace LiveBot
                 {
                     msgContent = $"{clock} You tried to execute the command too fast, wait a bit and try again.";
                 }
-                else if (ex.FailedChecks[0].GetType()==typeof(RequireRolesAttribute))
+                else if (ex.FailedChecks[0].GetType() == typeof(RequireRolesAttribute))
                 {
                     msgContent = $"{no_entry} You don't have the required role for this command";
                 }
@@ -815,11 +815,5 @@ namespace LiveBot
         public DiscordUser User { get; set; }
         public DiscordGuild Guild { get; set; }
         public DateTime Time { get; set; }
-    }
-
-    public class Tier_Entries
-    {
-        public ulong Points { get; set; }
-        public ulong Rank { get; set; }
     }
 }
