@@ -29,7 +29,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "backend update";
+            string changelog = "New comand `/mysummit`, can also use `/summitinfo` or `/sinfo`.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1160,6 +1160,7 @@ namespace LiveBot.Commands
                 string SJson;
                 StringBuilder sb = new StringBuilder();
                 List<Json.Summit> JSummit;
+                byte[] EventLogoBit;
                 using (WebClient wc = new WebClient())
                 {
                     string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
@@ -1167,22 +1168,90 @@ namespace LiveBot.Commands
                     SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
                 }
                 Json.Rank[] Events = new Json.Rank[1] { JsonConvert.DeserializeObject<Json.Rank>(SJson) };
-                foreach (var item in JSummit[0].Events)
+
+                int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
+
+                Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
+
+                var AllignCenter = new TextGraphicsOptions(true)
                 {
-                    var Activity = Events[0].Activities.Where(w => w.Activity_ID.Equals(item.ID.ToString())).ToArray();
-                    if (Activity.Length > 0)
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                var AllignTopLeft = new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                var AllignTopRight = new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+
+                using (Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 742))
+                {
+                    for (int i = 0; i < JSummit[0].Events.Length; i++)
                     {
-                        sb.AppendLine($"{item.Img_Path} | Score {Activity[0].Score} | Points {Activity[0].Points} | Rank {Activity[0].Rank}");
+                        var ThisEvent = JSummit[0].Events[i];
+                        var Activity = Events[0].Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
+
+                        using (WebClient wc=new WebClient())
+                        {
+                            EventLogoBit = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
+                        }
+                        using (Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit))
+                        {
+                            if (i == 5)
+                            {
+                                EventImage.Mutate(ctx => ctx.
+                                Resize(380, 483)
+                                );
+                            }
+                            else if (i>=0 && i<=3)
+                            {
+                                EventImage.Mutate(ctx => ctx.
+                                Resize(368, 239)
+                                );
+                            }
+                            if (Activity.Length > 0)
+                            {
+                                using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 20))
+                                {
+                                    ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                                    EventImage.Mutate(ctx => ctx
+                                    .DrawImage(ScoreBar,new Point(0,EventImage.Height-20),0.7f)
+                                    .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank}", Basefont,Rgba32.White, new PointF(5, EventImage.Height-22))
+                                    .DrawText(AllignTopRight, $"Score: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width-5, EventImage.Height - 22))
+                                    );
+                                }
+                                BaseImage.Mutate(ctx => ctx
+                                .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                                );
+                            }
+                            else
+                            {
+                                using (Image<Rgba32> NotComplete=new Image<Rgba32>(EventImage.Width,EventImage.Height))
+                                {
+                                    NotComplete.Mutate(ctx => ctx
+                                    .Fill(Rgba32.Black)
+                                    .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
+                                    );
+                                    BaseImage.Mutate(ctx => ctx
+                                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                                    .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
+                                    );
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        sb.AppendLine($"{item.Img_Path} | Event not completed yet!");
-                    }
+                    BaseImage.Save("Summit/MySummitUpload.png");
                 }
                 OutMessage = sb.ToString();
             }
-            
-            await ctx.RespondAsync(OutMessage);
+
+            using FileStream upFile = File.Open("Summit/MySummitUpload.png", FileMode.Open);
+            await ctx.RespondWithFileAsync(upFile,$"{ctx.Member.Mention}, Here are your summit event stats.\n*Scoreboard powerd by The Crew Hub and The Crew Exchange!*");
         }
 
         [Command("daily")]
