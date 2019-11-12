@@ -171,6 +171,7 @@ namespace LiveBot
             [JsonProperty("tier_entries")]
             public Tier_Entries[] Tier_entries { get; private set; }
         }
+
         public struct Tier_Entries
         {
             [JsonProperty("points")]
@@ -193,7 +194,6 @@ namespace LiveBot
 
             [JsonProperty("rank")]
             public int Rank { get; private set; }
-
         }
 
         public struct TCESummit

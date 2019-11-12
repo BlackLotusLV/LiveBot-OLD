@@ -1,9 +1,9 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.CommandsNext.Attributes;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using System;
@@ -558,7 +558,6 @@ namespace LiveBot
                          select lb).ToList();
             if (local.Count == 0)
             {
-
                 CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
             }
         }
@@ -757,7 +756,7 @@ namespace LiveBot
             DB.DBLists.LoadCUC();
             string CommandName = e.Command.Name;
             var DBEntry = DB.DBLists.CommandsUsedCount.Where(w => w.Name == CommandName).FirstOrDefault();
-            if (DBEntry==null)
+            if (DBEntry == null)
             {
                 DB.CommandsUsedCount NewEntry = new DB.CommandsUsedCount()
                 {
@@ -766,7 +765,7 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertCUC(NewEntry);
             }
-            else if (DBEntry!=null)
+            else if (DBEntry != null)
             {
                 DBEntry.Used_Count++;
                 DB.DBLists.UpdateCUC(new List<DB.CommandsUsedCount> { DBEntry });

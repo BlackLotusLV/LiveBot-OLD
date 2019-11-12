@@ -18,7 +18,6 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace LiveBot.Commands
 {
     public class UngroupedCommands : BaseCommandModule
@@ -29,8 +28,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[UPDATE] `/mysummit` command now shows the tier list, as well as your rank and score.\n" +
-                "[NEW] Internal counter for how many times each command is used. No public use for this yet, just stats.";
+            string changelog = "[FIX] `/mysummit` Typo\n" +
+                "[FIX] Always saying that the stats are for PC even when they are not. `/mysummit`";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -621,19 +620,19 @@ namespace LiveBot.Commands
             byte[] profilepic = webclinet.DownloadData(user.AvatarUrl);
             string username;
             StringBuilder sb = new StringBuilder();
-            int usernameSize=21;
+            int usernameSize = 21;
             for (int i = 0; i < user.Username.Length; i++)
             {
-                if (i==20)
+                if (i == 20)
                 {
                     sb.AppendLine();
                     usernameSize = 15;
                 }
-                else if (i==41)
+                else if (i == 41)
                 {
                     break;
                 }
-                if ((int)user.Username[i]>short.MaxValue)
+                if ((int)user.Username[i] > short.MaxValue)
                 {
                     sb.Append("?");
                 }
@@ -663,7 +662,7 @@ namespace LiveBot.Commands
             var AllignCenter = new TextGraphicsOptions(true)
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment=VerticalAlignment.Top
+                VerticalAlignment = VerticalAlignment.Top
             };
             Point bglocation = new Point(10, 10);
             Point pfplocation = new Point(440, 230);
@@ -713,7 +712,7 @@ namespace LiveBot.Commands
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y),
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y + pfp.Height),
                 new PointF(pfplocation.X, pfplocation.Y + pfp.Height)) //profile picture border
-                .DrawText(AllignCenter,username, UsernameFont, textcolour, new PointF(270, 225)) // username
+                .DrawText(AllignCenter, username, UsernameFont, textcolour, new PointF(270, 225)) // username
                 .DrawText($"LEVEL", LevelText, textcolour, new PointF(40, 230)) // levels
                 .DrawText(level, LevelNumber, textcolour, new PointF(40, 260))
                 .DrawText($"Followers:", Basefont, textcolour, new PointF(40, 320))
@@ -919,7 +918,7 @@ namespace LiveBot.Commands
                         join ui in userImages on bi.ID_BG equals ui.BG_ID
                         where ui.User_ID == ctx.User.Id.ToString()
                         select bi).ToList();
-            
+
             StringBuilder sb = new StringBuilder();
             sb.Append("Visual representation of the backgrounds can be viewed here: <http://bit.ly/LiveBG>\n```csharp\n[ID]\tBackground Name\n");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
@@ -1025,7 +1024,7 @@ namespace LiveBot.Commands
 
                 SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
 
-                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date*1000);
+                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
             Json.Rank[] Events = new Json.Rank[3] { JsonConvert.DeserializeObject<Json.Rank>(PCJson), JsonConvert.DeserializeObject<Json.Rank>(PSJson), JsonConvert.DeserializeObject<Json.Rank>(XBJson) };
 
@@ -1085,13 +1084,13 @@ namespace LiveBot.Commands
 
         [Command("mysummit")]
         [Cooldown(1, 120, CooldownBucketType.User)]
-        [Aliases("sinfo","summitinfo")]
-        [RequireRoles(RoleCheckMode.Any,"Patreon","Moderator","Trial Moderator","Ubisoft / IVT","TCE Patreon")]
+        [Aliases("sinfo", "summitinfo")]
+        [RequireRoles(RoleCheckMode.Any, "Patreon", "Moderator", "Trial Moderator", "Ubisoft / IVT", "TCE Patreon")]
         public async Task MySummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
 
-            string OutMessage="";
+            string OutMessage = "";
 
             bool SendImage = false;
 
@@ -1104,7 +1103,7 @@ namespace LiveBot.Commands
             string link = $"https://thecrew-exchange.com/api/tchub/profileId/{tcejson.Key}/{ctx.Member.Id}";
 
             Json.TCESummit JTCE;
-            using (WebClient wc=new WebClient())
+            using (WebClient wc = new WebClient())
             {
                 string Jdown = wc.DownloadString(link);
                 JTCE = JsonConvert.DeserializeObject<Json.TCESummit>(Jdown);
@@ -1112,9 +1111,9 @@ namespace LiveBot.Commands
 
             Json.TCESummitSubs UserInfo = new Json.TCESummitSubs();
 
-            if (JTCE.Error!=null)
+            if (JTCE.Error != null)
             {
-                if (JTCE.Error== "Unregistered user")
+                if (JTCE.Error == "Unregistered user")
                 {
                     OutMessage = $"{ctx.Member.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
                 }
@@ -1123,11 +1122,12 @@ namespace LiveBot.Commands
                     OutMessage = $"{ctx.Member.Mention}, the API is down, please try again later.";
                 }
             }
-            else if (JTCE.Subs.Length==1)
+            else if (JTCE.Subs.Length == 1)
             {
                 UserInfo = JTCE.Subs[0];
+                search = UserInfo.Platform;
             }
-            else if (JTCE.Subs.Length>1)
+            else if (JTCE.Subs.Length > 1)
             {
                 switch (platform.ToLower())
                 {
@@ -1136,19 +1136,21 @@ namespace LiveBot.Commands
                     case "computer":
                         search = "pc";
                         break;
+
                     case "xbox":
                     case "xb1":
                     case "xb":
                     case "x1":
                         search = "x1";
                         break;
+
                     case "ps4":
                     case "playstation":
                     case "ps":
                         search = "ps4";
                         break;
                 }
-                if (JTCE.Subs.Where(w=>w.Platform.Equals(search)).Count()==1)
+                if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() == 1)
                 {
                     UserInfo = JTCE.Subs.Where(w => w.Platform.Equals(search)).FirstOrDefault();
                 }
@@ -1158,7 +1160,7 @@ namespace LiveBot.Commands
                 }
             }
 
-            if (UserInfo.Profile_ID!=null)
+            if (UserInfo.Profile_ID != null)
             {
                 string SJson;
                 List<Json.Summit> JSummit;
@@ -1175,7 +1177,7 @@ namespace LiveBot.Commands
 
                 Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
                 Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-                Font SummitCaps10= Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 10);
+                Font SummitCaps10 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 10);
 
                 var AllignCenter = new TextGraphicsOptions(true)
                 {
@@ -1193,97 +1195,91 @@ namespace LiveBot.Commands
                     VerticalAlignment = VerticalAlignment.Top
                 };
 
-                using (Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765))
+                using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
+                for (int i = 0; i < JSummit[0].Events.Length; i++)
                 {
-                    for (int i = 0; i < JSummit[0].Events.Length; i++)
-                    {
-                        var ThisEvent = JSummit[0].Events[i];
-                        var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
+                    var ThisEvent = JSummit[0].Events[i];
+                    var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
 
-                        using (WebClient wc=new WebClient())
-                        {
-                            EventLogoBit = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
-                        }
-                        using (Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit))
-                        {
-                            if (i == 5)
-                            {
-                                EventImage.Mutate(ctx => ctx.
-                                Resize(380, 483)
-                                );
-                            }
-                            else if (i>=0 && i<=3)
-                            {
-                                EventImage.Mutate(ctx => ctx.
-                                Resize(368, 239)
-                                );
-                            }
-                            if (Activity.Length > 0)
-                            {
-                                using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 20))
-                                {
-                                    ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
-                                    EventImage.Mutate(ctx => ctx
-                                    .DrawImage(ScoreBar,new Point(0,EventImage.Height-20),0.7f)
-                                    .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank}", Basefont,Rgba32.White, new PointF(5, EventImage.Height-22))
-                                    .DrawText(AllignTopRight, $"Score: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width-5, EventImage.Height - 22))
-                                    );
-                                }
-                                BaseImage.Mutate(ctx => ctx
-                                .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                                );
-                            }
-                            else
-                            {
-                                using (Image<Rgba32> NotComplete=new Image<Rgba32>(EventImage.Width,EventImage.Height))
-                                {
-                                    NotComplete.Mutate(ctx => ctx
-                                    .Fill(Rgba32.Black)
-                                    .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
-                                    );
-                                    BaseImage.Mutate(ctx => ctx
-                                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                                    .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
-                                    );
-                                }
-                            }
-                        }
-                    }
-                    using (Image<Rgba32> TierBar=Image.Load<Rgba32>("Summit/TierBar.png"))
+                    using (WebClient wc = new WebClient())
                     {
-                        int[] TierXPos =new int[4] {845,563,281,0};
-                        bool[] Tier = new bool[] { false, false, false, false };
-                        for (int i = 0; i < Events.Tier_entries.Length; i++)
+                        EventLogoBit = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
+                    }
+                    using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
+                    if (i == 5)
+                    {
+                        EventImage.Mutate(ctx => ctx.
+                        Resize(380, 483)
+                        );
+                    }
+                    else if (i >= 0 && i <= 3)
+                    {
+                        EventImage.Mutate(ctx => ctx.
+                        Resize(368, 239)
+                        );
+                    }
+                    if (Activity.Length > 0)
+                    {
+                        using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 20))
                         {
-                            if (Events.Tier_entries[i].Points == 4294967295)
+                            ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                            EventImage.Mutate(ctx => ctx
+                            .DrawImage(ScoreBar, new Point(0, EventImage.Height - 20), 0.7f)
+                            .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
+                            .DrawText(AllignTopRight, $"Score: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                            );
+                        }
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                        );
+                    }
+                    else
+                    {
+                        using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
+                        NotComplete.Mutate(ctx => ctx
+                            .Fill(Rgba32.Black)
+                            .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
+                            );
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                        .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
+                        );
+                    }
+                }
+                using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Summit/TierBar.png"))
+                {
+                    int[] TierXPos = new int[4] { 845, 563, 281, 0 };
+                    bool[] Tier = new bool[] { false, false, false, false };
+                    for (int i = 0; i < Events.Tier_entries.Length; i++)
+                    {
+                        if (Events.Tier_entries[i].Points == 4294967295)
+                        {
+                            Tier[i] = true;
+                        }
+                        else
+                        {
+                            if (Events.Tier_entries[i].Points <= Events.Points)
                             {
                                 Tier[i] = true;
                             }
-                            else
-                            {
-                                if (Events.Tier_entries[i].Points<=Events.Points)
-                                {
-                                    Tier[i] = true;
-                                }
 
-                                TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps10, Rgba32.White, new PointF(TierXPos[i]+5,15))
-                                );
-                            }
+                            TierBar.Mutate(ctx => ctx
+                            .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps10, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
+                            );
                         }
-
-                        TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c=>c)-1] + 5, 0))
-                                );
-
-                        BaseImage.Mutate(ctx => ctx
-                        .DrawImage(TierBar,new Point(0,BaseImage.Height-30),1)
-                        );
                     }
-                    BaseImage.Save("Summit/MySummitUpload.png");
-                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search=="x1"? "Xbox":search=="ps4"?"PlayStation":"PC")}.\n*Scoreboard powerd by The Crew Hub and The Crew Exchange!*";
-                    SendImage = true;
+
+                    TierBar.Mutate(ctx => ctx
+                            .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
+                            );
+
+                    BaseImage.Mutate(ctx => ctx
+                    .DrawImage(TierBar, new Point(0, BaseImage.Height - 30), 1)
+                    );
                 }
+                BaseImage.Save("Summit/MySummitUpload.png");
+                OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : "PC")}.\n*Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+                SendImage = true;
             }
             if (SendImage)
             {
