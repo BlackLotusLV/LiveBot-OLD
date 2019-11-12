@@ -17,6 +17,7 @@ namespace LiveBot.DB
         public static List<Warnings> Warnings;
         public static List<ServerSettings> ServerSettings;
         public static List<RankRoles> RankRoles;
+        public static List<CommandsUsedCount> CommandsUsedCount;
 
         public static void LoadAllLists()
         {
@@ -32,6 +33,7 @@ namespace LiveBot.DB
             LoadWarnings();
             LoadServerSettings();
             LoadRankRoles();
+            LoadCUC();
         }
 
         public static void LoadVehicleList()
@@ -117,6 +119,12 @@ namespace LiveBot.DB
             RankRoles = (from c in ctx.RankRoles
                          select c).ToList();
         }
+        public static void LoadCUC()
+        {
+            using var ctx = new CommandsUsedCountContext();
+            CommandsUsedCount = (from c in ctx.CommandsUsedCount
+                         select c).ToList();
+        }
 
         public static void UpdateLeaderboard(List<Leaderboard> o)
         {
@@ -173,6 +181,12 @@ namespace LiveBot.DB
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+        public static void UpdateCUC(List<CommandsUsedCount> o)
+        {
+            using var ctx = new CommandsUsedCountContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
 
         public static void InsertUserImages(UserImages o)
         {
@@ -226,6 +240,13 @@ namespace LiveBot.DB
         {
             using var ctx = new RankRolesContext();
             ctx.RankRoles.Add(o);
+            ctx.SaveChanges();
+            LoadRankRoles();
+        }
+        public static void InsertCUC(CommandsUsedCount o)
+        {
+            using var ctx = new CommandsUsedCountContext();
+            ctx.CommandsUsedCount.Add(o);
             ctx.SaveChanges();
             LoadRankRoles();
         }

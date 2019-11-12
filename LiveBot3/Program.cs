@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191109_A";
+        public static string BotVersion = $"20191112_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -753,6 +753,24 @@ namespace LiveBot
         private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
             e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, "LiveBot", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+
+            DB.DBLists.LoadCUC();
+            string CommandName = e.Command.Name;
+            var DBEntry = DB.DBLists.CommandsUsedCount.Where(w => w.Name == CommandName).FirstOrDefault();
+            if (DBEntry==null)
+            {
+                DB.CommandsUsedCount NewEntry = new DB.CommandsUsedCount()
+                {
+                    Name = e.Command.Name,
+                    Used_Count = 1
+                };
+                DB.DBLists.InsertCUC(NewEntry);
+            }
+            else if (DBEntry!=null)
+            {
+                DBEntry.Used_Count++;
+                DB.DBLists.UpdateCUC(new List<DB.CommandsUsedCount> { DBEntry });
+            }
             return Task.CompletedTask;
         }
 
@@ -776,15 +794,15 @@ namespace LiveBot
                 string msgContent;
                 if (ex.FailedChecks[0].GetType() == typeof(CooldownAttribute))
                 {
-                    msgContent = $"{clock} You tried to execute the command too fast, wait a bit and try again.";
+                    msgContent = $"{clock} You, {e.Context.Member.Mention}, tried to execute the command too fast, wait a bit and try again.";
                 }
                 else if (ex.FailedChecks[0].GetType() == typeof(RequireRolesAttribute))
                 {
-                    msgContent = $"{no_entry} You don't have the required role for this command";
+                    msgContent = $"{no_entry} You, {e.Context.Member.Mention}, don't have the required role for this command";
                 }
                 else
                 {
-                    msgContent = $"{no_entry} You do not have the permissions required to execute this command.";
+                    msgContent = $"{no_entry} You, {e.Context.Member.Mention}, do not have the permissions required to execute this command.";
                 }
                 var embed = new DiscordEmbedBuilder
                 {

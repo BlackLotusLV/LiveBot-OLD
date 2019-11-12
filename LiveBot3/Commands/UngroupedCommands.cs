@@ -29,7 +29,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "New comand `/mysummit`, can also use `/summitinfo` or `/sinfo`.";
+            string changelog = "[UPDATE] `/mysummit` command now shows the tier list, as well as your rank and score.\n" +
+                "[NEW] Internal counter for how many times each command is used. No public use for this yet, just stats.";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1092,6 +1093,9 @@ namespace LiveBot.Commands
 
             string OutMessage="";
 
+            bool SendImage = false;
+
+            string search = "";
             string json = "";
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
@@ -1125,7 +1129,6 @@ namespace LiveBot.Commands
             }
             else if (JTCE.Subs.Length>1)
             {
-                string search="";
                 switch (platform.ToLower())
                 {
                     case null:
@@ -1158,7 +1161,6 @@ namespace LiveBot.Commands
             if (UserInfo.Profile_ID!=null)
             {
                 string SJson;
-                StringBuilder sb = new StringBuilder();
                 List<Json.Summit> JSummit;
                 byte[] EventLogoBit;
                 using (WebClient wc = new WebClient())
@@ -1167,11 +1169,13 @@ namespace LiveBot.Commands
                     JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
                     SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
                 }
-                Json.Rank[] Events = new Json.Rank[1] { JsonConvert.DeserializeObject<Json.Rank>(SJson) };
+                Json.Rank Events = JsonConvert.DeserializeObject<Json.Rank>(SJson);
 
                 int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
 
                 Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
+                Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+                Font SummitCaps10= Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 10);
 
                 var AllignCenter = new TextGraphicsOptions(true)
                 {
@@ -1189,12 +1193,12 @@ namespace LiveBot.Commands
                     VerticalAlignment = VerticalAlignment.Top
                 };
 
-                using (Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 742))
+                using (Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765))
                 {
                     for (int i = 0; i < JSummit[0].Events.Length; i++)
                     {
                         var ThisEvent = JSummit[0].Events[i];
-                        var Activity = Events[0].Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
+                        var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
 
                         using (WebClient wc=new WebClient())
                         {
@@ -1245,13 +1249,51 @@ namespace LiveBot.Commands
                             }
                         }
                     }
-                    BaseImage.Save("Summit/MySummitUpload.png");
-                }
-                OutMessage = sb.ToString();
-            }
+                    using (Image<Rgba32> TierBar=Image.Load<Rgba32>("Summit/TierBar.png"))
+                    {
+                        int[] TierXPos =new int[4] {845,563,281,0};
+                        bool[] Tier = new bool[] { false, false, false, false };
+                        for (int i = 0; i < Events.Tier_entries.Length; i++)
+                        {
+                            if (Events.Tier_entries[i].Points == 4294967295)
+                            {
+                                Tier[i] = true;
+                            }
+                            else
+                            {
+                                if (Events.Tier_entries[i].Points<=Events.Points)
+                                {
+                                    Tier[i] = true;
+                                }
 
-            using FileStream upFile = File.Open("Summit/MySummitUpload.png", FileMode.Open);
-            await ctx.RespondWithFileAsync(upFile,$"{ctx.Member.Mention}, Here are your summit event stats.\n*Scoreboard powerd by The Crew Hub and The Crew Exchange!*");
+                                TierBar.Mutate(ctx => ctx
+                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps10, Rgba32.White, new PointF(TierXPos[i]+5,15))
+                                );
+                            }
+                        }
+
+                        TierBar.Mutate(ctx => ctx
+                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c=>c)-1] + 5, 0))
+                                );
+
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(TierBar,new Point(0,BaseImage.Height-30),1)
+                        );
+                    }
+                    BaseImage.Save("Summit/MySummitUpload.png");
+                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search=="x1"? "Xbox":search=="ps4"?"PlayStation":"PC")}.\n*Scoreboard powerd by The Crew Hub and The Crew Exchange!*";
+                    SendImage = true;
+                }
+            }
+            if (SendImage)
+            {
+                using FileStream upFile = File.Open("Summit/MySummitUpload.png", FileMode.Open);
+                await ctx.RespondWithFileAsync(upFile, OutMessage);
+            }
+            else
+            {
+                await ctx.RespondAsync(OutMessage);
+            }
         }
 
         [Command("daily")]

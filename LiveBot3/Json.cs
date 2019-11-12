@@ -157,7 +157,7 @@ namespace LiveBot
         public struct Rank
         {
             [JsonProperty("points")]
-            public int Points { get; private set; }
+            public ulong Points { get; private set; }
 
             [JsonProperty("rank")]
             public int UserRank { get; private set; }
