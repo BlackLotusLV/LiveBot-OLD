@@ -28,10 +28,11 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Tentative fix for stream notifications, should now show the game title and stream title in the right places. Needs testing\n" +
-                "[REMOVED] `/mhc` no longer exists\n" +
-                "[CHANGE] `/mysummit` command will nolonger post an image if you have not done any events in the summit.\n" +
-                "";
+            string changelog = "[FIX] Wrong game and title for stream notification\n" +
+                "[REMOVED] `/mhc`\n" +
+                "[CHANGE] `/mysummit` If no event is done, image not created.\n" +
+                "[NEW] `/mysummit` now shows the event names\n" +
+                "[FIX] `/mysummit` visibility issues for summit tier scores.\n";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1179,7 +1180,7 @@ namespace LiveBot.Commands
 
                 Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
                 Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-                Font SummitCaps10 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 10);
+                Font SummitCaps12 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
 
                 var AllignCenter = new TextGraphicsOptions(true)
                 {
@@ -1225,11 +1226,26 @@ namespace LiveBot.Commands
                         }
                         if (Activity.Length > 0)
                         {
+                            using WebClient wc = new WebClient();
+                            string[] EventTitle = wc.DownloadString($"https://thecrew-exchange.com/api/tchub/event/{tcejson.Key}/{ThisEvent.ID}").Replace("\"","").Split(' ');
+                            StringBuilder sb = new StringBuilder();
+                            for (int j = 0; j < EventTitle.Length; j++)
+                            {
+                                if (j==3)
+                                {
+                                    sb.AppendLine();
+                                }
+                                sb.Append(EventTitle[j]+" ");
+                            }
+                            using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width,40))
                             using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 20))
                             {
                                 ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                                TitleBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
                                 EventImage.Mutate(ctx => ctx
                                 .DrawImage(ScoreBar, new Point(0, EventImage.Height - 20), 0.7f)
+                                .DrawImage(TitleBar, new Point(0, 0), 0.7f)
+                                .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
                                 .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
                                 .DrawText(AllignTopRight, $"Score: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                                 );
@@ -1253,6 +1269,7 @@ namespace LiveBot.Commands
                     }
                     using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Summit/TierBar.png"))
                     {
+                        TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Rgba32.Black), new Point(0, 0), 0.35f));
                         int[] TierXPos = new int[4] { 845, 563, 281, 0 };
                         bool[] Tier = new bool[] { false, false, false, false };
                         for (int i = 0; i < Events.Tier_entries.Length; i++)
@@ -1268,8 +1285,9 @@ namespace LiveBot.Commands
                                     Tier[i] = true;
                                 }
 
+
                                 TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps10, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
+                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps12, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
                                 );
                             }
                         }
