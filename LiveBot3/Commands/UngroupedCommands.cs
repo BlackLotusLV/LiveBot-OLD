@@ -28,8 +28,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/mysummit` Typo\n" +
-                "[FIX] Always saying that the stats are for PC even when they are not. `/mysummit`";
+            string changelog = "[FIX] Tentative fix for stream notifications, should now show the game title and stream title in the right places. Needs testing\n" +
+                "[REMOVED] `/mhc` no longer exists\n" +
+                "[CHANGE] `/mysummit` command will nolonger post an image if you have not done any events in the summit.\n" +
+                "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1195,91 +1197,99 @@ namespace LiveBot.Commands
                     VerticalAlignment = VerticalAlignment.Top
                 };
 
-                using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
-                for (int i = 0; i < JSummit[0].Events.Length; i++)
+                if (Events.Points != 0)
                 {
-                    var ThisEvent = JSummit[0].Events[i];
-                    var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
 
-                    using (WebClient wc = new WebClient())
+                    using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
+                    for (int i = 0; i < JSummit[0].Events.Length; i++)
                     {
-                        EventLogoBit = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
-                    }
-                    using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
-                    if (i == 5)
-                    {
-                        EventImage.Mutate(ctx => ctx.
-                        Resize(380, 483)
-                        );
-                    }
-                    else if (i >= 0 && i <= 3)
-                    {
-                        EventImage.Mutate(ctx => ctx.
-                        Resize(368, 239)
-                        );
-                    }
-                    if (Activity.Length > 0)
-                    {
-                        using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 20))
+                        var ThisEvent = JSummit[0].Events[i];
+                        var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
+
+                        using (WebClient wc = new WebClient())
                         {
-                            ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
-                            EventImage.Mutate(ctx => ctx
-                            .DrawImage(ScoreBar, new Point(0, EventImage.Height - 20), 0.7f)
-                            .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
-                            .DrawText(AllignTopRight, $"Score: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                            EventLogoBit = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
+                        }
+                        using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
+                        if (i == 5)
+                        {
+                            EventImage.Mutate(ctx => ctx.
+                            Resize(380, 483)
                             );
                         }
-                        BaseImage.Mutate(ctx => ctx
-                        .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                        );
-                    }
-                    else
-                    {
-                        using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
-                        NotComplete.Mutate(ctx => ctx
-                            .Fill(Rgba32.Black)
-                            .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
-                            );
-                        BaseImage.Mutate(ctx => ctx
-                        .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                        .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
-                        );
-                    }
-                }
-                using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Summit/TierBar.png"))
-                {
-                    int[] TierXPos = new int[4] { 845, 563, 281, 0 };
-                    bool[] Tier = new bool[] { false, false, false, false };
-                    for (int i = 0; i < Events.Tier_entries.Length; i++)
-                    {
-                        if (Events.Tier_entries[i].Points == 4294967295)
+                        else if (i >= 0 && i <= 3)
                         {
-                            Tier[i] = true;
+                            EventImage.Mutate(ctx => ctx.
+                            Resize(368, 239)
+                            );
+                        }
+                        if (Activity.Length > 0)
+                        {
+                            using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 20))
+                            {
+                                ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                                EventImage.Mutate(ctx => ctx
+                                .DrawImage(ScoreBar, new Point(0, EventImage.Height - 20), 0.7f)
+                                .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
+                                .DrawText(AllignTopRight, $"Score: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                                );
+                            }
+                            BaseImage.Mutate(ctx => ctx
+                            .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                            );
                         }
                         else
                         {
-                            if (Events.Tier_entries[i].Points <= Events.Points)
-                            {
-                                Tier[i] = true;
-                            }
-
-                            TierBar.Mutate(ctx => ctx
-                            .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps10, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
+                            using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
+                            NotComplete.Mutate(ctx => ctx
+                                .Fill(Rgba32.Black)
+                                .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
+                                );
+                            BaseImage.Mutate(ctx => ctx
+                            .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                            .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
                             );
                         }
                     }
+                    using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Summit/TierBar.png"))
+                    {
+                        int[] TierXPos = new int[4] { 845, 563, 281, 0 };
+                        bool[] Tier = new bool[] { false, false, false, false };
+                        for (int i = 0; i < Events.Tier_entries.Length; i++)
+                        {
+                            if (Events.Tier_entries[i].Points == 4294967295)
+                            {
+                                Tier[i] = true;
+                            }
+                            else
+                            {
+                                if (Events.Tier_entries[i].Points <= Events.Points)
+                                {
+                                    Tier[i] = true;
+                                }
 
-                    TierBar.Mutate(ctx => ctx
-                            .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
-                            );
+                                TierBar.Mutate(ctx => ctx
+                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps10, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
+                                );
+                            }
+                        }
 
-                    BaseImage.Mutate(ctx => ctx
-                    .DrawImage(TierBar, new Point(0, BaseImage.Height - 30), 1)
-                    );
+                        TierBar.Mutate(ctx => ctx
+                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
+                                );
+
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(TierBar, new Point(0, BaseImage.Height - 30), 1)
+                        );
+                    }
+                    BaseImage.Save("Summit/MySummitUpload.png");
+                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : "PC")}.\n*Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+                    SendImage = true;
                 }
-                BaseImage.Save("Summit/MySummitUpload.png");
-                OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : "PC")}.\n*Scoreboard powered by The Crew Hub and The Crew Exchange!*";
-                SendImage = true;
+                else
+                {
+                    OutMessage = $"{ctx.Member.Mention}, You have not completed any summit event!";
+                }
             }
             if (SendImage)
             {
@@ -1393,19 +1403,6 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync($"{ctx.Member.Mention} you have given out {user.Cookies_Given}, and received {user.Cookies_Taken} :cookie:\n" +
                 $"Can give cookie? {(cookiecheck ? "Yes" : "No")}.");
-        }
-
-        [Command("mhc")]
-        [Description("Shows the best money grinding method")]
-        public async Task MHC(CommandContext ctx, DiscordMember member = null)
-        {
-            DiscordEmoji JS = await Program.TCGuild.GetEmojiAsync(449686964950794240);
-            if (member == null)
-            {
-                member = ctx.Member;
-            }
-            await ctx.RespondAsync($"{member.Mention}, the best event to farm money and followers is **Maine Highlands Cave** in the {JS} (JetSprint) discipline. The target time to beat is 1m44s (average time to finish the event is about 1m30s once you know the track and the best route) and it awards 2940 Followers and 22,050 Bucks on Ace difficulty.");
-            await ctx.Message.DeleteAsync();
         }
     }
 }
