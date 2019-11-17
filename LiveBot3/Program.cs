@@ -227,8 +227,8 @@ namespace LiveBot
                                     Url = e.User.Presence.Activity.StreamUrl
                                 },
                                 Description = $"**Streamer:**\n {e.User.Mention}\n\n" +
-                        $"**Game:**\n{e.User.Presence.Activity.RichPresence.Details}\n\n" +
-                        $"**Stream title:**\n{e.User.Presence.Activity.Name}\n\n" +
+                        $"**Game:**\n{e.User.Presence.Activities.Where(w=>w.ActivityType.Equals(ActivityType.Playing)).FirstOrDefault().Name}\n\n" +
+                        $"**Stream title:**\n{e.User.Presence.Activity.RichPresence.Details}\n\n" +
                         $"**Stream Link:**\n{e.User.Presence.Activity.StreamUrl}",
                                 ThumbnailUrl = e.User.AvatarUrl,
                                 Title = $"Check out {e.User.Username} is now Streaming!"

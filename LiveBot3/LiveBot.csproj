@@ -12,8 +12,8 @@
     <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00635" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00635" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00635" />
-    <PackageReference Include="EntityFramework" Version="6.4.0-preview2-19525-03" />
-    <PackageReference Include="Npgsql" Version="4.1.1" />
+    <PackageReference Include="EntityFramework" Version="6.4.0-preview3-19553-01" />
+    <PackageReference Include="Npgsql" Version="4.1.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.0-preview2" />
     <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0008" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0009" />
