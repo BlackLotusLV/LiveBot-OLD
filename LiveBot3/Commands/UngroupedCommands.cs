@@ -28,11 +28,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Wrong game and title for stream notification\n" +
-                "[REMOVED] `/mhc`\n" +
-                "[CHANGE] `/mysummit` If no event is done, image not created.\n" +
-                "[NEW] `/mysummit` now shows the event names\n" +
-                "[FIX] `/mysummit` visibility issues for summit tier scores.\n";
+            string changelog = "[FIX] Stream notification broken";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;

@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191118_B";
+        public static string BotVersion = $"20191120_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -180,6 +180,8 @@ namespace LiveBot
                     {
                         DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
                         bool role = false, game = false;
+                        string gameTitle = e.Activity.RichPresence.State;
+                        string streamTitle = e.User.Presence.Activity.RichPresence.Details;
                         if (row.Roles_ID != null)
                         {
                             foreach (DiscordRole urole in StreamMember.Roles)
@@ -203,7 +205,7 @@ namespace LiveBot
                             {
                                 try
                                 {
-                                    if (e.User.Presence.Activity.RichPresence.Details == ugame)
+                                    if (gameTitle == ugame)
                                     {
                                         game = true;
                                     }
@@ -217,6 +219,7 @@ namespace LiveBot
                         }
                         if (game == true && role == true)
                         {
+
                             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                             {
                                 Color = new DiscordColor(0x6441A5),
@@ -227,8 +230,8 @@ namespace LiveBot
                                     Url = e.User.Presence.Activity.StreamUrl
                                 },
                                 Description = $"**Streamer:**\n {e.User.Mention}\n\n" +
-                        $"**Game:**\n{e.User.Presence.Activities.Where(w=>w.ActivityType.Equals(ActivityType.Playing)).FirstOrDefault().Name}\n\n" +
-                        $"**Stream title:**\n{e.User.Presence.Activity.RichPresence.Details}\n\n" +
+                        $"**Game:**\n{gameTitle}\n\n" +
+                        $"**Stream title:**\n{streamTitle}\n\n" +
                         $"**Stream Link:**\n{e.User.Presence.Activity.StreamUrl}",
                                 ThumbnailUrl = e.User.AvatarUrl,
                                 Title = $"Check out {e.User.Username} is now Streaming!"
