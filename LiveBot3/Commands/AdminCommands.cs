@@ -386,5 +386,14 @@ namespace LiveBot.Commands
             DiscordMessage info = await ctx.RespondAsync($"{MessageCount} messages deleted");
             await Task.Delay(5000).ContinueWith(t => info.DeleteAsync());
         }
+        [Command("activity")]
+        [Description("Used to check the users stream title and game, test command")]
+        public async Task Activity(CommandContext ctx, DiscordUser user)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"Game: {user.Presence.Activity.RichPresence.State}");
+            sb.AppendLine($"Title: {user.Presence.Activity.RichPresence.Details}");
+            await ctx.RespondAsync(sb.ToString());
+        }
     }
 }
