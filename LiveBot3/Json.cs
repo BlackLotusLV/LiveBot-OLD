@@ -216,5 +216,38 @@ namespace LiveBot
             [JsonProperty("profile_id")]
             public string Profile_ID { get; private set; }
         }
+        
+        public struct SummitLeaderboardEntries
+        {
+            [JsonProperty("profile_id")]
+            public string Profile_ID { get; private set; }
+
+            [JsonProperty("rank")]
+            public int Rank { get; private set; }
+
+            [JsonProperty("points")]
+            public int Points { get; private set; }
+
+            [JsonProperty("score")]
+            public int Score { get; private set; }
+
+            [JsonProperty("formatted_score")]
+            public string Formatted_Score { get; private set; }
+
+            [JsonProperty("vehicle_id")]
+            public ulong Vehicle_ID { get; private set; }
+
+            [JsonProperty("Vehicle_Level")]
+            public int Vehicle_Level { get; private set; }
+        }
+
+        public struct SummitLeaderboard
+        {
+            [JsonProperty("entries")]
+            public SummitLeaderboardEntries[] Entries { get; private set; }
+
+            [JsonProperty("score_format")]
+            public string Score_Format { get; private set; }
+        }
     }
 }

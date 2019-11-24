@@ -28,7 +28,12 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Stream notification broken";
+            string changelog = "[FIX] `/mysummit` ranks showing lower by 1 (rank 0)\n" +
+                "[NEW] Admin command \"activate\". Makes a role pingable and not pingable\n" +
+                "[Change] `/mysummit` command now has 5 minute cooldown isntead of 2\n" +
+                "[NEW] `/mysummit` command now shows event score and times\n" +
+                "[Change] `/mysummit` command is now public\n" +
+                "";
             string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
                 "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
@@ -1082,9 +1087,8 @@ namespace LiveBot.Commands
         }
 
         [Command("mysummit")]
-        [Cooldown(1, 120, CooldownBucketType.User)]
+        [Cooldown(1, 300, CooldownBucketType.User)]
         [Aliases("sinfo", "summitinfo")]
-        [RequireRoles(RoleCheckMode.Any, "Patreon", "Moderator", "Trial Moderator", "Ubisoft / IVT", "TCE Patreon")]
         public async Task MySummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
@@ -1224,6 +1228,7 @@ namespace LiveBot.Commands
                         {
                             using WebClient wc = new WebClient();
                             string[] EventTitle = wc.DownloadString($"https://thecrew-exchange.com/api/tchub/event/{tcejson.Key}/{ThisEvent.ID}").Replace("\"","").Split(' ');
+                            Json.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<Json.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
                             {
@@ -1234,16 +1239,17 @@ namespace LiveBot.Commands
                                 sb.Append(EventTitle[j]+" ");
                             }
                             using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width,40))
-                            using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 20))
+                            using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
                             {
                                 ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
                                 TitleBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
                                 EventImage.Mutate(ctx => ctx
-                                .DrawImage(ScoreBar, new Point(0, EventImage.Height - 20), 0.7f)
+                                .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
                                 .DrawImage(TitleBar, new Point(0, 0), 0.7f)
                                 .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
-                                .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
-                                .DrawText(AllignTopRight, $"Score: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                                .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank + 1}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
+                                .DrawText(AllignTopRight, $"{(leaderboard.Score_Format=="time"? $"Time: {CustomMethod.ScoreToTime(Activity[0].Score)}" : $"Score: {Activity[0].Score}")}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                                .DrawText(AllignTopRight, $"Points: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                                 );
                             }
                             BaseImage.Mutate(ctx => ctx
@@ -1289,7 +1295,7 @@ namespace LiveBot.Commands
                         }
 
                         TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
+                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank+1} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
                                 );
 
                         BaseImage.Mutate(ctx => ctx

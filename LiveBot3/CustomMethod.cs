@@ -144,5 +144,31 @@ namespace LiveBot
                 DB.DBLists.InsertServerRanks(newEntry);
             }
         }
+
+        public static string ScoreToTime(int Time)
+        {
+            string[] sTime = new string[2];
+            for (int i = 0; i < Time.ToString().Length; i++)
+            {
+                if (i<Time.ToString().Length-3)
+                {
+                    sTime[0] += Time.ToString()[i];
+                }
+                else
+                {
+                    sTime[1] += Time.ToString()[i];
+                }
+            }
+            TimeSpan seconds = TimeSpan.FromSeconds(double.Parse(sTime[0]));
+            TimeSpan ms = TimeSpan.FromMilliseconds(double.Parse(sTime[1]));
+            TimeSpan Total = seconds + ms;
+
+            if (Total.Hours==0)
+            {
+                return $"{Total.Minutes}:{Total.Seconds}.{Total.Milliseconds}";
+            }
+
+            return $"{Total.Hours}:{Total.Minutes}:{Total.Seconds}.{Total.Milliseconds}";
+        }
     }
 }
