@@ -28,10 +28,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Warnings now show from which server you got warned.\n" +
-                "[NEW] When banned, server followers are reset to 0.\n" +
-                "[NEW] `/mysummit` now tells how long till the summit ends.\n" +
-                "[NEW] Moderators can send a message to users with LiveBot through DMs without a warning.\n" +
+            string changelog = "[NEW] `/profile` now shows a progress bar for your followers *(not in game related)*\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -647,6 +644,9 @@ namespace LiveBot.Commands
             string followers = $"{global[0].Followers.ToString()}/{(int)global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)}";
             string bucks = global[0].Bucks.ToString();
             string bio = UserSettings[0].us.User_Info.ToString();
+
+            double FBarLenght = 100 / (global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)) * global[0].Followers;
+
             Rgba32 bordercolour = CustomMethod.GetColour(UserSettings[0].us.Border_Colour.ToString());
             Rgba32 textcolour = CustomMethod.GetColour(UserSettings[0].us.Text_Colour.ToString());
             Rgba32 backfieldcolour = CustomMethod.GetColour(UserSettings[0].us.Background_Colour.ToString());
@@ -655,6 +655,7 @@ namespace LiveBot.Commands
             using Image<Rgba32> picture = new Image<Rgba32>(600, 600);
             using Image<Rgba32> background = new Image<Rgba32>(560, 360);
             using Image<Rgba32> bg = Image.Load<Rgba32>(baseBG);
+            using Image<Rgba32> FollowersBar = new Image<Rgba32>(System.Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20);
             Font UsernameFont = SystemFonts.CreateFont("Consolas", usernameSize, FontStyle.Bold);
             Font Basefont = SystemFonts.CreateFont("Consolas", 21, FontStyle.Bold);
             Font LevelText = SystemFonts.CreateFont("Consolas", 30, FontStyle.Regular);
@@ -698,6 +699,7 @@ namespace LiveBot.Commands
                 }
             }
             pfp.Mutate(ctx => ctx.Resize(128, 128));
+            FollowersBar.Mutate(ctx => ctx.BackgroundColor(Color.Gray));
             picture.Mutate(ctx => ctx
                 .DrawPolygon(bordercolour, 3, new PointF(10, 10), new PointF(590, 10), new PointF(590, 590), new PointF(10, 590)) //outside border
                 .DrawImage(bg, bglocation, 1) //background image
@@ -713,6 +715,12 @@ namespace LiveBot.Commands
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y),
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y + pfp.Height),
                 new PointF(pfplocation.X, pfplocation.Y + pfp.Height)) //profile picture border
+                .DrawImage(FollowersBar, new Point(152, 320), 1)
+                .DrawPolygon(bordercolour, 1,
+                new PointF(152, 320),
+                new PointF(412, 320),
+                new PointF(412, 340),
+                new PointF(152, 340)) // follower bar border
                 .DrawText(AllignCenter, username, UsernameFont, textcolour, new PointF(270, 225)) // username
                 .DrawText($"LEVEL", LevelText, textcolour, new PointF(40, 230)) // levels
                 .DrawText(level, LevelNumber, textcolour, new PointF(40, 260))
@@ -1201,7 +1209,6 @@ namespace LiveBot.Commands
 
                 if (Events.Points != 0)
                 {
-
                     using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
                     for (int i = 0; i < JSummit[0].Events.Length; i++)
                     {
@@ -1228,18 +1235,18 @@ namespace LiveBot.Commands
                         if (Activity.Length > 0)
                         {
                             using WebClient wc = new WebClient();
-                            string[] EventTitle = wc.DownloadString($"https://thecrew-exchange.com/api/tchub/event/{tcejson.Key}/{ThisEvent.ID}").Replace("\"","").Split(' ');
+                            string[] EventTitle = wc.DownloadString($"https://thecrew-exchange.com/api/tchub/event/{tcejson.Key}/{ThisEvent.ID}").Replace("\"", "").Split(' ');
                             Json.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<Json.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
                             {
-                                if (j==3)
+                                if (j == 3)
                                 {
                                     sb.AppendLine();
                                 }
-                                sb.Append(EventTitle[j]+" ");
+                                sb.Append(EventTitle[j] + " ");
                             }
-                            using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width,40))
+                            using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
                             using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
                             {
                                 ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
@@ -1249,7 +1256,7 @@ namespace LiveBot.Commands
                                 .DrawImage(TitleBar, new Point(0, 0), 0.7f)
                                 .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
                                 .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank + 1}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
-                                .DrawText(AllignTopRight, $"{(leaderboard.Score_Format=="time"? $"Time: {CustomMethod.ScoreToTime(Activity[0].Score)}" : $"Score: {Activity[0].Score}")}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                                .DrawText(AllignTopRight, $"{(leaderboard.Score_Format == "time" ? $"Time: {CustomMethod.ScoreToTime(Activity[0].Score)}" : $"Score: {Activity[0].Score}")}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
                                 .DrawText(AllignTopRight, $"Points: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                                 );
                             }
@@ -1288,7 +1295,6 @@ namespace LiveBot.Commands
                                     Tier[i] = true;
                                 }
 
-
                                 TierBar.Mutate(ctx => ctx
                                 .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps12, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
                                 );
@@ -1296,7 +1302,7 @@ namespace LiveBot.Commands
                         }
 
                         TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank+1} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
+                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
                                 );
 
                         BaseImage.Mutate(ctx => ctx

@@ -1,13 +1,13 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Text;
 
 namespace LiveBot.Commands
 {
@@ -28,7 +28,7 @@ namespace LiveBot.Commands
 
         [Command("say")]
         [Description("Bot repeats whatever you tell it to repeat")]
-        public async Task Say(CommandContext ctx, DiscordChannel channel, [Description("bot will repeat this")] [RemainingText] string word="")
+        public async Task Say(CommandContext ctx, DiscordChannel channel, [Description("bot will repeat this")] [RemainingText] string word = "")
         {
             await ctx.Message.DeleteAsync();
             await channel.SendMessageAsync(word);
@@ -37,16 +37,15 @@ namespace LiveBot.Commands
         [Command("dm")]
         [Aliases("pm")]
         [Description("Bot sends a DM to the user")]
-        public async Task DirrectMessage(CommandContext ctx, DiscordMember username,[RemainingText] string message)
+        public async Task DirrectMessage(CommandContext ctx, DiscordMember username, [RemainingText] string message)
         {
             await ctx.TriggerTypingAsync();
             DB.DBLists.LoadServerSettings();
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
 
-
-            if (ServerSettings.WKB_Log!="0")
+            if (ServerSettings.WKB_Log != "0")
             {
-                if (username.Guild==ctx.Guild && message!="")
+                if (username.Guild == ctx.Guild && message != "")
                 {
                     DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
                     DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -94,12 +93,12 @@ namespace LiveBot.Commands
             DB.DBLists.LoadServerSettings();
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID));
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
-            string modinfo="";
+            string modinfo = "";
             StringBuilder SB = new StringBuilder();
             string uid = username.Id.ToString(), aid = ctx.User.Id.ToString();
             bool kick = false;
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
-            if (ServerSettings.WKB_Log!="0")
+            if (ServerSettings.WKB_Log != "0")
             {
                 DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
                 if (WarnedUserStats is null) // creates new entry in DB (Followers set to default value)
@@ -164,7 +163,7 @@ namespace LiveBot.Commands
 
                 await modlog.SendMessageAsync(modinfo, embed: embed);
 
-                if (kick==true)
+                if (kick == true)
                 {
                     await username.RemoveAsync("Exceeded warning limit!");
                 }
@@ -190,7 +189,7 @@ namespace LiveBot.Commands
             var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID)).ToList();
             string MSGOut, modmsg = "";
             bool check = true;
-            if (ServerSettings.WKB_Log!="0")
+            if (ServerSettings.WKB_Log != "0")
             {
                 DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
                 if (WarnedUserStats is null)
@@ -206,9 +205,9 @@ namespace LiveBot.Commands
                     }
                     else
                     {
-                        WarnedUserStats.Warning_Level-=1;
+                        WarnedUserStats.Warning_Level -= 1;
                         MSGOut = $"Warning level lowered for {username.Username}";
-                        var entry = Warnings.Where(f=>f.Active is true).OrderBy(f => f.ID_Warning).FirstOrDefault();
+                        var entry = Warnings.Where(f => f.Active is true).OrderBy(f => f.ID_Warning).FirstOrDefault();
                         entry.Active = false;
                         DB.DBLists.UpdateWarnings(new List<DB.Warnings> { entry });
                         DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { WarnedUserStats });
@@ -233,7 +232,7 @@ namespace LiveBot.Commands
                         {
                             modmsg = $":exclamation::exclamation:{username.Mention} could not be contacted via DM.";
                         }
-                        await modlog.SendMessageAsync(modmsg,embed: embed);
+                        await modlog.SendMessageAsync(modmsg, embed: embed);
                     }
                     DiscordMessage msg = await ctx.RespondAsync(MSGOut);
                     await Task.Delay(10000);
@@ -247,6 +246,7 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync("This server has not set up this feature!");
             }
         }
+
         [Command("getkicks")]
         [Description("Shows user warning, kick and ban history")]
         public async Task GetKicks(CommandContext ctx, DiscordUser username)
@@ -267,7 +267,7 @@ namespace LiveBot.Commands
                 kcount = UserStats.Kick_Count;
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == uid && w.Server_ID==ctx.Guild.Id.ToString()).ToList();
+                var WarningsList = warnings.Where(w => w.User_ID == uid && w.Server_ID == ctx.Guild.Id.ToString()).ToList();
                 foreach (var item in WarningsList)
                 {
                     if ((bool)item.Active == true)
@@ -393,6 +393,7 @@ namespace LiveBot.Commands
             await ctx.RespondAsync($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*");
             await ctx.Message.DeleteAsync();
         }
+
         [Command("warncount")]
         [Description("Shows the count of warnings issues by each admin")]
         public async Task WarnCount(CommandContext ctx)
@@ -400,12 +401,13 @@ namespace LiveBot.Commands
             StringBuilder sb = new StringBuilder();
             int i = 0;
             sb.AppendLine("```csharp\n\t\tUsername");
-            foreach (var item in DB.DBLists.Warnings.GroupBy(w=>w.Admin_ID)
-                .Select(s=>new { 
+            foreach (var item in DB.DBLists.Warnings.GroupBy(w => w.Admin_ID)
+                .Select(s => new
+                {
                     Admin_ID = s.Key,
-                    Count = s.Count() 
+                    Count = s.Count()
                 })
-                .OrderByDescending(o=>o.Count))
+                .OrderByDescending(o => o.Count))
             {
                 i++;
                 DiscordUser user = await Program.Client.GetUserAsync(Convert.ToUInt64(item.Admin_ID));
@@ -414,19 +416,20 @@ namespace LiveBot.Commands
             sb.AppendLine("```");
             await ctx.RespondAsync(sb.ToString());
         }
+
         [Command("prune")]
         [Description("Deletes chat history, up to 100 messages per use")]
-        [Cooldown(1,180,CooldownBucketType.Channel)]
+        [Cooldown(1, 180, CooldownBucketType.Channel)]
         public async Task Prune(CommandContext ctx, int MessageCount = 1)
         {
             await ctx.Message.DeleteAsync().ContinueWith(t => ctx.TriggerTypingAsync());
             var lid = 0ul;
             int count = 0;
-            for (int i = 0; i < MessageCount; i+=100)
+            for (int i = 0; i < MessageCount; i += 100)
             {
                 var msgs = await ctx.Channel.GetMessagesBeforeAsync(lid != 0 ? lid : ctx.Message.Id, Math.Min(MessageCount - i, 100)).ConfigureAwait(false);
                 var lmsg = msgs.FirstOrDefault();
-                if (lmsg==null)
+                if (lmsg == null)
                 {
                     break;
                 }
@@ -444,7 +447,7 @@ namespace LiveBot.Commands
             [Description("Name or ID of the role you want to make pingable/un-pingable")]DiscordRole role)
         {
             await ctx.Message.DeleteAsync().ContinueWith(t => ctx.TriggerTypingAsync());
-            string msg=$"---";
+            string msg = $"---";
             if (role.IsMentionable)
             {
                 await role.ModifyAsync(mentionable: false);

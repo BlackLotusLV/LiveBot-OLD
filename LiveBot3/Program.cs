@@ -219,7 +219,6 @@ namespace LiveBot
                         }
                         if (game == true && role == true)
                         {
-
                             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                             {
                                 Color = new DiscordColor(0x6441A5),
