@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191124_A";
+        public static string BotVersion = $"20191205_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -271,6 +271,8 @@ namespace LiveBot
             }
             if (!e.Author.IsBot)
             {
+                DB.DBLists.LoadServerRanks();
+                DB.DBLists.LoadLeaderboard();
                 bool checkglobal = false, checklocal = false;
                 Random r = new Random();
                 int MinInterval = 10, MaxInterval = 30, MinMoney = 2, MaxMoney = 5;
@@ -656,7 +658,7 @@ namespace LiveBot
             DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
             if (wkb_Settings[0].WKB_Log != "0")
             {
-                await Task.Delay(1000);
+                await Task.Delay(2000);
                 var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
                 DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -676,6 +678,7 @@ namespace LiveBot
             bool UserCheck = false;
             UserCheck = true;
             UserSettings.Ban_Count += 1;
+            UserSettings.Followers = 0;
             DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
             if (!UserCheck)
             {

@@ -28,14 +28,11 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/mysummit` ranks showing lower by 1 (rank 0)\n" +
-                "[NEW] Admin command \"activate\". Makes a role pingable and not pingable\n" +
-                "[Change] `/mysummit` command now has 5 minute cooldown isntead of 2\n" +
-                "[NEW] `/mysummit` command now shows event score and times\n" +
-                "[Change] `/mysummit` command is now public\n" +
+            string changelog = "[NEW] Warnings now show from which server you got warned.\n" +
+                "[NEW] When banned, server followers are reset to 0.\n" +
+                "[NEW] `/mysummit` now tells how long till the summit ends.\n" +
+                "[NEW] Moderators can send a message to users with LiveBot through DMs without a warning.\n" +
                 "";
-            string description = "LiveBot is a discord bot created for The Crew Community and used on few other discord servers as a stream announcement bot. " +
-                "It allows people to select their role by simply clicking on a reaction on the designated messages and offers many tools for moderators to help people faster and to keep order in the server.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -51,7 +48,7 @@ namespace LiveBot.Commands
 
             embed.AddField("Programmed in:", "C#", true);
             embed.AddField("Programmed by:", "<@86725763428028416>", true);
-            embed.AddField("LiveBot info", description);
+            embed.AddField("LiveBot info", "General purpose bot with a level system, stream notifications, greeting people and various other functions related to The Crew franchise");
             embed.AddField("Patreon:", "You can support the development of Live Bot and The Crew Community Discord here: https://www.patreon.com/BlackLotusLV");
             embed.AddField("Change log:", changelog);
             await ctx.Message.RespondAsync(embed: embed);
@@ -1097,6 +1094,8 @@ namespace LiveBot.Commands
 
             bool SendImage = false;
 
+            DateTime endtime;
+
             string search = "";
             string json = "";
             using (var fs = File.OpenRead("Config.json"))
@@ -1173,6 +1172,8 @@ namespace LiveBot.Commands
                     string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
                     JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
                     SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
+
+                    endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
                 }
                 Json.Rank Events = JsonConvert.DeserializeObject<Json.Rank>(SJson);
 
@@ -1302,8 +1303,10 @@ namespace LiveBot.Commands
                         .DrawImage(TierBar, new Point(0, BaseImage.Height - 30), 1)
                         );
                     }
+
+                    TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
                     BaseImage.Save("Summit/MySummitUpload.png");
-                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : "PC")}.\n*Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
                     SendImage = true;
                 }
                 else
