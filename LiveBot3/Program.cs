@@ -22,7 +22,7 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191205_A";
+        public static string BotVersion = $"20191209_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -132,8 +132,7 @@ namespace LiveBot
             {
                 Client.PresenceUpdated += this.Presence_Updated;
                 Client.MessageCreated += this.Message_Created;
-                Client.MessageReactionAdded += this.Reaction_Role_Added;
-                Client.MessageReactionRemoved += this.Reaction_Roles_Removed;
+                Client.MessageReactionAdded += this.Reaction_Role;
                 Client.MessageDeleted += this.Message_Deleted;
                 Client.GuildMemberAdded += this.Member_Joined;
                 Client.GuildMemberRemoved += this.Memmber_Leave;
@@ -274,7 +273,18 @@ namespace LiveBot
                 DB.DBLists.LoadLeaderboard();
                 bool checkglobal = false, checklocal = false;
                 Random r = new Random();
-                int MinInterval = 10, MaxInterval = 30, MinMoney = 2, MaxMoney = 5;
+                int MinInterval = 10, MaxInterval = 30;
+                if (e.Message.Content.Length > 500)
+                {
+                    MinInterval = 30;
+                    MaxInterval = 60;
+                }
+                else if (e.Message.Content.Length > 100 && e.Message.Content.Length <= 500)
+                {
+                    MinInterval += (19 / 500) * e.Message.Content.Length;
+                    MaxInterval += (19 / 500) * e.Message.Content.Length;
+                }
+                int  MinMoney = 2, MaxMoney = 5;
                 int points_added = r.Next(MinInterval, MaxInterval);
                 int money_added = r.Next(MinMoney, MaxMoney);
                 foreach (var Guser in UserLevelTimer)
@@ -404,14 +414,13 @@ namespace LiveBot
             }
         }
 
-        private async Task Reaction_Role_Added(MessageReactionAddEventArgs e)
+        private async Task Reaction_Role(MessageReactionAddEventArgs e)
         {
-            if (e.Emoji.Id != 0)
+            if (e.Emoji.Id != 0 && !e.User.IsBot)
             {
                 DiscordEmoji used = e.Emoji;
                 DiscordMessage sourcemsg = e.Message;
                 DiscordUser username = e.User;
-                //ulong f = e.User.Id;
 
                 List<DB.ReactionRoles> ReactionRoles = DB.DBLists.ReactionRoles;
                 var RR = (from rr in ReactionRoles
@@ -423,31 +432,15 @@ namespace LiveBot
                 {
                     DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(RR[0].Server_ID.ToString()));
                     DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                    await rolemember.GrantRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
-                }
-            }
-        }
-
-        private async Task Reaction_Roles_Removed(MessageReactionRemoveEventArgs e)
-        {
-            if (e.Emoji.Id != 0)
-            {
-                DiscordEmoji used = e.Emoji;
-                DiscordMessage sourcemsg = e.Message;
-                DiscordUser username = e.User;
-                //ulong f = e.User.Id;
-
-                List<DB.ReactionRoles> ReactionRoles = DB.DBLists.ReactionRoles;
-                var RR = (from rr in ReactionRoles
-                          where rr.Server_ID == e.Channel.Guild.Id.ToString()
-                          where rr.Message_ID == sourcemsg.Id.ToString()
-                          where rr.Reaction_ID == used.Id.ToString()
-                          select rr).ToList();
-                if (RR.Count == 1)
-                {
-                    DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(RR[0].Server_ID.ToString()));
-                    DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                    await rolemember.RevokeRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
+                    if (rolemember.Roles.Where(w=>w.Id == UInt64.Parse(RR[0].Role_ID.ToString())).Count()>0)
+                    {
+                        await rolemember.RevokeRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
+                    }
+                    else
+                    {
+                        await rolemember.GrantRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
+                    }
+                    await sourcemsg.DeleteReactionAsync(used, e.User, null);
                 }
             }
         }
