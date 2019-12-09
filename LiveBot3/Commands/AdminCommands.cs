@@ -252,6 +252,7 @@ namespace LiveBot.Commands
         public async Task GetKicks(CommandContext ctx, DiscordUser username)
         {
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
             DB.DBLists.LoadServerRanks();
             DB.DBLists.LoadWarnings();
             List<DB.ServerRanks> ServerRanks = DB.DBLists.ServerRanks;
@@ -300,7 +301,7 @@ namespace LiveBot.Commands
             }
             else
             {
-                await ctx.RespondAsync(embed: embed);
+                await ctx.RespondAsync($"{ctx.User.Mention}", embed: embed);
             }
         }
 
