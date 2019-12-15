@@ -28,9 +28,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] `/profile` now shows a progress bar for your followers *(not in game related)*\n" +
-                "[CHANGE] Follower gain boosted on longer messages.\n" +
-                "[CHANGE] Reaction roles system updated(<#475547614255906816>). Now works like button, not a switch.\n" +
+            string changelog = "[Change] To reduce confusion, reaction will be remove after 1 second of getting the role in role selector\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

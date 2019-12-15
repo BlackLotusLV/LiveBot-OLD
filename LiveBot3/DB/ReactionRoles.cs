@@ -21,5 +21,8 @@ namespace LiveBot.DB
 
         [Column("reaction_id")]
         public string Reaction_ID { get; set; }
+
+        [Column("type")]
+        public string Type { get; set; }
     }
 }

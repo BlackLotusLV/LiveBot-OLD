@@ -442,27 +442,6 @@ namespace LiveBot.Commands
             await Task.Delay(5000).ContinueWith(t => info.DeleteAsync());
         }
 
-        [Command("activate")]
-        [Description("Makes a role pingable/un-pingable")]
-        public async Task Activate(CommandContext ctx,
-            [Description("Name or ID of the role you want to make pingable/un-pingable")]DiscordRole role)
-        {
-            await ctx.Message.DeleteAsync().ContinueWith(t => ctx.TriggerTypingAsync());
-            string msg = $"---";
-            if (role.IsMentionable)
-            {
-                await role.ModifyAsync(mentionable: false);
-                msg = $"{role.Name} ⨯";
-            }
-            else if (!role.IsMentionable)
-            {
-                await role.ModifyAsync(mentionable: true);
-                msg = $"{role.Name} ✓";
-            }
-            DiscordMessage m = await ctx.RespondAsync(msg);
-            await Task.Delay(3000).ContinueWith(t => m.DeleteAsync());
-        }
-
         [Command("activity")]
         [Description("Used to check the users stream title and game, test command")]
         public async Task Activity(CommandContext ctx, DiscordUser user)

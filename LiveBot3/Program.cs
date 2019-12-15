@@ -22,13 +22,15 @@ namespace LiveBot
         public static DiscordClient Client { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191209_A";
+        public static string BotVersion = $"20191215_A";
 
         // numbers
         public int StreamCheckDelay = 5;
 
         //lists
         public List<LiveStreamer> LiveStreamerList = new List<LiveStreamer>();
+
+        public List<ActivateRolesTimer> ActivateRolesTimer = new List<ActivateRolesTimer>();
 
         public List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
         public List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
@@ -123,10 +125,31 @@ namespace LiveBot
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("list empty");
+                    Console.WriteLine("[System] LiveStream list is empty!");
                 }
             }
             Timer StreamTimer = new Timer(e => StreamListCheck(LiveStreamerList), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+
+            async void ActivatedRolesCheck(List<ActivateRolesTimer> list)
+            {
+                try
+                {
+                    foreach (var item in list)
+                    {
+                        if (item.Time.AddMinutes(5) < DateTime.Now)
+                        {
+
+                            await item.Role.ModifyAsync(mentionable: false);
+                            list.Remove(item);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("[System] ActivateRolesTimer list is empty!");
+                }
+            }
+            Timer RoleTimer = new Timer(e => ActivatedRolesCheck(ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
             if (!TestBuild) //Only enables these when using live version
             {
@@ -139,6 +162,7 @@ namespace LiveBot
                 Client.GuildBanAdded += this.Ban_Counter;
                 Client.GuildBanRemoved += this.Ban_Removed;
             }
+
             await Client.ConnectAsync();
             await Task.Delay(-1);
         }
@@ -423,24 +447,54 @@ namespace LiveBot
                 DiscordUser username = e.User;
 
                 List<DB.ReactionRoles> ReactionRoles = DB.DBLists.ReactionRoles;
-                var RR = (from rr in ReactionRoles
-                          where rr.Server_ID == e.Channel.Guild.Id.ToString()
-                          where rr.Message_ID == sourcemsg.Id.ToString()
-                          where rr.Reaction_ID == used.Id.ToString()
-                          select rr).ToList();
-                if (RR.Count == 1)
+                var RoleInfo = (from rr in ReactionRoles
+                                where rr.Server_ID == e.Channel.Guild.Id.ToString()
+                                where rr.Message_ID == sourcemsg.Id.ToString()
+                                where rr.Reaction_ID == used.Id.ToString()
+                                select rr).ToList();
+                if (RoleInfo.Count == 1)
                 {
-                    DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(RR[0].Server_ID.ToString()));
-                    DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                    if (rolemember.Roles.Where(w=>w.Id == UInt64.Parse(RR[0].Role_ID.ToString())).Count()>0)
+                    DiscordGuild guild = await Client.GetGuildAsync(UInt64.Parse(RoleInfo[0].Server_ID.ToString()));
+                    if (RoleInfo[0].Type == "acquire")
                     {
-                        await rolemember.RevokeRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
+                        DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
+                        if (rolemember.Roles.Where(w => w.Id == UInt64.Parse(RoleInfo[0].Role_ID.ToString())).Count() > 0)
+                        {
+                            await rolemember.RevokeRoleAsync(guild.GetRole(UInt64.Parse(RoleInfo[0].Role_ID.ToString())));
+                        }
+                        else
+                        {
+                            await rolemember.GrantRoleAsync(guild.GetRole(UInt64.Parse(RoleInfo[0].Role_ID.ToString())));
+                        }
+
+                        await Task.Delay(1000).ContinueWith(t => sourcemsg.DeleteReactionAsync(used, e.User, null));
                     }
-                    else
+                    else if (RoleInfo[0].Type == "activate")
                     {
-                        await rolemember.GrantRoleAsync(guild.GetRole(UInt64.Parse(RR[0].Role_ID.ToString())));
+                        DiscordRole role = guild.GetRole(UInt64.Parse(RoleInfo[0].Role_ID.ToString()));
+                        string msg = $"---";
+                        if (role.IsMentionable)
+                        {
+                            await role.ModifyAsync(mentionable: false);
+                            msg = $"{role.Name} ⨯";
+                            ActivateRolesTimer.RemoveAt(ActivateRolesTimer.FindIndex(a => a.Guild == e.Guild && a.Role == role));
+                        }
+                        else if (!role.IsMentionable)
+                        {
+                            await role.ModifyAsync(mentionable: true);
+                            msg = $"{role.Name} ✓";
+                            ActivateRolesTimer newItem = new ActivateRolesTimer
+                            {
+                                Guild = guild,
+                                Role = role,
+                                Time = DateTime.Now
+                            };
+                            ActivateRolesTimer.Add(newItem);
+                        }
+                        await sourcemsg.DeleteReactionAsync(used, e.User, null);
+                        DiscordMessage m = await e.Channel.SendMessageAsync(msg);
+                        await Task.Delay(3000).ContinueWith(t => m.DeleteAsync());
                     }
-                    await sourcemsg.DeleteReactionAsync(used, e.User, null);
                 }
             }
         }
@@ -829,6 +883,13 @@ namespace LiveBot
     {
         public DiscordUser User { get; set; }
         public DiscordGuild Guild { get; set; }
+        public DateTime Time { get; set; }
+    }
+
+    internal class ActivateRolesTimer
+    {
+        public DiscordGuild Guild { get; set; }
+        public DiscordRole Role { get; set; }
         public DateTime Time { get; set; }
     }
 }
