@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -28,7 +29,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Change] To reduce confusion, reaction will be remove after 1 second of getting the role in role selector\n" +
+            string changelog = "[Change] Random vehicle command will now ask for vehicle type when asking for street race vehicle.\n" +
+                "[NEW] `/servertop` (`/top`) and `/globaltop` (`/gtop`) now have buttons to switch between pages. 20 seconds after executing the command, or clicking a button, they will disapear\n" +
+                "[NEW] `/bg` - profile backgrounds list also has buttons now.\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -436,8 +439,7 @@ namespace LiveBot.Commands
         [Command("rvehicle")]
         [Aliases("rv")]
         [Description("Gives a random vehicle from a discipline. Street race gives both a bike and a car")]
-        public async Task RVehicle(CommandContext ctx,
-            [Description("Emoji of the discipline")]DiscordEmoji discipline = null)
+        public async Task RandomVehicle(CommandContext ctx, DiscordEmoji discipline = null)
         {
             string disciplinename;
             if (discipline == null)
@@ -464,67 +466,68 @@ namespace LiveBot.Commands
                 449688867164127232 => "Street Race",
                 _ => "Street Race"
             };
+
             List<DB.VehicleList> VehicleList = DB.DBLists.VehicleList;
             List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w => w.Discipline_Name == disciplinename).ToList();
             Random r = new Random();
-            string output;
             int row = 0;
             int maxCount = (from vl in VehicleList
                             join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
                             where dl.Discipline_Name == disciplinename
                             select vl).ToList().Max(m => m.Selected_Count);
-            if (disciplinename == "Street Race")
-            {
-                var CarList = (from vl in VehicleList
-                               join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
-                               where dl.Discipline_Name == disciplinename
-                               where vl.Type == "car"
-                               select vl).ToList();
-                int StreetMaxCountC = CarList.Max(m => m.Selected_Count);
-                var BikeList = (from vl in VehicleList
-                                join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
-                                where dl.Discipline_Name == disciplinename
-                                where vl.Type == "bike"
-                                select vl).ToList();
-                int StreetMaxCountB = BikeList.Max(m => m.Selected_Count);
-                if (CarList.Min(m => m.Selected_Count) != StreetMaxCountC)
-                {
-                    CarList = (from cl in CarList
-                               where cl.Selected_Count < StreetMaxCountC
-                               select cl).ToList();
-                }
-                if (BikeList.Min(m => m.Selected_Count) != StreetMaxCountB)
-                {
-                    BikeList = (from bl in BikeList
-                                where bl.Selected_Count < StreetMaxCountB
-                                select bl).ToList();
-                }
-                row = r.Next(CarList.Count);
-                output = $"**Car:** {CarList[row].Brand} | {CarList[row].Model} | {CarList[row].Year}\n";
-                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, CarList, row));
-                row = r.Next(BikeList.Count);
-                output += $"**Bike:** {BikeList[row].Brand} | {BikeList[row].Model} | {BikeList[row].Year}";
 
-                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, BikeList, row));
+            List<DB.VehicleList> SelectedVehicles = new List<DB.VehicleList>();
+
+            if (disciplinename=="Street Race")
+            {
+
+                DiscordMessage CarOrBike = await ctx.RespondAsync($"{ctx.Member.Mention} **Select vehicle type:**\n:one: - Car\n:two: - Bike");
+                DiscordEmoji One = DiscordEmoji.FromName(ctx.Client, ":one:");
+                DiscordEmoji Two = DiscordEmoji.FromName(ctx.Client, ":two:");
+
+                await CarOrBike.CreateReactionAsync(One).ContinueWith(t=>CarOrBike.CreateReactionAsync(Two));
+
+                var Result = await CarOrBike.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+
+                if (Result.TimedOut)
+                {
+                    await ctx.RespondAsync($"{ctx.Member.Mention} You didn't select vehicle type in time.");
+                    return;
+                }
+                else if (Result.Result.Emoji== One)
+                {
+                    SelectedVehicles = (from vl in VehicleList
+                                        join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                                        where dl.Discipline_Name == disciplinename
+                                        where vl.Type == "car"
+                                        select vl).ToList();
+                }
+                else if (Result.Result.Emoji == Two)
+                {
+                    SelectedVehicles = (from vl in VehicleList
+                                        join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                                        where dl.Discipline_Name == disciplinename
+                                        where vl.Type == "bike"
+                                        select vl).ToList();
+                }
             }
             else
             {
-                var Vlist = (from vl in VehicleList
-                             join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
-                             where dl.Discipline_Name == disciplinename
-                             select vl).ToList();
-                Console.WriteLine(Vlist);
-                if (Vlist.Min(m => m.Selected_Count) != maxCount)
-                {
-                    Vlist = (from vl in Vlist
-                             where vl.Selected_Count < maxCount
-                             select vl).ToList();
-                }
-                row = r.Next(Vlist.Count);
-                output = $"{Vlist[row].Brand} | {Vlist[row].Model} | {Vlist[row].Year} ({Vlist[row].Type})";
-                DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, Vlist, row));
+                SelectedVehicles = (from vl in VehicleList
+                                    join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
+                                    where dl.Discipline_Name == disciplinename
+                                    select vl).ToList();
             }
-            await ctx.RespondAsync(output);
+            if (SelectedVehicles.Min(m=>m.Selected_Count)!=maxCount)
+            {
+                SelectedVehicles = (from sv in SelectedVehicles
+                                    where sv.Selected_Count < maxCount
+                                    select sv).ToList();
+            }
+            row = r.Next(SelectedVehicles.Count);
+            DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, SelectedVehicles, row));
+
+            await ctx.RespondAsync($"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})");
         }
 
         [Command("rank")]
@@ -840,34 +843,44 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            StringBuilder sb = new StringBuilder();
-            string list = "", personalscore = "";
-            List<DB.Leaderboard> leaderboard = DB.DBLists.Leaderboard;
-            var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
-            sb.AppendLine("```csharp\n📋 Rank | Username");
-            for (int i = (int)(page * 10) - 10; i < page * 10; i++)
+            DiscordMessage TopMessage = await ctx.RespondAsync(CustomMethod.GetGlobalTop(ctx, (int)page));
+            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
+            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
+
+            await TopMessage.CreateReactionAsync(left).ContinueWith(t => TopMessage.CreateReactionAsync(right));
+
+            bool end = false;
+            do
             {
-                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].ID_User.ToString()));
-                list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}\n";
-                sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}");
-                if (i == user.Count - 1)
+                var result = TopMessage.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+                if (result.Result.TimedOut)
                 {
-                    i = (int)page * 10;
+                    end = result.Result.TimedOut;
                 }
-            }
-            int rank = 0;
-            List<DB.Leaderboard> LB = DB.DBLists.Leaderboard;
-            List<DB.Leaderboard> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
-            foreach (var item in leaderbaords)
-            {
-                rank++;
-                if (item.ID_User == ctx.User.Id.ToString())
+                else if (result.Result.Result.Emoji == left)
                 {
-                    personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t Level {item.Level}";
+                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
+                    if (page > 1)
+                    {
+                        page--;
+                        await TopMessage.ModifyAsync(CustomMethod.GetGlobalTop(ctx, (int)page));
+                    }
                 }
-            }
-            sb.AppendLine($"\n# Your Global Ranking\n{personalscore}\n```");
-            await ctx.RespondAsync(sb.ToString());
+                else if (result.Result.Result.Emoji == right)
+                {
+                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
+                    page++;
+                    try
+                    {
+                        await TopMessage.ModifyAsync(CustomMethod.GetGlobalTop(ctx, (int)page));
+                    }
+                    catch (Exception)
+                    {
+                        page--;
+                    }
+                }
+            } while (!end);
+            await TopMessage.DeleteAllReactionsAsync();
         }
 
         [Command("servertop")]
@@ -880,36 +893,45 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            StringBuilder sb = new StringBuilder();
-            string personalscore = "";
-            List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
-            var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
-            user = user.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
-            sb.AppendLine("```csharp\n📋 Rank | Username");
-            for (int i = (int)(page * 10) - 10; i < page * 10; i++)
+
+            DiscordMessage TopMessage = await ctx.RespondAsync(CustomMethod.GetServerTop(ctx, (int)page));
+            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
+            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
+
+            await TopMessage.CreateReactionAsync(left).ContinueWith(t => TopMessage.CreateReactionAsync(right));
+
+            bool end = false;
+            do
             {
-                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].User_ID.ToString()));
-                sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}");
-                if (i == user.Count - 1)
+                var result = TopMessage.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+                if (result.Result.TimedOut)
                 {
-                    i = (int)page * 10;
+                    end = result.Result.TimedOut;
                 }
-            }
-            int rank = 0;
-            List<DB.ServerRanks> LB = DB.DBLists.ServerRanks;
-            List<DB.ServerRanks> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
-            leaderbaords = leaderbaords.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
-            foreach (var item in leaderbaords)
-            {
-                rank++;
-                if (item.User_ID == ctx.User.Id.ToString())
+                else if (result.Result.Result.Emoji==left)
                 {
-                    personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t";
-                    break;
+                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
+                    if (page>1)
+                    {
+                        page--;
+                        await TopMessage.ModifyAsync(CustomMethod.GetServerTop(ctx, (int)page));
+                    }
                 }
-            }
-            sb.AppendLine($"\n# Your Server Ranking\n{personalscore}\n```");
-            await ctx.RespondAsync(sb.ToString());
+                else if (result.Result.Result.Emoji == right)
+                {
+                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
+                    page++;
+                    try
+                    {
+                        await TopMessage.ModifyAsync(CustomMethod.GetServerTop(ctx, (int)page));
+                    }
+                    catch (Exception)
+                    {
+                        page--;
+                    }
+                }
+            } while (!end);
+            await TopMessage.DeleteAllReactionsAsync();
         }
 
         [Command("background")]
@@ -921,37 +943,44 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            List<DB.UserImages> userImages = DB.DBLists.UserImages;
-            List<DB.BackgroundImage> Backgrounds = DB.DBLists.BackgroundImage.OrderBy(o => o.ID_BG).ToList();
-            var List = (from bi in Backgrounds
-                        join ui in userImages on bi.ID_BG equals ui.BG_ID
-                        where ui.User_ID == ctx.User.Id.ToString()
-                        select bi).ToList();
+            DiscordMessage TopMessage = await ctx.RespondAsync(CustomMethod.GetBackgroundList(ctx, (int)page));
+            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
+            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
-            StringBuilder sb = new StringBuilder();
-            sb.Append("Visual representation of the backgrounds can be viewed here: <http://bit.ly/LiveBG>\n```csharp\n[ID]\tBackground Name\n");
-            for (int i = (int)(page * 10) - 10; i < page * 10; i++)
+            await TopMessage.CreateReactionAsync(left).ContinueWith(t => TopMessage.CreateReactionAsync(right));
+
+            bool end = false;
+            do
             {
-                bool check = false;
-                foreach (var userimage in List)
+                var result = TopMessage.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(20));
+                if (result.Result.TimedOut)
                 {
-                    if (Backgrounds[i].ID_BG == (int)userimage.ID_BG)
+                    end = result.Result.TimedOut;
+                }
+                else if (result.Result.Result.Emoji == left)
+                {
+                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
+                    if (page > 1)
                     {
-                        sb.Append($"[{Backgrounds[i].ID_BG}]\t# {Backgrounds[i].Name}\n\t\t\t [OWNED]\n");
-                        check = true;
+                        page--;
+                        await TopMessage.ModifyAsync(CustomMethod.GetBackgroundList(ctx, (int)page));
                     }
                 }
-                if (check == false)
+                else if (result.Result.Result.Emoji == right)
                 {
-                    sb.Append($"[{Backgrounds[i].ID_BG}]\t# {Backgrounds[i].Name}\n\t\t\t Price:{Backgrounds[i].Price} Bucks\n");
+                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
+                    page++;
+                    try
+                    {
+                        await TopMessage.ModifyAsync(CustomMethod.GetBackgroundList(ctx, (int)page));
+                    }
+                    catch (Exception)
+                    {
+                        page--;
+                    }
                 }
-                if (i == Backgrounds.Count - 1)
-                {
-                    i = (int)page * 10;
-                }
-            }
-            sb.Append("```");
-            await ctx.RespondAsync(sb.ToString());
+            } while (!end);
+            await TopMessage.DeleteAllReactionsAsync();
         }
 
         [Command("buy")]

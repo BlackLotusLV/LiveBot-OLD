@@ -4,6 +4,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using System;
@@ -20,9 +21,10 @@ namespace LiveBot
     internal class Program
     {
         public static DiscordClient Client { get; set; }
+        public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191215_A";
+        public static string BotVersion = $"20191218_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -88,6 +90,12 @@ namespace LiveBot
             Client.Ready += this.Client_Ready;
             Client.GuildAvailable += this.Client_GuildAvailable;
             Client.ClientErrored += this.Client_ClientError;
+
+            Client.UseInteractivity(new InteractivityConfiguration
+            {
+                PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore,
+                Timeout = TimeSpan.FromMinutes(2)
+            });
 
             var ccfg = new CommandsNextConfiguration
             {
