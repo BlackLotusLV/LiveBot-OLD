@@ -1,4 +1,4 @@
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -308,13 +308,13 @@ namespace LiveBot
                 int MinInterval = 10, MaxInterval = 30;
                 if (e.Message.Content.Length > 500)
                 {
-                    MinInterval = 30;
-                    MaxInterval = 60;
+                    MinInterval = 40;
+                    MaxInterval = 70;
                 }
                 else if (e.Message.Content.Length > 100 && e.Message.Content.Length <= 500)
                 {
-                    MinInterval += (19 / 500) * e.Message.Content.Length;
-                    MaxInterval += (19 / 500) * e.Message.Content.Length;
+                    MinInterval += (29 / 500) * e.Message.Content.Length;
+                    MaxInterval += (29 / 500) * e.Message.Content.Length;
                 }
                 int  MinMoney = 2, MaxMoney = 5;
                 int points_added = r.Next(MinInterval, MaxInterval);
