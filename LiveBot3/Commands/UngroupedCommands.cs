@@ -1,4 +1,4 @@
-﻿using DSharpPlus;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -847,7 +847,8 @@ namespace LiveBot.Commands
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
-            await TopMessage.CreateReactionAsync(left).ContinueWith(t => TopMessage.CreateReactionAsync(right));
+            await TopMessage.CreateReactionAsync(left);
+            await Task.Delay(300).ContinueWith(t => TopMessage.CreateReactionAsync(right));
 
             bool end = false;
             do
@@ -898,7 +899,8 @@ namespace LiveBot.Commands
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
-            await TopMessage.CreateReactionAsync(left).ContinueWith(t => TopMessage.CreateReactionAsync(right));
+            await TopMessage.CreateReactionAsync(left);
+            await Task.Delay(300).ContinueWith(t => TopMessage.CreateReactionAsync(right));
 
             bool end = false;
             do
@@ -947,7 +949,8 @@ namespace LiveBot.Commands
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
-            await TopMessage.CreateReactionAsync(left).ContinueWith(t => TopMessage.CreateReactionAsync(right));
+            await TopMessage.CreateReactionAsync(left);
+            await Task.Delay(300).ContinueWith(t => TopMessage.CreateReactionAsync(right));
 
             bool end = false;
             do
