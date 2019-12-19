@@ -1,4 +1,4 @@
-﻿using DSharpPlus;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -138,7 +138,7 @@ namespace LiveBot
             }
             Timer StreamTimer = new Timer(e => StreamListCheck(LiveStreamerList), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
 
-            async void ActivatedRolesCheck(List<ActivateRolesTimer> list)
+            async static void ActivatedRolesCheck(List<ActivateRolesTimer> list)
             {
                 try
                 {

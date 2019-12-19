@@ -1,4 +1,4 @@
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -29,9 +29,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Change] Random vehicle command will now ask for vehicle type when asking for street race vehicle.\n" +
-                "[NEW] `/servertop` (`/top`) and `/globaltop` (`/gtop`) now have buttons to switch between pages. 20 seconds after executing the command, or clicking a button, they will disapear\n" +
-                "[NEW] `/bg` - profile backgrounds list also has buttons now.\n" +
+            string changelog = "[Change] Follower gain boosted for longer messages.\n" +
+                "[FIX] Ratelimit fixes *(internal)*\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -71,7 +70,9 @@ namespace LiveBot.Commands
 
         [Command("share")]
         [Description("Informs the user about the content sharing channels and how to get the share role")] // photomode info command
-        public async Task Share(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
+        public async Task Share(CommandContext ctx,
+            [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null,
+            [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             if (language == null)
             {
@@ -604,6 +605,7 @@ namespace LiveBot.Commands
                 }
             }
             catch { }
+            DB.DBLists.LoadUserSettings(); // Updates 
             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
             List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
             var global = (from gl in Leaderboard
