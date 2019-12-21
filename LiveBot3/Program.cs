@@ -24,7 +24,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191218_A";
+        public static string BotVersion = $"20191221_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -118,46 +118,8 @@ namespace LiveBot
             TC1Photomode = TCGuild.GetChannel(191567033064751104);
             TC2Photomode = TCGuild.GetChannel(447134224349134848);
             //*/
-            void StreamListCheck(List<LiveStreamer> list)
-            {
-                try
-                {
-                    foreach (var item in list)
-                    {
-                        if (item.Time.AddHours(StreamCheckDelay) < DateTime.Now && item.User.Presence.Activity.ActivityType != ActivityType.Streaming)
-                        {
-                            Console.WriteLine($"{item.User.Username} removed for time out");
-                            list.Remove(item);
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("[System] LiveStream list is empty!");
-                }
-            }
-            Timer StreamTimer = new Timer(e => StreamListCheck(LiveStreamerList), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
-
-            async static void ActivatedRolesCheck(List<ActivateRolesTimer> list)
-            {
-                try
-                {
-                    foreach (var item in list)
-                    {
-                        if (item.Time.AddMinutes(5) < DateTime.Now)
-                        {
-
-                            await item.Role.ModifyAsync(mentionable: false);
-                            list.Remove(item);
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("[System] ActivateRolesTimer list is empty!");
-                }
-            }
-            Timer RoleTimer = new Timer(e => ActivatedRolesCheck(ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            Timer StreamTimer = new Timer(e => TimerMethod.StreamListCheck(LiveStreamerList, StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            Timer RoleTimer = new Timer(e => TimerMethod.ActivatedRolesCheck(ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
             if (!TestBuild) //Only enables these when using live version
             {
@@ -805,7 +767,7 @@ namespace LiveBot
 
         private Task Client_ClientError(ClientErrorEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            e.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"Exception occurred: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
             return Task.CompletedTask;
         }
 

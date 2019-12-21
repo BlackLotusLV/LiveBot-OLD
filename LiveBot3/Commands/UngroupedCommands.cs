@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace LiveBot.Commands
 {
@@ -31,7 +32,7 @@ namespace LiveBot.Commands
             TimeSpan time = current - Program.start;
             string changelog = "[Change] Follower gain boosted for longer messages.\n" +
                 "[FIX] Ratelimit fixes *(internal)*\n" +
-                "";
+                "[NEW] `/status` command created to see if game server is online *(needs testing when offline)*";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -486,7 +487,8 @@ namespace LiveBot.Commands
                 DiscordEmoji One = DiscordEmoji.FromName(ctx.Client, ":one:");
                 DiscordEmoji Two = DiscordEmoji.FromName(ctx.Client, ":two:");
 
-                await CarOrBike.CreateReactionAsync(One).ContinueWith(t=>CarOrBike.CreateReactionAsync(Two));
+                await CarOrBike.CreateReactionAsync(One);
+                await Task.Delay(300).ContinueWith(t=>CarOrBike.CreateReactionAsync(Two));
 
                 var Result = await CarOrBike.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
 
@@ -1466,6 +1468,28 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync($"{ctx.Member.Mention} you have given out {user.Cookies_Given}, and received {user.Cookies_Taken} :cookie:\n" +
                 $"Can give cookie? {(cookiecheck ? "Yes" : "No")}.");
+        }
+
+        [Command("status")]
+        [Description("The Crew 2 Server status.")]
+        [Cooldown(1, 120, CooldownBucketType.User)]
+        public async Task Status(CommandContext ctx)
+        {
+            string HTML;
+            using (WebClient wc = new WebClient())
+            {
+                HTML = wc.DownloadString("https://ubistatic-a.akamaihd.net/0115/tc2/status.html");
+            }
+            if (HTML.Contains("STATUS OK"))
+            {
+                await ctx.RespondAsync("The Crew 2 Server is Online");
+            }
+            else
+            {
+
+                await ctx.RespondAsync("The Crew 2 Server is Offline");
+            }
+
         }
     }
 }
