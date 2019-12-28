@@ -24,7 +24,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191221_A";
+        public static string BotVersion = $"20191228_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -173,8 +173,8 @@ namespace LiveBot
                     {
                         DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
                         bool role = false, game = false;
-                        string gameTitle = e.Activity.RichPresence.State;
-                        string streamTitle = e.User.Presence.Activity.RichPresence.Details;
+                        string gameTitle = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.State;
+                        string streamTitle = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.Details;
                         if (row.Roles_ID != null)
                         {
                             foreach (DiscordRole urole in StreamMember.Roles)

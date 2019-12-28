@@ -30,9 +30,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Change] Follower gain boosted for longer messages.\n" +
-                "[FIX] Ratelimit fixes *(internal)*\n" +
-                "[NEW] `/status` command created to see if game server is online *(needs testing when offline)*";
+            string changelog = "[FIX] Stream notification fixed\n" +
+                "[Change] 30 second CD to warning command, to reduce accidental double warnings\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
