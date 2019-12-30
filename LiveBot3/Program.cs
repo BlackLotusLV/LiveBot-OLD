@@ -24,7 +24,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191228_A";
+        public static string BotVersion = $"20191230_A";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -155,21 +155,26 @@ namespace LiveBot
                     int ItemIndex;
                     try
                     {
-                        ItemIndex = LiveStreamerList.FindIndex(a => a.User.Id == e.User.Id && a.Guild.Id == e.User.Presence.Guild.Id);
+                        ItemIndex = LiveStreamerList.FindIndex(a => a.User.Id == e.User.Id
+                        && a.Guild.Id == e.User.Presence.Guild.Id);
                     }
                     catch (Exception)
                     {
                         ItemIndex = -1;
                     }
-                    if (ItemIndex >= 0 && e.Activity.ActivityType != ActivityType.Streaming)
+                    if (ItemIndex >= 0
+                        && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() == null)
                     {
                         //removes user from list
-                        if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.Now && e.Activity == LiveStreamerList[ItemIndex].User.Presence.Activity)
+                        if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.Now
+                            && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() == LiveStreamerList[ItemIndex].User.Presence.Activities.Where(w=>w.Name.ToLower()=="twitch").FirstOrDefault())
                         {
                             LiveStreamerList.RemoveAt(ItemIndex);
                         }
                     }
-                    else if (ItemIndex == -1 && e.Activity.ActivityType == ActivityType.Streaming)
+                    else if (ItemIndex == -1 
+                        && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() != null 
+                        && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().ActivityType.Equals(ActivityType.Streaming))
                     {
                         DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
                         bool role = false, game = false;
