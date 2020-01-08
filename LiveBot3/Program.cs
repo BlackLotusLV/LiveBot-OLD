@@ -24,7 +24,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191230_A";
+        public static string BotVersion = $"20191230_B";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -180,6 +180,7 @@ namespace LiveBot
                         bool role = false, game = false;
                         string gameTitle = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.State;
                         string streamTitle = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.Details;
+                        string streamURL = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().StreamUrl;
                         if (row.Roles_ID != null)
                         {
                             foreach (DiscordRole urole in StreamMember.Roles)
@@ -224,12 +225,12 @@ namespace LiveBot
                                 {
                                     IconUrl = e.User.AvatarUrl,
                                     Name = "STREAM",
-                                    Url = e.User.Presence.Activity.StreamUrl
+                                    Url = streamURL
                                 },
                                 Description = $"**Streamer:**\n {e.User.Mention}\n\n" +
                         $"**Game:**\n{gameTitle}\n\n" +
                         $"**Stream title:**\n{streamTitle}\n\n" +
-                        $"**Stream Link:**\n{e.User.Presence.Activity.StreamUrl}",
+                        $"**Stream Link:**\n{streamURL}",
                                 ThumbnailUrl = e.User.AvatarUrl,
                                 Title = $"Check out {e.User.Username} is now Streaming!"
                             };
