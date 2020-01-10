@@ -1,4 +1,4 @@
-﻿using DSharpPlus;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -650,7 +650,9 @@ namespace LiveBot.Commands
             string bucks = global[0].Bucks.ToString();
             string bio = UserSettings[0].us.User_Info.ToString();
 
-            double FBarLenght = 100 / (global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)) * global[0].Followers;
+            double FollowersBetweenLevels = ((global[0].Level + 1) * (300 * (global[0].Level + 2) * 0.5)) - (global[0].Level * (300 * (global[0].Level + 1) * 0.5));
+            double FollowersToNextLevel = (global[0].Level * (300 * (global[0].Level + 1) * 0.5)) - global[0].Followers;
+            double FBarLenght = 100- (100 / FollowersBetweenLevels) * FollowersToNextLevel;
 
             Rgba32 bordercolour = CustomMethod.GetColour(UserSettings[0].us.Border_Colour.ToString());
             Rgba32 textcolour = CustomMethod.GetColour(UserSettings[0].us.Text_Colour.ToString());
