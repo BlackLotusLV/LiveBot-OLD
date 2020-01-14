@@ -1,4 +1,4 @@
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -18,7 +18,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 
 namespace LiveBot.Commands
 {
@@ -30,7 +29,11 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Stream notification link fix";
+            string changelog = "[FIX] `/profile` level progress bar showing progress from 0 to next level instead of between levels\n" +
+                "[NEW] `/quote` command now allows you to add text with the quote\n" +
+                "[REMOVED] Cooldown for `/buy` command removed.\n" +
+                "[FIX] Internal file management(consistency in profile and mysummit commands when multiple use at same time)\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -264,27 +267,38 @@ namespace LiveBot.Commands
         [Command("quote")]
         [Description("Quotes a message using its ID")]
         [Priority(10)]
-        public async Task Quote(CommandContext ctx, [Description("message ID")] DiscordMessage msg)
+        public async Task Quote(CommandContext ctx,
+            [Description("message ID")] DiscordMessage QuotedMessage,
+            [RemainingText] string YourMessage)
         {
             await ctx.Message.DeleteAsync();
-            string content = $"\"{msg.Content}\"";
+            string content = $"\"{QuotedMessage.Content}\"";
             var embed = new DiscordEmbedBuilder
             {
                 Color = new DiscordColor(0xFF6600),
-                Description = $"{content}\n[go to message]({msg.JumpLink})",
+                Description = $"{content}\n[go to message]({QuotedMessage.JumpLink})",
                 Author = new DiscordEmbedBuilder.EmbedAuthor
                 {
-                    Name = msg.Author is DiscordMember mx ? mx.DisplayName : msg.Author.Username,
-                    IconUrl = msg.Author.AvatarUrl
+                    Name = QuotedMessage.Author is DiscordMember mx ? mx.DisplayName : QuotedMessage.Author.Username,
+                    IconUrl = QuotedMessage.Author.AvatarUrl
                 }
             };
-            await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
+            if (YourMessage == null)
+            {
+                await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
+            }
+            else
+            {
+                await ctx.RespondAsync($"{ctx.User.Mention} says:\n>>> {YourMessage}", embed: embed);
+            }
         }
 
         [Command("quote")]
         [Description("Cross channel message quoting. (ChannelID-MessageID)")]
         [Priority(9)]
-        public async Task Quote(CommandContext ctx, [Description("Channel and Message ID seperated by -")] string ChannelMsg)
+        public async Task Quote(CommandContext ctx,
+            [Description("Channel and Message ID seperated by -")] string ChannelMsg,
+            [RemainingText] string YourMessage)
         {
             string[] strarr = ChannelMsg.Split("-");
             if (strarr.Length == 2)
@@ -778,9 +792,9 @@ namespace LiveBot.Commands
                     }
                 }
             }
-
-            picture.Save("bg.png");
-            using FileStream upFile = File.Open("bg.png", FileMode.Open);
+            string imageLoc = $"{Program.tmpLoc}/{user.Id}-profile.png";
+            picture.Save(imageLoc);
+            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             await ctx.RespondWithFileAsync(upFile);
         }
 
@@ -997,7 +1011,6 @@ namespace LiveBot.Commands
         }
 
         [Command("buy")]
-        [Cooldown(1, 60, CooldownBucketType.User)]
         [Description("Command to buy profile customisation.")]
         public async Task Buy(CommandContext ctx,
             [Description("What you want to buy")] string what,
@@ -1063,6 +1076,7 @@ namespace LiveBot.Commands
         {
             await ctx.TriggerTypingAsync();
             string PCJson = "", XBJson = "", PSJson = "";
+            string imageLoc = $"{Program.tmpLoc}/{ctx.User.Id}-summit.png";
             byte[] SummitLogo;
             DateTime endtime;
             using (WebClient wc = new WebClient())
@@ -1125,11 +1139,11 @@ namespace LiveBot.Commands
                             .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
                             );
                     }
-                    BaseImg.Save("Summit/SummitUpload.png");
+                    BaseImg.Save(imageLoc);
                 }
             }
-            using FileStream upFile = File.Open("Summit/SummitUpload.png", FileMode.Open);
             TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
+            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             await ctx.RespondWithFileAsync(upFile, $"Summit tier lists.\n *Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes.*");
         }
 
@@ -1141,6 +1155,7 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
 
             string OutMessage = "";
+            string imageLoc = $"{Program.tmpLoc}/{ctx.User.Id}-mysummit.png";
 
             bool SendImage = false;
 
@@ -1353,7 +1368,7 @@ namespace LiveBot.Commands
                     }
 
                     TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
-                    BaseImage.Save("Summit/MySummitUpload.png");
+                    BaseImage.Save(imageLoc);
                     OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
                     SendImage = true;
                 }
@@ -1364,7 +1379,7 @@ namespace LiveBot.Commands
             }
             if (SendImage)
             {
-                using FileStream upFile = File.Open("Summit/MySummitUpload.png", FileMode.Open);
+                using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
                 await ctx.RespondWithFileAsync(upFile, OutMessage);
             }
             else

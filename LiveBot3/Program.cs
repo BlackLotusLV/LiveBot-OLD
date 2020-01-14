@@ -1,4 +1,4 @@
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -24,10 +24,14 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20191230_B";
+        public static string BotVersion = $"20200114_A";
 
         // numbers
         public int StreamCheckDelay = 5;
+
+        // string
+
+        public static string tmpLoc = Path.GetTempPath();
 
         //lists
         public List<LiveStreamer> LiveStreamerList = new List<LiveStreamer>();
