@@ -1,4 +1,4 @@
-﻿using DSharpPlus;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -167,13 +167,13 @@ namespace LiveBot
                     {
                         //removes user from list
                         if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.Now
-                            && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() == LiveStreamerList[ItemIndex].User.Presence.Activities.Where(w=>w.Name.ToLower()=="twitch").FirstOrDefault())
+                            && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() == LiveStreamerList[ItemIndex].User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault())
                         {
                             LiveStreamerList.RemoveAt(ItemIndex);
                         }
                     }
-                    else if (ItemIndex == -1 
-                        && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() != null 
+                    else if (ItemIndex == -1
+                        && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() != null
                         && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().ActivityType.Equals(ActivityType.Streaming))
                     {
                         DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
@@ -284,7 +284,7 @@ namespace LiveBot
                     MinInterval += (29 / 500) * e.Message.Content.Length;
                     MaxInterval += (29 / 500) * e.Message.Content.Length;
                 }
-                int  MinMoney = 2, MaxMoney = 5;
+                int MinMoney = 2, MaxMoney = 5;
                 int points_added = r.Next(MinInterval, MaxInterval);
                 int money_added = r.Next(MinMoney, MaxMoney);
                 foreach (var Guser in UserLevelTimer)

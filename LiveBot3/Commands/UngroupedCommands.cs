@@ -305,7 +305,14 @@ namespace LiveBot.Commands
                         IconUrl = msg.Author.AvatarUrl
                     }
                 };
-                await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
+                if (YourMessage == null)
+                {
+                    await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
+                }
+                else
+                {
+                    await ctx.RespondAsync($"{ctx.User.Mention} says:\n>>> {YourMessage}", embed: embed);
+                }
             }
         }
 
@@ -478,15 +485,14 @@ namespace LiveBot.Commands
 
             List<DB.VehicleList> SelectedVehicles = new List<DB.VehicleList>();
 
-            if (disciplinename=="Street Race")
+            if (disciplinename == "Street Race")
             {
-
                 DiscordMessage CarOrBike = await ctx.RespondAsync($"{ctx.Member.Mention} **Select vehicle type:**\n:one: - Car\n:two: - Bike");
                 DiscordEmoji One = DiscordEmoji.FromName(ctx.Client, ":one:");
                 DiscordEmoji Two = DiscordEmoji.FromName(ctx.Client, ":two:");
 
                 await CarOrBike.CreateReactionAsync(One);
-                await Task.Delay(300).ContinueWith(t=>CarOrBike.CreateReactionAsync(Two));
+                await Task.Delay(300).ContinueWith(t => CarOrBike.CreateReactionAsync(Two));
 
                 var Result = await CarOrBike.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
 
@@ -495,7 +501,7 @@ namespace LiveBot.Commands
                     await ctx.RespondAsync($"{ctx.Member.Mention} You didn't select vehicle type in time.");
                     return;
                 }
-                else if (Result.Result.Emoji== One)
+                else if (Result.Result.Emoji == One)
                 {
                     SelectedVehicles = (from vl in VehicleList
                                         join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
@@ -519,7 +525,7 @@ namespace LiveBot.Commands
                                     where dl.Discipline_Name == disciplinename
                                     select vl).ToList();
             }
-            if (SelectedVehicles.Min(m=>m.Selected_Count)!=maxCount)
+            if (SelectedVehicles.Min(m => m.Selected_Count) != maxCount)
             {
                 SelectedVehicles = (from sv in SelectedVehicles
                                     where sv.Selected_Count < maxCount
@@ -605,7 +611,7 @@ namespace LiveBot.Commands
                 }
             }
             catch { }
-            DB.DBLists.LoadUserSettings(); // Updates 
+            DB.DBLists.LoadUserSettings(); // Updates
             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
             List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
             var global = (from gl in Leaderboard
@@ -652,7 +658,7 @@ namespace LiveBot.Commands
 
             double FollowersBetweenLevels = ((global[0].Level + 1) * (300 * (global[0].Level + 2) * 0.5)) - (global[0].Level * (300 * (global[0].Level + 1) * 0.5));
             double FollowersToNextLevel = (global[0].Level * (300 * (global[0].Level + 1) * 0.5)) - global[0].Followers;
-            double FBarLenght = 100- (100 / FollowersBetweenLevels) * FollowersToNextLevel;
+            double FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel;
 
             Rgba32 bordercolour = CustomMethod.GetColour(UserSettings[0].us.Border_Colour.ToString());
             Rgba32 textcolour = CustomMethod.GetColour(UserSettings[0].us.Text_Colour.ToString());
@@ -914,10 +920,10 @@ namespace LiveBot.Commands
                 {
                     end = result.Result.TimedOut;
                 }
-                else if (result.Result.Result.Emoji==left)
+                else if (result.Result.Result.Emoji == left)
                 {
                     await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
-                    if (page>1)
+                    if (page > 1)
                     {
                         page--;
                         await TopMessage.ModifyAsync(CustomMethod.GetServerTop(ctx, (int)page));
@@ -1486,10 +1492,8 @@ namespace LiveBot.Commands
             }
             else
             {
-
                 await ctx.RespondAsync("The Crew 2 Server is Offline");
             }
-
         }
     }
 }
