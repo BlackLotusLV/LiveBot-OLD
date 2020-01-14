@@ -1,11 +1,10 @@
-﻿using System;
+﻿using DSharpPlus.Entities;
+using System;
 using System.Collections.Generic;
-using DSharpPlus.Entities;
-using System.Text;
 
 namespace LiveBot
 {
-    class TimerMethod
+    internal class TimerMethod
     {
         public static void StreamListCheck(List<LiveStreamer> list, int StreamCheckDelay)
         {
@@ -25,6 +24,7 @@ namespace LiveBot
                 Console.WriteLine("[System] LiveStream list is empty!");
             }
         }
+
         public async static void ActivatedRolesCheck(List<ActivateRolesTimer> list)
         {
             try
@@ -33,7 +33,6 @@ namespace LiveBot
                 {
                     if (item.Time.AddMinutes(5) < DateTime.Now)
                     {
-
                         await item.Role.ModifyAsync(mentionable: false);
                         list.Remove(item);
                     }

@@ -24,6 +24,7 @@ namespace LiveBot.DB
 
         [Column("user_id")]
         public string User_ID { get; set; }
+
         [Column("server_id")]
         public string Server_ID { get; set; }
     }

@@ -86,7 +86,7 @@ namespace LiveBot.Commands
 
         [Command("warn")]
         [Description("Warns a user")]
-        [Cooldown(1,30,CooldownBucketType.Guild)]
+        [Cooldown(1, 30, CooldownBucketType.Guild)]
         public async Task Warning(CommandContext ctx, DiscordMember username, [RemainingText] string reason = "Reason not specified")
         {
             await ctx.TriggerTypingAsync();
@@ -449,7 +449,7 @@ namespace LiveBot.Commands
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"Game: {user.Presence.Activities.Where(w=>w.Name.ToLower()=="twitch").FirstOrDefault().RichPresence.State}");
+            sb.AppendLine($"Game: {user.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.State}");
             sb.AppendLine($"Title: {user.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.Details}");
             //sb.AppendLine($"Game: {user.Presence.Activity.RichPresence.State}");
             //sb.AppendLine($"Title: {user.Presence.Activity.RichPresence.Details}");

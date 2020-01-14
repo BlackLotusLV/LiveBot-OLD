@@ -119,11 +119,12 @@ namespace LiveBot.DB
             RankRoles = (from c in ctx.RankRoles
                          select c).ToList();
         }
+
         public static void LoadCUC()
         {
             using var ctx = new CommandsUsedCountContext();
             CommandsUsedCount = (from c in ctx.CommandsUsedCount
-                         select c).ToList();
+                                 select c).ToList();
         }
 
         public static void UpdateLeaderboard(List<Leaderboard> o)
@@ -181,6 +182,7 @@ namespace LiveBot.DB
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+
         public static void UpdateCUC(List<CommandsUsedCount> o)
         {
             using var ctx = new CommandsUsedCountContext();
@@ -243,6 +245,7 @@ namespace LiveBot.DB
             ctx.SaveChanges();
             LoadRankRoles();
         }
+
         public static void InsertCUC(CommandsUsedCount o)
         {
             using var ctx = new CommandsUsedCountContext();

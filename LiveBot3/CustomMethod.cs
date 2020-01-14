@@ -2,13 +2,13 @@
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System;
 
 namespace LiveBot
 {
@@ -126,6 +126,7 @@ namespace LiveBot
             };
             DB.DBLists.InsertUserSettings(newUSettings);
         }
+
         public static void AddUserToServerRanks(DiscordUser user, DiscordGuild guild)
         {
             List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
@@ -150,7 +151,7 @@ namespace LiveBot
             string[] sTime = new string[2];
             for (int i = 0; i < Time.ToString().Length; i++)
             {
-                if (i<Time.ToString().Length-3)
+                if (i < Time.ToString().Length - 3)
                 {
                     sTime[0] += Time.ToString()[i];
                 }
@@ -163,7 +164,7 @@ namespace LiveBot
             TimeSpan ms = TimeSpan.FromMilliseconds(double.Parse(sTime[1]));
             TimeSpan Total = seconds + ms;
 
-            if (Total.Hours==0)
+            if (Total.Hours == 0)
             {
                 return $"{Total.Minutes}:{Total.Seconds}.{Total.Milliseconds}";
             }
@@ -208,7 +209,6 @@ namespace LiveBot
 
         public static string GetGlobalTop(CommandContext ctx, int page)
         {
-
             StringBuilder sb = new StringBuilder();
             string list = "", personalscore = "";
             List<DB.Leaderboard> leaderboard = DB.DBLists.Leaderboard;

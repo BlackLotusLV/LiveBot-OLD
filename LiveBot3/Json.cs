@@ -216,7 +216,7 @@ namespace LiveBot
             [JsonProperty("profile_id")]
             public string Profile_ID { get; private set; }
         }
-        
+
         public struct SummitLeaderboardEntries
         {
             [JsonProperty("profile_id")]
