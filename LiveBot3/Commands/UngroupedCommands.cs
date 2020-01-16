@@ -1,4 +1,4 @@
-﻿using DSharpPlus;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -467,26 +467,29 @@ namespace LiveBot.Commands
             {
                 disciplinename = "Street Race";
             }
-            disciplinename = (discipline.Id) switch
+            else
             {
-                449686964757594123 => "Power Boat",
-                449686964925628426 => "Alpha Grand Prix",
-                449686964669513729 => "Air Race",
-                449686965135212574 => "Touring Car",
-                517383831398121473 => "Demolition Derby",
-                449686964497547295 => "Monster Truck",
-                449686964891811840 => "Aerobatics",
-                449686964950794240 => "Jetsprint",
-                481392539728084994 => "Hovercraft",
-                449686964967309312 => "Rally Raid",
-                449686964791410690 => "Rally Cross",
-                449686964623638530 => "Moto Cross",
-                449688867088367646 => "Hyper Car",
-                449688867251945493 => "Drag Race",
-                449688866870525963 => "Drift",
-                449688867164127232 => "Street Race",
-                _ => "Street Race"
-            };
+                disciplinename = (discipline.Id) switch
+                {
+                    449686964757594123 => "Power Boat",
+                    449686964925628426 => "Alpha Grand Prix",
+                    449686964669513729 => "Air Race",
+                    449686965135212574 => "Touring Car",
+                    517383831398121473 => "Demolition Derby",
+                    449686964497547295 => "Monster Truck",
+                    449686964891811840 => "Aerobatics",
+                    449686964950794240 => "Jetsprint",
+                    481392539728084994 => "Hovercraft",
+                    449686964967309312 => "Rally Raid",
+                    449686964791410690 => "Rally Cross",
+                    449686964623638530 => "Moto Cross",
+                    449688867088367646 => "Hyper Car",
+                    449688867251945493 => "Drag Race",
+                    449688866870525963 => "Drift",
+                    449688867164127232 => "Street Race",
+                    _ => "Street Race"
+                };
+            }
 
             List<DB.VehicleList> VehicleList = DB.DBLists.VehicleList;
             List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w => w.Discipline_Name == disciplinename).ToList();
