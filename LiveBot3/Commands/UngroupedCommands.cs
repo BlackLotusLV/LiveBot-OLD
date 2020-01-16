@@ -787,7 +787,7 @@ namespace LiveBot.Commands
                     }
                 }
             }
-            string imageLoc = $"{Program.tmpLoc}/{user.Id}-profile.png";
+            string imageLoc = $"{Program.tmpLoc}{user.Id}-profile.png";
             picture.Save(imageLoc);
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             await ctx.RespondWithFileAsync(upFile);
@@ -1071,7 +1071,7 @@ namespace LiveBot.Commands
         {
             await ctx.TriggerTypingAsync();
             string PCJson = "", XBJson = "", PSJson = "";
-            string imageLoc = $"{Program.tmpLoc}/{ctx.User.Id}-summit.png";
+            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summit.png";
             byte[] SummitLogo;
             DateTime endtime;
             using (WebClient wc = new WebClient())
@@ -1150,7 +1150,7 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
 
             string OutMessage = "";
-            string imageLoc = $"{Program.tmpLoc}/{ctx.User.Id}-mysummit.png";
+            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
 
             bool SendImage = false;
 
