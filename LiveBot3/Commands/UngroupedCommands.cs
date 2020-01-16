@@ -275,21 +275,17 @@ namespace LiveBot.Commands
             string content = $"\"{QuotedMessage.Content}\"";
             var embed = new DiscordEmbedBuilder
             {
-                Color = new DiscordColor(0xFF6600),
-                Description = $"{content}\n[go to message]({QuotedMessage.JumpLink})",
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    Name = QuotedMessage.Author is DiscordMember mx ? mx.DisplayName : QuotedMessage.Author.Username,
-                    IconUrl = QuotedMessage.Author.AvatarUrl
-                }
+                Color = new DiscordColor(0xFF6600)                
             };
+            embed.AddField($"Quoted {QuotedMessage.Author.Username}'s message:", $"{content}\n[go to message]({QuotedMessage.JumpLink})");
             if (YourMessage == null)
             {
                 await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
             }
             else
             {
-                await ctx.RespondAsync($"{ctx.User.Mention} says:\n>>> {YourMessage}", embed: embed);
+                embed.AddField($"{ctx.Member.Username} Says:", YourMessage);
+                await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
             }
         }
 
@@ -307,25 +303,21 @@ namespace LiveBot.Commands
                 ulong msgid = ulong.Parse(strarr[1]);
                 await ctx.Message.DeleteAsync();
                 DiscordChannel channel = ctx.Guild.GetChannel(channelid);
-                DiscordMessage msg = await channel.GetMessageAsync(msgid);
-                string content = $"\"{msg.Content}\"";
+                DiscordMessage QuotedMessage = await channel.GetMessageAsync(msgid);
+                string content = $"\"{QuotedMessage.Content}\"";
                 var embed = new DiscordEmbedBuilder
                 {
-                    Color = new DiscordColor(0xFF6600),
-                    Description = $"{content}\n[go to message]({msg.JumpLink})",
-                    Author = new DiscordEmbedBuilder.EmbedAuthor
-                    {
-                        Name = msg.Author is DiscordMember mx ? mx.DisplayName : msg.Author.Username,
-                        IconUrl = msg.Author.AvatarUrl
-                    }
+                    Color = new DiscordColor(0xFF6600)
                 };
+                embed.AddField($"Quoted {QuotedMessage.Author.Username}'s message:", $"{content}\n[go to message]({QuotedMessage.JumpLink})");
                 if (YourMessage == null)
                 {
                     await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
                 }
                 else
                 {
-                    await ctx.RespondAsync($"{ctx.User.Mention} says:\n>>> {YourMessage}", embed: embed);
+                    embed.AddField($"{ctx.Member.Username} Says:", YourMessage);
+                    await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
                 }
             }
         }
