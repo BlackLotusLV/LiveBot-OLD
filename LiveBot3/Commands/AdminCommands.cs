@@ -307,12 +307,11 @@ namespace LiveBot.Commands
         }
 
         [Command("vote")]
-        [Description("starts a timed vote")]
-        public async Task Vote(CommandContext ctx, [Description("What to vote about?")] params string[] topic)
+        [Description("starts a vote")]
+        public async Task Vote(CommandContext ctx, [Description("What to vote about?")] [RemainingText] string topic)
         {
             await ctx.Message.DeleteAsync();
-            string f = CustomMethod.ParamsStringConverter(topic);
-            DiscordMessage msg = await ctx.Message.RespondAsync(f);
+            DiscordMessage msg = await ctx.Message.RespondAsync(topic);
             DiscordEmoji up = DiscordEmoji.FromName(ctx.Client, ":thumbsup:");
             DiscordEmoji down = DiscordEmoji.FromName(ctx.Client, ":thumbsdown:");
             await msg.CreateReactionAsync(up);
@@ -322,12 +321,11 @@ namespace LiveBot.Commands
 
         [Command("poll")]
         [Description("creates a poll up to 10 choices. Delimiter \".\"")]
-        public async Task Poll(CommandContext ctx, [Description("Options")]params string[] input)
+        public async Task Poll(CommandContext ctx, [Description("Options")] [RemainingText] string input)
         {
             await ctx.Message.DeleteAsync();
-            string f = CustomMethod.ParamsStringConverter(input);
             char delimiter = '.';
-            string[] options = f.Split(delimiter);
+            string[] options = input.Split(delimiter);
             string final = "";
             string[] emotename = new string[] { ":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:" };
             int i = 0;

@@ -11,9 +11,11 @@
     "host": "Database host",
     "username": "Databse username",
     "password": "User passwrod",
-    "database": "Database name"
+    "database": "Database name",
+    "port": "****"
   },
   "TCE": {
-    "key": "TCE key here"
+    "key": "TCE key here",
+    "link": "link to tce website"
   }
 }

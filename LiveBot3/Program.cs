@@ -1,4 +1,4 @@
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -24,7 +24,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200114_B";
+        public static string BotVersion = $"20200123_B";
 
         // numbers
         public int StreamCheckDelay = 5;
@@ -40,6 +40,7 @@ namespace LiveBot
 
         public List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
         public List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
+        public List<GuildTimer> RandomMsgTimer = new List<GuildTimer>();
 
         //channels
         public DiscordChannel TC1Photomode;
@@ -121,6 +122,7 @@ namespace LiveBot
             // Channels
             TC1Photomode = TCGuild.GetChannel(191567033064751104);
             TC2Photomode = TCGuild.GetChannel(447134224349134848);
+
             //*/
             Timer StreamTimer = new Timer(e => TimerMethod.StreamListCheck(LiveStreamerList, StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
             Timer RoleTimer = new Timer(e => TimerMethod.ActivatedRolesCheck(ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
@@ -249,7 +251,8 @@ namespace LiveBot
 
         private async Task Message_Created(MessageCreateEventArgs e)
         {
-            if ((e.Channel == TC1Photomode || e.Channel == TC2Photomode) && !e.Author.IsBot) // deletes regular messages in photo mode channels
+            // deletes regular messages in photo mode channels
+            if ((e.Channel == TC1Photomode || e.Channel == TC2Photomode) && !e.Author.IsBot)
             {
                 if (e.Message.Attachments.Count == 0)
                 {
@@ -267,10 +270,12 @@ namespace LiveBot
                     }
                 }
             }
+            // Responds to TCE bot
             if (e.Author.IsBot && e.Author.Id.Equals(202440605123477505) && e.Message.Content.Equals("Hey Live!"))
             {
                 await e.Channel.SendMessageAsync("Hey!");
             }
+            // Leveling system
             if (!e.Author.IsBot)
             {
                 DB.DBLists.LoadServerRanks();
@@ -416,6 +421,7 @@ namespace LiveBot
                     }
                 }
             }
+            // Random message response
         }
 
         private async Task Reaction_Role(MessageReactionAddEventArgs e)
@@ -825,7 +831,7 @@ namespace LiveBot
                 string msgContent;
                 if (ex.FailedChecks[0].GetType() == typeof(CooldownAttribute))
                 {
-                    msgContent = $"{clock} You, {e.Context.Member.Mention}, tried to execute the command too fast, wait a bit and try again.";
+                    msgContent = $"{clock} You, {e.Context.Member.Mention}, tried to execute the command too fast, wait and try again later.";
                 }
                 else if (ex.FailedChecks[0].GetType() == typeof(RequireRolesAttribute))
                 {
@@ -841,7 +847,8 @@ namespace LiveBot
                     Description = msgContent,
                     Color = new DiscordColor(0xFF0000) // red
                 };
-                await e.Context.RespondAsync("", embed: embed);
+                DiscordMessage errorMSG = await e.Context.RespondAsync("", embed: embed);
+                await Task.Delay(10000).ContinueWith(t => errorMSG.DeleteAsync());
             }
         }
     }
@@ -870,6 +877,11 @@ namespace LiveBot
     {
         public DiscordGuild Guild { get; set; }
         public DiscordRole Role { get; set; }
+        public DateTime Time { get; set; }
+    }
+    internal class GuildTimer
+    {
+        public DiscordGuild Guild { get; set; }
         public DateTime Time { get; set; }
     }
 }

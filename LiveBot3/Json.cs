@@ -41,12 +41,16 @@ namespace LiveBot
 
             [JsonProperty("database")]
             public string Database { get; private set; }
+            [JsonProperty("port")]
+            public string Port { get; private set; }
         }
 
         public struct TCE
         {
             [JsonProperty("key")]
             public string Key { get; private set; }
+            [JsonProperty("link")]
+            public string Link { get; private set; }
         }
 
         public struct Summit

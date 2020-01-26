@@ -2,16 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon>live.ico</ApplicationIcon>
     <LangVersion>8.0</LangVersion>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00648" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00648" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00648" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00653" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00653" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00653" />
     <PackageReference Include="EntityFramework" Version="6.4.0" />
     <PackageReference Include="Npgsql" Version="4.1.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.0" />

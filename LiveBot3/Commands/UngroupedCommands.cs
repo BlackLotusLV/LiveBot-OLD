@@ -1,4 +1,4 @@
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -29,11 +29,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/profile` level progress bar showing progress from 0 to next level instead of between levels\n" +
-                "[NEW] `/quote` command now allows you to add text with the quote\n" +
-                "[REMOVED] Cooldown for `/buy` command removed.\n" +
-                "[FIX] Internal file management(consistency in profile and mysummit commands when multiple use at same time)\n" +
-                "";
+            string changelog = "[CHANGE] Some commands got a 10 second cooldown use per channel";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -65,12 +61,14 @@ namespace LiveBot.Commands
         [Command("ping")]
         [Description("Shows that the bots response time")]
         [Aliases("pong")]
+        [Cooldown(1,10,CooldownBucketType.Channel)]
         public async Task Ping(CommandContext ctx)
         {
             await ctx.RespondAsync($"Pong! {ctx.Client.Ping}ms");
         }
 
         [Command("share")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Informs the user about the content sharing channels and how to get the share role")] // photomode info command
         public async Task Share(CommandContext ctx,
             [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null,
@@ -103,6 +101,7 @@ namespace LiveBot.Commands
         }
 
         [Command("platform")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Informs the user about the platform roles.")] //platform selection command
         public async Task Platform(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
@@ -133,6 +132,7 @@ namespace LiveBot.Commands
         }
 
         [Command("maxlvl")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Explains how to get maximum car level in The Crew 1.")] // how to get max level for cars in TC1
         public async Task MaxCarlvl(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
@@ -163,6 +163,7 @@ namespace LiveBot.Commands
         }
 
         [Command("tce")] //The Crew Exchange info command
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Informs the user about The Crew Exchange website.")]
         public async Task TCE(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
@@ -193,6 +194,7 @@ namespace LiveBot.Commands
         }
 
         [Command("lfc")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Informs the user of using the LFC channels, or to get the platform role if they don't have it.")]
         public async Task LFC(CommandContext ctx, DiscordMember username = null)
         {
@@ -233,6 +235,7 @@ namespace LiveBot.Commands
         }
 
         [Command("support")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Gives the link to the support page")]
         public async Task Support(CommandContext ctx, DiscordMember username = null)
         {
@@ -249,6 +252,7 @@ namespace LiveBot.Commands
         }
 
         [Command("forums")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Gives the link to the forum")]
         public async Task Forums(CommandContext ctx, DiscordMember username = null)
         {
@@ -610,7 +614,7 @@ namespace LiveBot.Commands
             {
                 user = ctx.Member;
             }
-            string link = $"https://thecrew-exchange.com/api/bot/isAccountLinked/{tcejson.Key}/{user.Id}";
+            string link = $"{tcejson.Link}api/bot/isAccountLinked/{tcejson.Key}/{user.Id}";
             try
             {
                 using WebClient wc = new WebClient();
@@ -1162,7 +1166,7 @@ namespace LiveBot.Commands
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
             Json.TCE tcejson = JsonConvert.DeserializeObject<Json.Config>(json).TCE;
-            string link = $"https://thecrew-exchange.com/api/tchub/profileId/{tcejson.Key}/{ctx.Member.Id}";
+            string link = $"{tcejson.Link}api/tchub/profileId/{tcejson.Key}/{ctx.Member.Id}";
 
             Json.TCESummit JTCE;
             using (WebClient wc = new WebClient())
@@ -1287,7 +1291,7 @@ namespace LiveBot.Commands
                         if (Activity.Length > 0)
                         {
                             using WebClient wc = new WebClient();
-                            string[] EventTitle = wc.DownloadString($"https://thecrew-exchange.com/api/tchub/event/{tcejson.Key}/{ThisEvent.ID}").Replace("\"", "").Split(' ');
+                            string[] EventTitle = wc.DownloadString($"{tcejson.Link}api/tchub/event/{tcejson.Key}/{ThisEvent.ID}").Replace("\"", "").Split(' ');
                             Json.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<Json.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
