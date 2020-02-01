@@ -28,7 +28,7 @@ namespace LiveBot.Commands
         [Aliases("txtup")]
         public async Task TextUpdate(CommandContext ctx, string language, string command, params string[] text)
         {
-            string location = "TextFiles/" + language.ToLower() + "/" + command.ToLower() + ".txt";
+            string location = "Assets/TextFiles/" + language.ToLower() + "/" + command.ToLower() + ".txt";
             string f = CustomMethod.ParamsStringConverter(text);
             if (File.Exists(location))
             {

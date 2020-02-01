@@ -1,4 +1,4 @@
-﻿using DSharpPlus;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -63,7 +63,7 @@ namespace LiveBot
         {
             // fills all database lists
             DB.DBLists.LoadAllLists();
-            fonts.Install("Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
+            fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
 
             bool TestBuild = true;
 

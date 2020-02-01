@@ -82,14 +82,14 @@ namespace LiveBot.Commands
             }
             string content = (language) switch
             {
-                ("gb") => File.ReadAllText(@"TextFiles/english/share.txt"),
-                ("de") => File.ReadAllText(@"TextFiles/german/share.txt"),
-                ("fr") => File.ReadAllText(@"TextFiles/french/share.txt"),
-                ("nl") => File.ReadAllText(@"TextFiles/dutch/share.txt"),
-                ("se") => File.ReadAllText(@"TextFiles/swedish/share.txt"),
-                ("ru") => File.ReadAllText(@"TextFiles/russian/share.txt"),
-                ("lv") => File.ReadAllText(@"TextFiles/latvian/share.txt"),
-                _ => File.ReadAllText(@"TextFiles/english/share.txt")
+                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/share.txt"),
+                ("de") => File.ReadAllText(@"Assets/TextFiles/german/share.txt"),
+                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/share.txt"),
+                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/share.txt"),
+                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/share.txt"),
+                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/share.txt"),
+                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/share.txt"),
+                _ => File.ReadAllText(@"Assets/TextFiles/english/share.txt")
             };
             await ctx.Message.DeleteAsync(); //deletes command message
             if (username is null) //checks if user name is not specified
@@ -113,14 +113,14 @@ namespace LiveBot.Commands
             }
             string content = language switch
             {
-                ("gb") => File.ReadAllText(@"TextFiles/english/platform.txt"),
-                ("de") => File.ReadAllText(@"TextFiles/german/platform.txt"),
-                ("fr") => File.ReadAllText(@"TextFiles/french/platform.txt"),
-                ("nl") => File.ReadAllText(@"TextFiles/dutch/platform.txt"),
-                ("se") => File.ReadAllText(@"TextFiles/swedish/platform.txt"),
-                ("ru") => File.ReadAllText(@"TextFiles/russian/platform.txt"),
-                ("lv") => File.ReadAllText(@"TextFiles/latvian/platform.txt"),
-                _ => File.ReadAllText(@"TextFiles/english/platform.txt")
+                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/platform.txt"),
+                ("de") => File.ReadAllText(@"Assets/TextFiles/german/platform.txt"),
+                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/platform.txt"),
+                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/platform.txt"),
+                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/platform.txt"),
+                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/platform.txt"),
+                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/platform.txt"),
+                _ => File.ReadAllText(@"Assets/TextFiles/english/platform.txt")
             };
             await ctx.Message.DeleteAsync();
             if (username is null)
@@ -144,14 +144,14 @@ namespace LiveBot.Commands
             }
             string content = (language) switch
             {
-                ("gb") => File.ReadAllText(@"TextFiles/english/maxlvl.txt"),
-                ("de") => File.ReadAllText(@"TextFiles/german/maxlvl.txt"),
-                ("fr") => File.ReadAllText(@"TextFiles/french/maxlvl.txt"),
-                ("nl") => File.ReadAllText(@"TextFiles/dutch/maxlvl.txt"),
-                ("se") => File.ReadAllText(@"TextFiles/swedish/maxlvl.txt"),
-                ("ru") => File.ReadAllText(@"TextFiles/russian/maxlvl.txt"),
-                ("lv") => File.ReadAllText(@"TextFiles/latvian/maxlvl.txt"),
-                _ => File.ReadAllText(@"TextFiles/english/maxlvl.txt")
+                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/maxlvl.txt"),
+                ("de") => File.ReadAllText(@"Assets/TextFiles/german/maxlvl.txt"),
+                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/maxlvl.txt"),
+                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/maxlvl.txt"),
+                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/maxlvl.txt"),
+                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/maxlvl.txt"),
+                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/maxlvl.txt"),
+                _ => File.ReadAllText(@"Assets/TextFiles/english/maxlvl.txt")
             };
             await ctx.Message.DeleteAsync();
             if (username is null)
@@ -175,14 +175,14 @@ namespace LiveBot.Commands
             }
             string content = language switch
             {
-                ("gb") => File.ReadAllText(@"TextFiles/english/tce.txt"),
-                ("de") => File.ReadAllText(@"TextFiles/german/tce.txt"),
-                ("fr") => File.ReadAllText(@"TextFiles/french/tce.txt"),
-                ("nl") => File.ReadAllText(@"TextFiles/dutch/tce.txt"),
-                ("se") => File.ReadAllText(@"TextFiles/swedish/tce.txt"),
-                ("ru") => File.ReadAllText(@"TextFiles/russian/tce.txt"),
-                ("lv") => File.ReadAllText(@"TextFiles/latvian/tce.txt"),
-                _ => File.ReadAllText(@"TextFiles/english/tce.txt")
+                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/tce.txt"),
+                ("de") => File.ReadAllText(@"Assets/TextFiles/german/tce.txt"),
+                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/tce.txt"),
+                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/tce.txt"),
+                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/tce.txt"),
+                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/tce.txt"),
+                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/tce.txt"),
+                _ => File.ReadAllText(@"Assets/TextFiles/english/tce.txt")
             };
             await ctx.Message.DeleteAsync();
             if (username is null)
@@ -200,7 +200,7 @@ namespace LiveBot.Commands
         [Description("Informs the user of using the LFC channels, or to get the platform role if they don't have it.")]
         public async Task LFC(CommandContext ctx, DiscordMember username = null)
         {
-            string content = File.ReadAllText(@"TextFiles/english/lfcnorole.txt");
+            string content = File.ReadAllText(@"Assets/TextFiles/english/lfcnorole.txt");
             DiscordRole pc = ctx.Guild.GetRole(223867454642716673);
             DiscordRole ps = ctx.Guild.GetRole(223867009484587008);
             DiscordRole xb = ctx.Guild.GetRole(223867264246611970);
@@ -213,7 +213,7 @@ namespace LiveBot.Commands
             {
                 if ((item == pc || item == ps || item == xb) && check == false)
                 {
-                    content = File.ReadAllText(@"TextFiles/english/lfcrole.txt");
+                    content = File.ReadAllText(@"Assets/TextFiles/english/lfcrole.txt");
                 }
             }
             await ctx.RespondAsync($"{username.Mention}, {content}");
@@ -777,7 +777,7 @@ namespace LiveBot.Commands
                 );
             if (tcelink == true)
             {
-                using Image<Rgba32> badge = Image.Load<Rgba32>("Badges/tce.png");
+                using Image<Rgba32> badge = Image.Load<Rgba32>("Assets/Badges/tce.png");
                 Point badgeloc = new Point(BadgeX + (BadgeCount * badge.Width) + 2, BadgeY);
                 picture.Mutate(ctx => ctx
                 .DrawImage(badge, badgeloc, 1)
@@ -790,7 +790,7 @@ namespace LiveBot.Commands
                 {
                     if (role.Id == 473247655913455617) // checks if the role is patreon role
                     {
-                        using Image<Rgba32> badge = Image.Load<Rgba32>("Badges/Patreon.png");
+                        using Image<Rgba32> badge = Image.Load<Rgba32>("Assets/Badges/Patreon.png");
                         Point badgeloc = new Point(BadgeX + (BadgeCount * badge.Width) + 5, BadgeY);
                         picture.Mutate(ctx => ctx
                         .DrawImage(badge, badgeloc, 1)
@@ -799,7 +799,7 @@ namespace LiveBot.Commands
                     }
                     if (role.Id == 585537338491404290)
                     {
-                        using Image<Rgba32> badge = Image.Load<Rgba32>("Badges/Booster.png");
+                        using Image<Rgba32> badge = Image.Load<Rgba32>("Assets/Badges/Booster.png");
                         Point badgeloc = new Point(BadgeX + (BadgeCount * badge.Width) + 5, BadgeY);
                         picture.Mutate(ctx => ctx
                         .DrawImage(badge, badgeloc, 1)
@@ -1124,15 +1124,15 @@ namespace LiveBot.Commands
                     }
                 }
             }
-            using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Summit/PC.jpeg"))
-            using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Summit/PS.jpg"))
-            using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Summit/XB.png"))
+            using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Assets/Summit/PC.jpeg"))
+            using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Assets/Summit/PS.jpg"))
+            using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Assets/Summit/XB.png"))
             using (Image<Rgba32> BaseImg = new Image<Rgba32>(900, 643))
             {
                 Image<Rgba32>[] PlatformImg = new Image<Rgba32>[3] { PCImg, PSImg, XBImg };
                 for (int i = 0; i < Events.Length; i++)
                 {
-                    using (Image<Rgba32> TierImg = Image.Load<Rgba32>("Summit/SummitBase.png"))
+                    using (Image<Rgba32> TierImg = Image.Load<Rgba32>("Assets/Summit/SummitBase.png"))
                     using (Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo))
                     using (Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30))
                     {
@@ -1350,7 +1350,7 @@ namespace LiveBot.Commands
                             );
                         }
                     }
-                    using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Summit/TierBar.png"))
+                    using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Assets/Summit/TierBar.png"))
                     {
                         TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Rgba32.Black), new Point(0, 0), 0.35f));
                         int[] TierXPos = new int[4] { 845, 563, 281, 0 };
