@@ -41,6 +41,7 @@ namespace LiveBot
 
             [JsonProperty("database")]
             public string Database { get; private set; }
+
             [JsonProperty("port")]
             public string Port { get; private set; }
         }
@@ -49,6 +50,7 @@ namespace LiveBot
         {
             [JsonProperty("key")]
             public string Key { get; private set; }
+
             [JsonProperty("link")]
             public string Link { get; private set; }
         }

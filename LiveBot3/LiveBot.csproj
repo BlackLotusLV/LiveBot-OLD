@@ -29,133 +29,130 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Badges\Booster.png">
+    <None Update="Assets\Badges\Booster.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Badges\Patreon.png">
+    <None Update="Assets\Badges\Patreon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Badges\tce.png">
+    <None Update="Assets\Badges\tce.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="bg.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Fonts\Hurme_Geometric_Sans_3_W03_Blk.ttf">
+    <None Update="Assets\Fonts\Hurme_Geometric_Sans_3_W03_Blk.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="ITC.jpg">
+    <None Update="Assets\ITC.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="live.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Summit\PC.jpeg">
+    <None Update="Assets\Summit\PC.jpeg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Summit\PS.jpg">
+    <None Update="Assets\Summit\PS.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Summit\SummitBase.png">
+    <None Update="Assets\Summit\SummitBase.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Summit\TierBar.png">
+    <None Update="Assets\Summit\TierBar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Summit\XB.png">
+    <None Update="Assets\Summit\XB.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\dutch\maxlvl.txt">
+    <None Update="Assets\TextFiles\dutch\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\dutch\platform.txt">
+    <None Update="Assets\TextFiles\dutch\platform.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\dutch\share.txt">
+    <None Update="Assets\TextFiles\dutch\share.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\dutch\tce.txt">
+    <None Update="Assets\TextFiles\dutch\tce.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\english\lfcnorole.txt">
+    <None Update="Assets\TextFiles\english\lfcnorole.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\english\lfcrole.txt">
+    <None Update="Assets\TextFiles\english\lfcrole.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\english\maxlvl.txt">
+    <None Update="Assets\TextFiles\english\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\english\platform.txt">
+    <None Update="Assets\TextFiles\english\platform.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\english\share.txt">
+    <None Update="Assets\TextFiles\english\share.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\english\tce.txt">
+    <None Update="Assets\TextFiles\english\tce.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\french\maxlvl.txt">
+    <None Update="Assets\TextFiles\french\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\french\platform.txt">
+    <None Update="Assets\TextFiles\french\platform.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\french\share.txt">
+    <None Update="Assets\TextFiles\french\share.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\french\tce.txt">
+    <None Update="Assets\TextFiles\french\tce.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\german\maxlvl.txt">
+    <None Update="Assets\TextFiles\german\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\german\platform.txt">
+    <None Update="Assets\TextFiles\german\platform.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\german\share.txt">
+    <None Update="Assets\TextFiles\german\share.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\german\tce.txt">
+    <None Update="Assets\TextFiles\german\tce.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\latvian\maxlvl.txt">
+    <None Update="Assets\TextFiles\latvian\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\latvian\platform.txt">
+    <None Update="Assets\TextFiles\latvian\platform.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\latvian\share.txt">
+    <None Update="Assets\TextFiles\latvian\share.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\latvian\tce.txt">
+    <None Update="Assets\TextFiles\latvian\tce.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\russian\maxlvl.txt">
+    <None Update="Assets\TextFiles\russian\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\russian\platform.txt">
+    <None Update="Assets\TextFiles\russian\platform.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\russian\share.txt">
+    <None Update="Assets\TextFiles\russian\share.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\russian\tce.txt">
+    <None Update="Assets\TextFiles\russian\tce.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\swedish\maxlvl.txt">
+    <None Update="Assets\TextFiles\swedish\maxlvl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\swedish\platform.txt">
+    <None Update="Assets\TextFiles\swedish\platform.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\swedish\share.txt">
+    <None Update="Assets\TextFiles\swedish\share.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TextFiles\swedish\tce.txt">
+    <None Update="Assets\TextFiles\swedish\tce.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

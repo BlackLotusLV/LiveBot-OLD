@@ -19,6 +19,8 @@ namespace LiveBot.DB
         public static List<RankRoles> RankRoles;
         public static List<CommandsUsedCount> CommandsUsedCount;
 
+        public static List<AMBannedWords> AMBannedWords;
+
         public static void LoadAllLists()
         {
             LoadVehicleList();
@@ -34,6 +36,7 @@ namespace LiveBot.DB
             LoadServerSettings();
             LoadRankRoles();
             LoadCUC();
+            LoadBannedWords();
         }
 
         public static void LoadVehicleList()
@@ -127,6 +130,13 @@ namespace LiveBot.DB
                                  select c).ToList();
         }
 
+        public static void LoadBannedWords()
+        {
+            using var ctx = new AMBannedWordsContext();
+            AMBannedWords = (from c in ctx.AMBannedWords
+                             select c).ToList();
+        }
+
         public static void UpdateLeaderboard(List<Leaderboard> o)
         {
             using var ctx = new LeaderboardContext();
@@ -186,6 +196,13 @@ namespace LiveBot.DB
         public static void UpdateCUC(List<CommandsUsedCount> o)
         {
             using var ctx = new CommandsUsedCountContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+
+        public static void UpdateBannedWords(List<AMBannedWords> o)
+        {
+            using var ctx = new AMBannedWordsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
@@ -250,6 +267,14 @@ namespace LiveBot.DB
         {
             using var ctx = new CommandsUsedCountContext();
             ctx.CommandsUsedCount.Add(o);
+            ctx.SaveChanges();
+            LoadRankRoles();
+        }
+
+        public static void InsertBannedWords(AMBannedWords o)
+        {
+            using var ctx = new AMBannedWordsContext();
+            ctx.AMBannedWords.Add(o);
             ctx.SaveChanges();
             LoadRankRoles();
         }

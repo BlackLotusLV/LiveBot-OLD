@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace LiveBot
 {
@@ -274,6 +275,103 @@ namespace LiveBot
             sb.Append("```");
 
             return sb.ToString();
+        }
+
+        public static async Task WarnUserAsync(DiscordMember user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
+        {
+            DB.DBLists.LoadServerRanks();
+            DB.DBLists.LoadServerSettings();
+            DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id.ToString().Equals(f.Server_ID) && user.Id.ToString().Equals(f.User_ID));
+            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id.ToString().Equals(f.ID_Server));
+            string modinfo = "";
+            StringBuilder SB = new StringBuilder();
+            string uid = user.Id.ToString(), aid = admin.Id.ToString();
+            bool kick = false;
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
+            if (ServerSettings.WKB_Log != "0")
+            {
+                DiscordChannel modlog = server.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
+                if (WarnedUserStats is null) // creates new entry in DB (Followers set to default value)
+                {
+                    DB.ServerRanks newEntry = new DB.ServerRanks
+                    {
+                        Server_ID = server.Id.ToString(),
+                        Ban_Count = 0,
+                        Kick_Count = 0,
+                        Warning_Level = 1,
+                        User_ID = user.Id.ToString()
+                    };
+                    DB.DBLists.InsertServerRanks(newEntry);
+                }
+                else
+                {
+                    WarnedUserStats.Warning_Level++;
+                    DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { WarnedUserStats });
+                }
+
+                DB.Warnings newWarning = new DB.Warnings
+                {
+                    Reason = reason,
+                    Active = true,
+                    Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                    Admin_ID = aid,
+                    User_ID = uid,
+                    Server_ID = server.Id.ToString()
+                };
+                DB.DBLists.InsertWarnings(newWarning);
+
+                int warning_count = DB.DBLists.Warnings.Where(w => w.User_ID == user.Id.ToString() && w.Server_ID == server.Id.ToString()).Count();
+
+                SB.AppendLine($"You have been warned by <@{admin.Id}>.\n**Warning Reason:**\t{reason}\n**Warning Level:** {WarnedUserStats.Warning_Level}\n**Server:** {server.Name}");
+                embed = new DiscordEmbedBuilder
+                {
+                    Color = new DiscordColor(0xf90707),
+                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                    {
+                        IconUrl = user.AvatarUrl,
+                        Name = user.Username
+                    },
+                    Description = $"**Warned user:**\t{user.Mention}\n**Warning level:**\t {WarnedUserStats.Warning_Level}\t**Warning count:**\t {warning_count}\n**Warned by**\t{admin.Username}\n**Reason:** {reason}"
+                };
+
+                if (WarnedUserStats.Warning_Level > 2)
+                {
+                    SB.AppendLine($"You have been kicked from **{server.Name}** by {admin.Mention} for exceeding the warning level threshold(2).");
+                    kick = true;
+                }
+
+                if (automsg == true)
+                {
+                    SB.Append("*This warning is given out by a bot, contact an admin if you think this is a mistake*");
+                }
+                else
+                {
+                    SB.Append("*(This is an automated message, contact the moderator personally if you have any questions.)*");
+                }
+
+                try
+                {
+                    await user.SendMessageAsync(SB.ToString());
+                }
+                catch
+                {
+                    await modlog.SendMessageAsync($":exclamation::exclamation:{user.Mention} could not be contacted via DM. Reason not sent");
+                }
+
+                await modlog.SendMessageAsync(modinfo, embed: embed);
+
+                if (kick == true)
+                {
+                    await user.RemoveAsync("Exceeded warning limit!");
+                }
+
+                DiscordMessage info = await channel.SendMessageAsync($"{user.Username}, Has been warned!");
+                await Task.Delay(10000).ContinueWith(t => info.DeleteAsync());
+            }
+            else
+            {
+                await channel.SendMessageAsync("This server has not set up this feature!");
+            }
         }
     }
 }

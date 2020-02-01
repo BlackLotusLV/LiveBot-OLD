@@ -63,7 +63,7 @@ namespace LiveBot.Commands
         [Command("ping")]
         [Description("Shows that the bots response time")]
         [Aliases("pong")]
-        [Cooldown(1,10,CooldownBucketType.Channel)]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         public async Task Ping(CommandContext ctx)
         {
             await ctx.RespondAsync($"Pong! {ctx.Client.Ping}ms");
@@ -225,7 +225,7 @@ namespace LiveBot.Commands
         public async Task IT(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
-            FileStream ITImage = new FileStream("ITC.jpg", FileMode.Open);
+            FileStream ITImage = new FileStream("Assets/ITC.jpg", FileMode.Open);
             if (username == null)
             {
                 await ctx.RespondWithFileAsync(ITImage, ctx.User.Mention);
@@ -269,6 +269,7 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync($"{username.Mention}, {content}");
             }
         }
+
         [Command("prosettings")]
         [Aliases("psettings")]
         [Cooldown(1, 10, CooldownBucketType.Channel)]
@@ -296,7 +297,7 @@ namespace LiveBot.Commands
             string content = $"\"{QuotedMessage.Content}\"";
             var embed = new DiscordEmbedBuilder
             {
-                Color = new DiscordColor(0xFF6600)                
+                Color = new DiscordColor(0xFF6600)
             };
             embed.AddField($"Quoted {QuotedMessage.Author.Username}'s message:", $"{content}\n[go to message]({QuotedMessage.JumpLink})");
             if (YourMessage == null)
