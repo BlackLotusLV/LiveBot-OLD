@@ -29,9 +29,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[CHANGE] Some commands got a 10 second cooldown use per channel\n" +
-                "[NEW] `/prosettings` Bot tells you how to find pro settings. Tag a user with the command to ping them.\n" +
-                "";
+            string changelog = "[NEW] Auto moderator added. Certain words and phrases will now automatically give the user a warning\n" +
+                "[CHANE] Internal file management rework, some things might not work untill tested.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

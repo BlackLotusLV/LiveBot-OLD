@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,22 +13,35 @@ namespace LiveBot.Automation
     {
         public static DiscordChannel TC1Photomode;
         public static DiscordChannel TC2Photomode;
-
+        
         public static async Task Auto_Moderator_Banned_Words(MessageCreateEventArgs e)
         {
             if (!e.Author.IsBot)
             {
-                var wordlist = (from bw in DB.DBLists.AMBannedWords
-                                where bw.Server_ID == e.Guild.Id.ToString()
-                                select bw).ToList();
-
-                foreach (var word in wordlist)
+                bool permissionCheck = false;
+                DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+                foreach (DiscordRole role in member.Roles)
                 {
-                    if (Regex.IsMatch(e.Message.Content, @$"\b{word.Word}\b"))
+                    if (role.CheckPermission(Permissions.ManageMessages)==PermissionLevel.Allowed 
+                        || role.CheckPermission(Permissions.KickMembers) == PermissionLevel.Allowed
+                        || role.CheckPermission(Permissions.BanMembers) == PermissionLevel.Allowed
+                        || role.CheckPermission(Permissions.Administrator) == PermissionLevel.Allowed)
                     {
-                        await e.Message.DeleteAsync();
-                        DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
-                        await CustomMethod.WarnUserAsync(member, Program.Client.CurrentUser, e.Guild, e.Channel, word.Offense, true);
+                        permissionCheck = true;
+                    }
+                }
+                if (!permissionCheck)
+                {
+                    var wordlist = (from bw in DB.DBLists.AMBannedWords
+                                    where bw.Server_ID == e.Guild.Id.ToString()
+                                    select bw).ToList();
+                    foreach (var word in wordlist)
+                    {
+                        if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b"))
+                        {
+                            await e.Message.DeleteAsync();
+                            await CustomMethod.WarnUserAsync(member, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
+                        }
                     }
                 }
             }

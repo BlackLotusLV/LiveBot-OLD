@@ -61,13 +61,18 @@ namespace LiveBot.Commands
                     DB.DBLists.LoadServerSettings();
                     msgcontent = "Server settings list updated";
                     break;
+                case "bannedw":
+                    DB.DBLists.LoadBannedWords();
+                    msgcontent = "Banned Words list updated";
+                    break;
 
                 case null:
                 default:
                     msgcontent = "Couldn't find this table. Nothing was updated\n" +
                         "all - updates all tables\n" +
                         "vehicle - updates the **vehicle list**\n" +
-                        "server - updates Server Settings";
+                        "server - updates Server Settings\n" +
+                        "bannedw - Update banned words list";
                     break;
             }
             DiscordMessage msg = await ctx.RespondAsync(msgcontent);

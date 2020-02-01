@@ -368,5 +368,66 @@ namespace LiveBot.Commands
             //sb.AppendLine($"Title: {user.Presence.Activity.RichPresence.Details}");
             await ctx.RespondAsync(sb.ToString());
         }
+
+        [Command("banword")]
+        [Description("Adds a word to banned word list")]
+        public async Task BanWord(CommandContext ctx,
+            [Description("The word that is banned")] string BannedWord,
+            [Description("What the user will be warned with when using such word")] [RemainingText] string warning)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string info = "";
+            DB.DBLists.LoadBannedWords();
+            var duplicate = (from bw in DB.DBLists.AMBannedWords
+                             where bw.Server_ID == ctx.Guild.Id.ToString()
+                             where bw.Word == BannedWord.ToLower()
+                             select bw).FirstOrDefault();
+            if (duplicate is null)
+            {
+                DB.AMBannedWords newEntry = new DB.AMBannedWords()
+                {
+                    Word = BannedWord.ToLower(),
+                    Offense = warning,
+                    Server_ID = ctx.Guild.Id.ToString()
+                };
+                DB.DBLists.InsertBannedWords(newEntry);
+                info = $"The word `{BannedWord.ToLower()}` has been added to the list. They will be warned with `{warning}`";
+            }
+            else
+            {
+                info = $"The word `{BannedWord.ToLower()}` is already in the database for this server.";
+            }
+            DiscordMessage msg = await ctx.RespondAsync(info);
+            await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
+        }
+
+        [Command("unbanword")]
+        [Description("Removes a word from the banned word list")]
+        public async Task UnbanWord(CommandContext ctx,
+            [Description("The word you want to be removed from the list.")] string word)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string info = "";
+            DB.DBLists.LoadBannedWords();
+            var DBEntry = (from bw in DB.DBLists.AMBannedWords
+                           where bw.Server_ID == ctx.Guild.Id.ToString()
+                           where bw.Word == word.ToLower()
+                           select bw).FirstOrDefault();
+            if (DBEntry != null)
+            {
+                var context = new DB.AMBannedWordsContext();
+                context.Remove(DBEntry);
+                context.SaveChanges();
+                info = $"The word `{word.ToLower()}` has been removed from the list.";
+            }
+            else
+            {
+                info = $"The word `{word.ToLower()}` is not listed for this server.";
+            }
+            DiscordMessage msg = await ctx.RespondAsync(info);
+            await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
+        }
     }
 }

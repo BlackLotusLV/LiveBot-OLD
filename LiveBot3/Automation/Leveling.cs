@@ -9,8 +9,8 @@ namespace LiveBot.Automation
 {
     internal class Leveling
     {
-        private static readonly List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
-        private static readonly List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
+        public static List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
+        public static List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
 
         public static async Task Update_User_Levels(MessageCreateEventArgs e)
         {
