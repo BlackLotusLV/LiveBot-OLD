@@ -24,7 +24,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200123_B";
+        public static string BotVersion = $"20200129_A";
 
         // numbers
         public int StreamCheckDelay = 5;

@@ -29,7 +29,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[CHANGE] Some commands got a 10 second cooldown use per channel";
+            string changelog = "[CHANGE] Some commands got a 10 second cooldown use per channel\n" +
+                "[NEW] `/prosettings` Bot tells you how to find pro settings. Tag a user with the command to ping them.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -266,6 +268,21 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondAsync($"{username.Mention}, {content}");
             }
+        }
+        [Command("prosettings")]
+        [Aliases("psettings")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
+        [Description("Explains how to find pro settings")]
+        public async Task ProSettings(CommandContext ctx, DiscordMember user = null)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            if (user is null)
+            {
+                user = ctx.Member;
+            }
+            await ctx.RespondAsync($"{user.Mention}, Go to <#469920096962478080> -> Open pinned messages -> Jump to \"COLLECTION OF ALL OUR PRO TUNES\" message -> Click the link -> Select the discipline -> Press `ctrl+f` -> Write the name of the vehicle.\n" +
+                $"If you are having trouble following the steps, here is a gif to help you https://cdn.discordapp.com/attachments/438354175668256768/672037424649601044/coXUaa7P66.gif");
         }
 
         [Command("quote")]
