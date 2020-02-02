@@ -16,6 +16,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,8 +30,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Auto moderator added. Certain words and phrases will now automatically give the user a warning\n" +
-                "[CHANE] Internal file management rework, some things might not work untill tested.";
+            string changelog = "[FIX] tream check fix(back end)" +
+                "[FIX] `/mysummit` command now should respond that the API is down, when it is down, instead of no answer.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1188,8 +1189,18 @@ namespace LiveBot.Commands
             Json.TCESummit JTCE;
             using (WebClient wc = new WebClient())
             {
-                string Jdown = wc.DownloadString(link);
-                JTCE = JsonConvert.DeserializeObject<Json.TCESummit>(Jdown);
+                try
+                {
+                    string Jdown = wc.DownloadString(link);
+                    JTCE = JsonConvert.DeserializeObject<Json.TCESummit>(Jdown);
+                }
+                catch (Exception)
+                {
+                    JTCE = new Json.TCESummit
+                    {
+                        Error = "No Connection."
+                    };
+                }
             }
 
             Json.TCESummitSubs UserInfo = new Json.TCESummitSubs();
@@ -1200,9 +1211,9 @@ namespace LiveBot.Commands
                 {
                     OutMessage = $"{ctx.Member.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
                 }
-                else if (JTCE.Error == "Invalid API key !")
+                else if (JTCE.Error == "Invalid API key !"||JTCE.Error== "No Connection.")
                 {
-                    OutMessage = $"{ctx.Member.Mention}, the API is down, please try again later.";
+                    OutMessage = $"{ctx.Member.Mention}, the API is down, check <#257513574061178881> and please try again later.";
                 }
             }
             else if (JTCE.Subs.Length == 1)
@@ -1393,6 +1404,7 @@ namespace LiveBot.Commands
                     OutMessage = $"{ctx.Member.Mention}, You have not completed any summit event!";
                 }
             }
+
             if (SendImage)
             {
                 using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);

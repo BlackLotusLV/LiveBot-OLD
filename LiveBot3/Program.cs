@@ -25,7 +25,11 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200201_C";
+        public static string BotVersion = $"20200202_C";
+
+        // Lists
+
+        public static List<ulong> ServerIdList = new List<ulong>();
 
         // string
 
@@ -137,6 +141,7 @@ namespace LiveBot
                 Client.GuildMemberAdded += MemberFlow.Welcome_Member;
                 Client.GuildMemberRemoved += MemberFlow.Say_Goodbye;
             }
+
             await Client.ConnectAsync();
             await Task.Delay(-1);
         }
@@ -149,6 +154,7 @@ namespace LiveBot
 
         private Task Client_GuildAvailable(GuildCreateEventArgs e)
         {
+            ServerIdList.Add(e.Guild.Id);
             var list = (from ss in DB.DBLists.ServerSettings
                         where ss.ID_Server == e.Guild.Id.ToString()
                         select ss).ToList();
@@ -172,7 +178,18 @@ namespace LiveBot
         private async Task<Task> Client_ClientError(ClientErrorEventArgs e)
         {
             e.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"Exception occurred: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
-            await BotErrorLogChannel.SendMessageAsync($"{DateTime.Now} {LogLevel.Error} LiveBot Exception Occured: {e.Exception.GetType()}: {e.Exception.Message}");
+            string errormsg = $"{DateTime.Now} {LogLevel.Error} LiveBot Exception Occured: {e.Exception.GetType()}: {e.Exception.Message}\n" +
+                $"{e.Exception.InnerException}";
+            if (errormsg.Length <= 1900)
+            {
+                await BotErrorLogChannel.SendMessageAsync(errormsg);
+            }
+            else
+            {
+                File.WriteAllText($"{tmpLoc}{errormsg.Length}-errorFile.txt", errormsg);
+                using var upFile = new FileStream($"{tmpLoc}{errormsg.Length}-errorFile.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+                await BotErrorLogChannel.SendFileAsync(upFile);
+            }
             return Task.CompletedTask;
         }
 
@@ -203,10 +220,6 @@ namespace LiveBot
         private async Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
             e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
-            if (e.Exception.InnerException != null)
-            {
-                e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"{e.Exception.InnerException.Message}", DateTime.Now);
-            }
 #pragma warning disable IDE0059 // Value assigned to symbol is never used
             if (e.Exception is ChecksFailedException ex)
 #pragma warning restore IDE0059 // Value assigned to symbol is never used

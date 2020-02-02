@@ -211,7 +211,7 @@ namespace LiveBot
             public TCESummitSubs[] Subs { get; private set; }
 
             [JsonProperty("error")]
-            public string Error { get; private set; }
+            public string Error { get; set; }
         }
 
         public struct TCESummitSubs
