@@ -19,6 +19,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using LiveBot.Json;
+using System.Threading;
 
 namespace LiveBot.Commands
 {
@@ -30,8 +32,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] tream check fix(back end)" +
-                "[FIX] `/mysummit` command now should respond that the API is down, when it is down, instead of no answer.";
+            string changelog = "[CHANGE] Reworked the `/mysummit` command so it... basically programming voodoo";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -626,7 +627,7 @@ namespace LiveBot.Commands
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
-            Json.TCE tcejson = JsonConvert.DeserializeObject<Json.Config>(json).TCE;
+            ConfigJson.TCE tcejson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
             bool tcelink = false;
             if (user == null)
             {
@@ -1099,7 +1100,7 @@ namespace LiveBot.Commands
             using (WebClient wc = new WebClient())
             {
                 string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
-                List<Json.Summit> JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
+                List<TCHubJson.Summit> JSummit = JsonConvert.DeserializeObject<List<TCHubJson.Summit>>(JSummitString);
                 PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
@@ -1108,7 +1109,7 @@ namespace LiveBot.Commands
 
                 endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
-            Json.Rank[] Events = new Json.Rank[3] { JsonConvert.DeserializeObject<Json.Rank>(PCJson), JsonConvert.DeserializeObject<Json.Rank>(PSJson), JsonConvert.DeserializeObject<Json.Rank>(XBJson) };
+            TCHubJson.Rank[] Events = new TCHubJson.Rank[3] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson) };
 
             string[,] pts = new string[3, 4];
             for (int i = 0; i < Events.Length; i++)
@@ -1165,11 +1166,12 @@ namespace LiveBot.Commands
         }
 
         [Command("mysummit")]
-        [Cooldown(1, 300, CooldownBucketType.User)]
+        //[Cooldown(1, 300, CooldownBucketType.User)]
         [Aliases("sinfo", "summitinfo")]
         public async Task MySummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
+            TimerMethod.UpdateHubInfo();
 
             string OutMessage = "";
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
@@ -1183,27 +1185,27 @@ namespace LiveBot.Commands
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
-            Json.TCE tcejson = JsonConvert.DeserializeObject<Json.Config>(json).TCE;
+            ConfigJson.TCE tcejson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
             string link = $"{tcejson.Link}api/tchub/profileId/{tcejson.Key}/{ctx.Member.Id}";
 
-            Json.TCESummit JTCE;
+            TCHubJson.TCESummit JTCE;
             using (WebClient wc = new WebClient())
             {
                 try
                 {
                     string Jdown = wc.DownloadString(link);
-                    JTCE = JsonConvert.DeserializeObject<Json.TCESummit>(Jdown);
+                    JTCE = JsonConvert.DeserializeObject<TCHubJson.TCESummit>(Jdown);
                 }
                 catch (Exception)
                 {
-                    JTCE = new Json.TCESummit
+                    JTCE = new TCHubJson.TCESummit
                     {
                         Error = "No Connection."
                     };
                 }
             }
 
-            Json.TCESummitSubs UserInfo = new Json.TCESummitSubs();
+            TCHubJson.TCESummitSubs UserInfo = new TCHubJson.TCESummitSubs();
 
             if (JTCE.Error != null)
             {
@@ -1257,17 +1259,15 @@ namespace LiveBot.Commands
             if (UserInfo.Profile_ID != null)
             {
                 string SJson;
-                List<Json.Summit> JSummit;
+                List<TCHubJson.Summit> JSummit = Program.JSummit;
                 byte[] EventLogoBit;
                 using (WebClient wc = new WebClient())
                 {
-                    string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
-                    JSummit = JsonConvert.DeserializeObject<List<Json.Summit>>(JSummitString);
                     SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
 
                     endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
                 }
-                Json.Rank Events = JsonConvert.DeserializeObject<Json.Rank>(SJson);
+                TCHubJson.Rank Events = JsonConvert.DeserializeObject<TCHubJson.Rank>(SJson);
 
                 int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
 
@@ -1294,15 +1294,13 @@ namespace LiveBot.Commands
                 if (Events.Points != 0)
                 {
                     using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
-                    for (int i = 0; i < JSummit[0].Events.Length; i++)
+                    Parallel.For(0, 9, (i,state)=>
                     {
+
                         var ThisEvent = JSummit[0].Events[i];
                         var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
 
-                        using (WebClient wc = new WebClient())
-                        {
-                            EventLogoBit = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
-                        }
+                        EventLogoBit = TimerMethod.EventLogoBitArr[i];
                         using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
                         if (i == 5)
                         {
@@ -1319,8 +1317,17 @@ namespace LiveBot.Commands
                         if (Activity.Length > 0)
                         {
                             using WebClient wc = new WebClient();
-                            string[] EventTitle = wc.DownloadString($"{tcejson.Link}api/tchub/event/{tcejson.Key}/{ThisEvent.ID}").Replace("\"", "").Split(' ');
-                            Json.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<Json.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));
+                            string ThisEventNameID = "";
+                            if (ThisEvent.Is_Mission)
+                            {
+                                ThisEventNameID = Program.TCHubMissions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
+                            }
+                            else
+                            {
+                                ThisEventNameID = Program.TCHubSkills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
+                            }
+                            string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", "").Split(' ');
+                            TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
                             {
@@ -1360,13 +1367,13 @@ namespace LiveBot.Commands
                             .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
                             );
                         }
-                    }
+                    });
                     using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Assets/Summit/TierBar.png"))
                     {
                         TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Rgba32.Black), new Point(0, 0), 0.35f));
                         int[] TierXPos = new int[4] { 845, 563, 281, 0 };
                         bool[] Tier = new bool[] { false, false, false, false };
-                        for (int i = 0; i < Events.Tier_entries.Length; i++)
+                        Parallel.For(0, Events.Tier_entries.Length, (i, state) => 
                         {
                             if (Events.Tier_entries[i].Points == 4294967295)
                             {
@@ -1383,7 +1390,7 @@ namespace LiveBot.Commands
                                 .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps12, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
                                 );
                             }
-                        }
+                        });
 
                         TierBar.Mutate(ctx => ctx
                                 .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))

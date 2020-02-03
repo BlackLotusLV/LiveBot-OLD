@@ -17,5 +17,11 @@
   "TCE": {
     "key": "TCE key here",
     "link": "link to tce website"
+  },
+  "TCHub": {
+    "summit": "summit info link",
+    "missions": "mission api link",
+    "dictionary": "name id list",
+    "skills": "skills api link"
   }
 }

@@ -75,7 +75,7 @@ namespace LiveBot
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = sr.ReadToEnd();
-            var cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).DataBase;
+            var cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DataBase;
             return $"Host={cfgjson.Host};Username={cfgjson.Username};Password={cfgjson.Password};Database={cfgjson.Database}; Port={cfgjson.Port}";
         }
 

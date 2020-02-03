@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LiveBot.Json;
 
 namespace LiveBot
 {
@@ -25,7 +26,15 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200202_C";
+        public static string BotVersion = $"20200204_A";
+
+        // TC Hub
+
+        public static ConfigJson.TCHubAPI TCHubJson;
+        public static Dictionary<string,string> TCHubDictionary;
+        public static TCHubJson.Missions[] TCHubMissions;
+        public static TCHubJson.Skills[] TCHubSkills;
+        public static List<TCHubJson.Summit> JSummit;
 
         // Lists
 
@@ -62,12 +71,12 @@ namespace LiveBot
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
-            Json.Bot cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).DevBot;
+            ConfigJson.Bot cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
             if (args.Length == 1)
             {
                 if (args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
                 {
-                    cfgjson = JsonConvert.DeserializeObject<Json.Config>(json).LiveBot;
+                    cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).LiveBot;
                     Console.WriteLine($"Running live version: {BotVersion}");
                     TestBuild = false;
                 }
@@ -107,6 +116,11 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.AdminCommands>();
             this.Commands.RegisterCommands<Commands.OCommands>();
 
+            // TC Hub
+            TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
+            TimerMethod.UpdateHubInfo();
+
+
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
             DiscordGuild testserver = await Client.GetGuildAsync(282478449539678210);
@@ -119,6 +133,7 @@ namespace LiveBot
             //*/
             Timer StreamTimer = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
             Timer RoleTimer = new Timer(e => TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            Timer UpdateTCHubInfo = new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
 
             if (!TestBuild) //Only enables these when using live version
             {

@@ -1,58 +1,17 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
-namespace LiveBot
+namespace LiveBot.Json
 {
-    internal class Json
+    class TCHubJson
     {
-        public struct Config
+        public struct TCHub
         {
-            [JsonProperty("LiveBot")]
-            public Bot LiveBot { get; private set; }
+            [JsonProperty("missions")]
+            public Missions[] Missions { get; private set; }
 
-            [JsonProperty("DevBot")]
-            public Bot DevBot { get; private set; }
-
-            [JsonProperty("DataBase")]
-            public DB DataBase { get; private set; }
-
-            [JsonProperty("TCE")]
-            public TCE TCE { get; private set; }
-        }
-
-        public struct Bot
-        {
-            [JsonProperty("token")]
-            public string Token { get; private set; }
-
-            [JsonProperty("prefix")]
-            public string CommandPrefix { get; private set; }
-        }
-
-        public struct DB
-        {
-            [JsonProperty("host")]
-            public string Host { get; private set; }
-
-            [JsonProperty("username")]
-            public string Username { get; private set; }
-
-            [JsonProperty("password")]
-            public string Password { get; private set; }
-
-            [JsonProperty("database")]
-            public string Database { get; private set; }
-
-            [JsonProperty("port")]
-            public string Port { get; private set; }
-        }
-
-        public struct TCE
-        {
-            [JsonProperty("key")]
-            public string Key { get; private set; }
-
-            [JsonProperty("link")]
-            public string Link { get; private set; }
+            [JsonProperty("skills")]
+            public Skills[] Skills { get; private set; }
         }
 
         public struct Summit
@@ -86,6 +45,8 @@ namespace LiveBot
 
             [JsonProperty("events")]
             public Event[] Events { get; private set; }
+            [JsonProperty("rewards")]
+            public Reward[] Rewards { get; set; }
         }
 
         public struct Event
@@ -127,7 +88,7 @@ namespace LiveBot
             public string Type { get; private set; }
 
             [JsonProperty("extra")]
-            public Reward_Extra[] Extra { get; private set; }
+            public Dictionary<string,string> Extra { get; private set; }
         }
 
         public struct Reward_Extra
@@ -158,6 +119,7 @@ namespace LiveBot
 
             [JsonProperty("vcat_color")]
             public string Discipline_Color_Hex { get; private set; }
+
         }
 
         public struct Rank
@@ -254,6 +216,47 @@ namespace LiveBot
 
             [JsonProperty("score_format")]
             public string Score_Format { get; private set; }
+        }
+
+        public struct Missions
+        {
+            [JsonProperty("id")]
+            public ulong ID { get; private set; }
+
+            [JsonProperty("text_id")]
+            public string Text_ID { get; private set; }
+
+            [JsonProperty("type")]
+            public string Type { get; private set; }
+
+            [JsonProperty("unlock_level")]
+            public int Unlock_Level { get; private set; }
+
+            [JsonProperty("image_path")]
+            public string IMG_Path { get; private set; }
+
+            [JsonProperty("discipline")]
+            public string Discipline_ID { get; private set; }
+        }
+        public struct Skills
+        {
+            [JsonProperty("id")]
+            public ulong ID { get; private set; }
+
+            [JsonProperty("text_id")]
+            public string Text_ID { get; private set; }
+
+            [JsonProperty("family")]
+            public string Family { get; private set; }
+
+            [JsonProperty("type_text_id")]
+            public string Type_Text_ID { get; private set; }
+
+            [JsonProperty("score_type")]
+            public string Score_Type { get; private set; }
+
+            [JsonProperty("img_path")]
+            public string IMG_Path { get; private set; }
         }
     }
 }
