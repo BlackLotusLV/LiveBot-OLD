@@ -1166,7 +1166,7 @@ namespace LiveBot.Commands
         }
 
         [Command("mysummit")]
-        //[Cooldown(1, 300, CooldownBucketType.User)]
+        [Cooldown(1, 300, CooldownBucketType.User)]
         [Aliases("sinfo", "summitinfo")]
         public async Task MySummit(CommandContext ctx, string platform = null)
         {
@@ -1320,11 +1320,11 @@ namespace LiveBot.Commands
                             string ThisEventNameID = "";
                             if (ThisEvent.Is_Mission)
                             {
-                                ThisEventNameID = Program.TCHubMissions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
+                                ThisEventNameID = Program.TCHub.Missions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                             }
                             else
                             {
-                                ThisEventNameID = Program.TCHubSkills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
+                                ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                             }
                             string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", "").Split(' ');
                             TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));

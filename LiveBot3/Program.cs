@@ -26,14 +26,13 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200204_A";
+        public static string BotVersion = $"20200204_B";
 
         // TC Hub
 
         public static ConfigJson.TCHubAPI TCHubJson;
         public static Dictionary<string,string> TCHubDictionary;
-        public static TCHubJson.Missions[] TCHubMissions;
-        public static TCHubJson.Skills[] TCHubSkills;
+        public static TCHubJson.TCHub TCHub;
         public static List<TCHubJson.Summit> JSummit;
 
         // Lists

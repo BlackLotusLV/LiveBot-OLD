@@ -20,8 +20,7 @@
   },
   "TCHub": {
     "summit": "summit info link",
-    "missions": "mission api link",
-    "dictionary": "name id list",
-    "skills": "skills api link"
+    "gamedata": "data/game? api link",
+    "dictionary": "name id list"
   }
 }

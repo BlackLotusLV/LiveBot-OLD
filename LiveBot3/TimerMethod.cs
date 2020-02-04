@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using LiveBot.Json;
+using System.Text;
+using System.Linq;
 
 namespace LiveBot
 {
@@ -57,28 +59,24 @@ namespace LiveBot
         {
             List<TCHubJson.Summit> JSummit;
             DateTime endtime;
-            using (WebClient wc = new WebClient())
+            using WebClient wc = new WebClient();
+            string JSummitString = wc.DownloadString(Program.TCHubJson.Summit);
+            JSummit = JsonConvert.DeserializeObject<List<TCHubJson.Summit>>(JSummitString);
+            endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
+
+            if (endtime != TCHubLastUpdated)
             {
-                string JSummitString = wc.DownloadString(Program.TCHubJson.Summit);
-                JSummit = JsonConvert.DeserializeObject<List<TCHubJson.Summit>>(JSummitString);
-                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
-
-                if (endtime != TCHubLastUpdated)
+                TCHubLastUpdated = endtime;
+                Program.TCHubDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(wc.DownloadString(Program.TCHubJson.Dictionary));
+                Program.JSummit = JSummit;
+                Program.TCHub = JsonConvert.DeserializeObject<TCHubJson.TCHub>(wc.DownloadString(Program.TCHubJson.GameData));
+                for (int i = 0; i < JSummit[0].Events.Length; i++)
                 {
-                    TCHubLastUpdated = endtime;
-                    Program.TCHubDictionary = JsonConvert.DeserializeObject<Dictionary<string,string>>(wc.DownloadString(Program.TCHubJson.Dictionary));
-                    Program.JSummit = JSummit;
-                    Program.TCHubMissions = JsonConvert.DeserializeObject<TCHubJson.TCHub>(wc.DownloadString(Program.TCHubJson.Missions)).Missions;
-                    Program.TCHubSkills = JsonConvert.DeserializeObject<TCHubJson.TCHub>(wc.DownloadString(Program.TCHubJson.Skills)).Skills;
-                    for (int i = 0; i < JSummit[0].Events.Length; i++)
-                    {
-                        var ThisEvent = JSummit[0].Events[i];
+                    var ThisEvent = JSummit[0].Events[i];
 
-                            EventLogoBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
-                    }
-
-                    Console.WriteLine($"[TCHub] Info downloaded for {JSummit[0].Summit_ID} summit.");
+                    EventLogoBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
                 }
+                Console.WriteLine($"[TCHub] Info downloaded for {JSummit[0].Summit_ID} summit.");
             }
         }
     }

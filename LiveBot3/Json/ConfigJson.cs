@@ -62,12 +62,10 @@ namespace LiveBot
         {
             [JsonProperty("summit")]
             public string Summit { get; set; }
-            [JsonProperty("missions")]
-            public string Missions { get; set; }
+            [JsonProperty("gamedata")]
+            public string GameData { get; set; }
             [JsonProperty("dictionary")]
             public string Dictionary { get; set; }
-            [JsonProperty("skills")]
-            public string Skills { get; set; }
 
         }
 
