@@ -1,6 +1,6 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace LiveBot.Automation
     {
         public static DiscordChannel TC1Photomode;
         public static DiscordChannel TC2Photomode;
-        
+
         public static async Task Auto_Moderator_Banned_Words(MessageCreateEventArgs e)
         {
             if (!e.Author.IsBot)
@@ -22,7 +22,7 @@ namespace LiveBot.Automation
                 DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                 foreach (DiscordRole role in member.Roles)
                 {
-                    if (role.CheckPermission(Permissions.ManageMessages)==PermissionLevel.Allowed 
+                    if (role.CheckPermission(Permissions.ManageMessages) == PermissionLevel.Allowed
                         || role.CheckPermission(Permissions.KickMembers) == PermissionLevel.Allowed
                         || role.CheckPermission(Permissions.BanMembers) == PermissionLevel.Allowed
                         || role.CheckPermission(Permissions.Administrator) == PermissionLevel.Allowed)

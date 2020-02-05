@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace LiveBot
 {
@@ -18,6 +17,7 @@ namespace LiveBot
 
             [JsonProperty("TCE")]
             public TCE TCE { get; private set; }
+
             [JsonProperty("TCHub")]
             public TCHubAPI TCHub { get; private set; }
         }
@@ -62,13 +62,12 @@ namespace LiveBot
         {
             [JsonProperty("summit")]
             public string Summit { get; set; }
+
             [JsonProperty("gamedata")]
             public string GameData { get; set; }
+
             [JsonProperty("dictionary")]
             public string Dictionary { get; set; }
-
         }
-
-        
     }
 }

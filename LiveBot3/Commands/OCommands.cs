@@ -61,6 +61,7 @@ namespace LiveBot.Commands
                     DB.DBLists.LoadServerSettings();
                     msgcontent = "Server settings list updated";
                     break;
+
                 case "bannedw":
                     DB.DBLists.LoadBannedWords();
                     msgcontent = "Banned Words list updated";
@@ -79,12 +80,20 @@ namespace LiveBot.Commands
             await Task.Delay(10000);
             await msg.DeleteAsync();
         }
+
         [Command("updatehub")]
         public async Task UpdateHub(CommandContext ctx)
         {
             TimerMethod.UpdateHubInfo();
             DiscordMessage msg = await ctx.RespondAsync("TCHub info has been force updated.");
             await Task.Delay(1000).ContinueWith(f => msg.DeleteAsync());
+        }
+
+        [Command("stopbot")]
+        public async Task StopBot(CommandContext ctx)
+        {
+            await ctx.Message.DeleteAsync();
+            System.Environment.Exit(0);
         }
     }
 }

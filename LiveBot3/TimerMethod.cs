@@ -1,12 +1,10 @@
 ﻿using DSharpPlus.Entities;
 using LiveBot.Automation;
+using LiveBot.Json;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using LiveBot.Json;
-using System.Text;
-using System.Linq;
 
 namespace LiveBot
 {
@@ -14,8 +12,6 @@ namespace LiveBot
     {
         private static DateTime TCHubLastUpdated = new DateTime();
         public static byte[][] EventLogoBitArr = new byte[9][];
-
-
 
         public static void StreamListCheck(List<LiveStreamer> list, int StreamCheckDelay)
         {

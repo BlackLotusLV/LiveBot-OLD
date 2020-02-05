@@ -6,6 +6,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using LiveBot.Automation;
+using LiveBot.Json;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using System;
@@ -16,7 +17,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using LiveBot.Json;
 
 namespace LiveBot
 {
@@ -26,12 +26,12 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200204_B";
+        public static string BotVersion = $"20200205_A";
 
         // TC Hub
 
         public static ConfigJson.TCHubAPI TCHubJson;
-        public static Dictionary<string,string> TCHubDictionary;
+        public static Dictionary<string, string> TCHubDictionary;
         public static TCHubJson.TCHub TCHub;
         public static List<TCHubJson.Summit> JSummit;
 
@@ -118,7 +118,6 @@ namespace LiveBot
             // TC Hub
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
             TimerMethod.UpdateHubInfo();
-
 
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
@@ -233,7 +232,7 @@ namespace LiveBot
 
         private async Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+            e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}\n{e.Exception.InnerException}", DateTime.Now);
 #pragma warning disable IDE0059 // Value assigned to symbol is never used
             if (e.Exception is ChecksFailedException ex)
 #pragma warning restore IDE0059 // Value assigned to symbol is never used

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace LiveBot.Json
 {
-    class TCHubJson
+    internal class TCHubJson
     {
         public struct TCHub
         {
@@ -12,12 +12,16 @@ namespace LiveBot.Json
 
             [JsonProperty("skills")]
             public Skill[] Skills { get; private set; }
+
             [JsonProperty("brands")]
             public Brand[] Brands { get; private set; }
+
             [JsonProperty("models")]
             public Model[] Models { get; private set; }
+
             [JsonProperty("disciplines")]
             public Discipline[] Disciplines { get; private set; }
+
             [JsonProperty("families")]
             public Family[] Families { get; private set; }
         }
@@ -53,6 +57,7 @@ namespace LiveBot.Json
 
             [JsonProperty("events")]
             public Event[] Events { get; private set; }
+
             [JsonProperty("rewards")]
             public Reward[] Rewards { get; set; }
         }
@@ -96,7 +101,7 @@ namespace LiveBot.Json
             public string Type { get; private set; }
 
             [JsonProperty("extra")]
-            public Dictionary<string,string> Extra { get; private set; }
+            public Dictionary<string, string> Extra { get; private set; }
         }
 
         public struct Reward_Extra
@@ -127,7 +132,6 @@ namespace LiveBot.Json
 
             [JsonProperty("vcat_color")]
             public string Discipline_Color_Hex { get; private set; }
-
         }
 
         public struct Rank
@@ -246,6 +250,7 @@ namespace LiveBot.Json
             [JsonProperty("discipline")]
             public string Discipline_ID { get; private set; }
         }
+
         public struct Skill
         {
             [JsonProperty("id")]
@@ -266,41 +271,54 @@ namespace LiveBot.Json
             [JsonProperty("img_path")]
             public string IMG_Path { get; private set; }
         }
+
         public struct Brand
         {
             [JsonProperty("id")]
             public string ID { get; private set; }
+
             [JsonProperty("text_id")]
             public string Text_ID { get; private set; }
+
             [JsonProperty("rank")]
             public int Rank { get; private set; }
         }
+
         public struct Model
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
+
             [JsonProperty("text_id")]
             public string Text_ID { get; private set; }
+
             [JsonProperty("vcat")]
             public string VCat { get; private set; }
+
             [JsonProperty("brand")]
             public string Brand_ID { get; private set; }
         }
+
         public struct Discipline
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
+
             [JsonProperty("text_id")]
             public string Text_ID { get; private set; }
+
             [JsonProperty("family")]
             public ulong Family_ID { get; private set; }
+
             [JsonProperty("img_path")]
             public string IMG_Path { get; private set; }
         }
+
         public struct Family
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
+
             [JsonProperty("text_id")]
             public string Text_ID { get; private set; }
         }

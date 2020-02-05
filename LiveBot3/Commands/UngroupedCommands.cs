@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using LiveBot.Json;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -16,11 +17,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using LiveBot.Json;
-using System.Threading;
 
 namespace LiveBot.Commands
 {
@@ -32,7 +30,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[CHANGE] Reworked the `/mysummit` command so it... basically programming voodoo";
+            string changelog = "Code cleanup";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1213,9 +1211,10 @@ namespace LiveBot.Commands
                 {
                     OutMessage = $"{ctx.Member.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
                 }
-                else if (JTCE.Error == "Invalid API key !"||JTCE.Error== "No Connection.")
+                else if (JTCE.Error == "Invalid API key !" || JTCE.Error == "No Connection.")
                 {
-                    OutMessage = $"{ctx.Member.Mention}, the API is down, check <#257513574061178881> and please try again later.";
+                    OutMessage = $"{ctx.Member.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
+                        $"<@85017957343694848> Rip API";
                 }
             }
             else if (JTCE.Subs.Length == 1)
@@ -1294,9 +1293,8 @@ namespace LiveBot.Commands
                 if (Events.Points != 0)
                 {
                     using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
-                    Parallel.For(0, 9, (i,state)=>
+                    Parallel.For(0, 9, (i, state) =>
                     {
-
                         var ThisEvent = JSummit[0].Events[i];
                         var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
 
@@ -1373,7 +1371,7 @@ namespace LiveBot.Commands
                         TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Rgba32.Black), new Point(0, 0), 0.35f));
                         int[] TierXPos = new int[4] { 845, 563, 281, 0 };
                         bool[] Tier = new bool[] { false, false, false, false };
-                        Parallel.For(0, Events.Tier_entries.Length, (i, state) => 
+                        Parallel.For(0, Events.Tier_entries.Length, (i, state) =>
                         {
                             if (Events.Tier_entries[i].Points == 4294967295)
                             {
