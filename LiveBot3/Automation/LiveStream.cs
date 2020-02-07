@@ -14,7 +14,7 @@ namespace LiveBot.Automation
 
         public static async Task Stream_Notification(PresenceUpdateEventArgs e)
         {
-            if (e != null)
+            if (e.User != null)
             {
                 List<DB.StreamNotifications> StreamNotifications = DB.DBLists.StreamNotifications;
                 foreach (var row in StreamNotifications)

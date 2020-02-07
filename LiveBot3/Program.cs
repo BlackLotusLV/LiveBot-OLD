@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200205_A";
+        public static string BotVersion = $"20200207_A";
 
         // TC Hub
 
@@ -143,6 +143,7 @@ namespace LiveBot
                 Client.MessageCreated += AutoMod.Photomode_Cleanup;
                 Client.MessageCreated += AutoMod.Auto_Moderator_Banned_Words;
                 Client.MessageDeleted += AutoMod.Delete_Log;
+                Client.MessagesBulkDeleted += AutoMod.Bulk_Delete_Log;
                 Client.GuildMemberAdded += AutoMod.User_Join_Log;
                 Client.GuildMemberRemoved += AutoMod.User_Leave_Log;
                 Client.GuildMemberRemoved += AutoMod.User_Kicked_Log;
@@ -154,7 +155,6 @@ namespace LiveBot
                 Client.GuildMemberAdded += MemberFlow.Welcome_Member;
                 Client.GuildMemberRemoved += MemberFlow.Say_Goodbye;
             }
-
             await Client.ConnectAsync();
             await Task.Delay(-1);
         }

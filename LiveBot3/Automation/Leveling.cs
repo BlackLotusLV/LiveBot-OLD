@@ -14,7 +14,7 @@ namespace LiveBot.Automation
 
         public static async Task Update_User_Levels(MessageCreateEventArgs e)
         {
-            if (!e.Author.IsBot)
+            if (!e.Author.IsBot && e.Guild != null)
             {
                 DB.DBLists.LoadServerRanks();
                 DB.DBLists.LoadLeaderboard();
