@@ -30,7 +30,11 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "Code cleanup";
+            string changelog = "[FIX] Bot reacting to DMs and trying to find user stats(followers/bucks)\n" +
+                "[FIX] Moderator log should now correctly show who unbanned the user.\n" +
+                "[NEW] Bulk delete log added for prune and deleted messages on ban.\n" +
+                "[OPTIMISATION] `/summit` command optimised.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1097,8 +1101,7 @@ namespace LiveBot.Commands
             DateTime endtime;
             using (WebClient wc = new WebClient())
             {
-                string JSummitString = wc.DownloadString("https://api.thecrew-hub.com/v1/data/summit");
-                List<TCHubJson.Summit> JSummit = JsonConvert.DeserializeObject<List<TCHubJson.Summit>>(JSummitString);
+                List<TCHubJson.Summit> JSummit = Program.JSummit;
                 PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
@@ -1130,33 +1133,32 @@ namespace LiveBot.Commands
             using (Image<Rgba32> BaseImg = new Image<Rgba32>(900, 643))
             {
                 Image<Rgba32>[] PlatformImg = new Image<Rgba32>[3] { PCImg, PSImg, XBImg };
-                for (int i = 0; i < Events.Length; i++)
+                Parallel.For(0, Events.Length, (i, state) =>
                 {
-                    using (Image<Rgba32> TierImg = Image.Load<Rgba32>("Assets/Summit/SummitBase.png"))
-                    using (Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo))
-                    using (Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30))
-                    {
-                        Rgba32 TextColour = Rgba32.WhiteSmoke;
-                        Point SummitLocation = new Point(0 + (300 * i), 0);
-                        Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
-                        Font FooterFont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-                        FooterImg.Mutate(ctx => ctx
-                        .Fill(Rgba32.Black)
-                        .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
+                    using Image<Rgba32> TierImg = Image.Load<Rgba32>("Assets/Summit/SummitBase.png");
+                    using Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo);
+                    using Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30);
+                    SummitImg.Mutate(ctx => ctx.Crop(300, SummitImg.Height));
+                    Rgba32 TextColour = Rgba32.WhiteSmoke;
+                    Point SummitLocation = new Point(0 + (300 * i), 0);
+                    Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
+                    Font FooterFont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+                    FooterImg.Mutate(ctx => ctx
+                    .Fill(Rgba32.Black)
+                    .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
+                    );
+                    BaseImg.Mutate(ctx => ctx
+                        .DrawImage(SummitImg, SummitLocation, 1)
+                        .DrawImage(TierImg, SummitLocation, 1)
+                        .DrawText(pts[i, 3], Basefont, TextColour, new PointF(80 + (300 * i), 370))
+                        .DrawText(pts[i, 2], Basefont, TextColour, new PointF(80 + (300 * i), 440))
+                        .DrawText(pts[i, 1], Basefont, TextColour, new PointF(80 + (300 * i), 510))
+                        .DrawText(pts[i, 0], Basefont, TextColour, new PointF(80 + (300 * i), 580))
+                        .DrawImage(FooterImg, new Point(0 + (300 * i), 613), 1)
+                        .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
                         );
-                        BaseImg.Mutate(ctx => ctx
-                            .DrawImage(SummitImg, SummitLocation, 1)
-                            .DrawImage(TierImg, SummitLocation, 1)
-                            .DrawText(pts[i, 3], Basefont, TextColour, new PointF(80 + (300 * i), 370))
-                            .DrawText(pts[i, 2], Basefont, TextColour, new PointF(80 + (300 * i), 440))
-                            .DrawText(pts[i, 1], Basefont, TextColour, new PointF(80 + (300 * i), 510))
-                            .DrawText(pts[i, 0], Basefont, TextColour, new PointF(80 + (300 * i), 580))
-                            .DrawImage(FooterImg, new Point(0 + (300 * i), 613), 1)
-                            .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
-                            );
-                    }
-                    BaseImg.Save(imageLoc);
-                }
+                });
+                BaseImg.Save(imageLoc);
             }
             TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
