@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace LiveBot.DB
 {
@@ -23,22 +24,21 @@ namespace LiveBot.DB
 
         public static void LoadAllLists()
         {
-            LoadVehicleList();
-            LoadDisciplineList();
-            LoadReactionRoles();
-            LoadStreamNotifications();
-            LoadBackgroundImage();
-            LoadLeaderboard();
-            LoadServerRanks();
-            LoadUserImages();
-            LoadUserSettings();
-            LoadWarnings();
             LoadServerSettings();
-            LoadRankRoles();
-            LoadCUC();
-            LoadBannedWords();
+            new Thread(LoadVehicleList).Start();
+            new Thread(LoadDisciplineList).Start();
+            new Thread(LoadReactionRoles).Start();
+            new Thread(LoadStreamNotifications).Start();
+            new Thread(LoadBackgroundImage).Start();
+            new Thread(LoadLeaderboard).Start();
+            new Thread(LoadServerRanks).Start();
+            new Thread(LoadUserImages).Start();
+            new Thread(LoadUserSettings).Start();
+            new Thread(LoadWarnings).Start();
+            new Thread(LoadRankRoles).Start();
+            new Thread(LoadCUC).Start();
+            new Thread(LoadBannedWords).Start();
         }
-
         public static void LoadVehicleList()
         {
             using var ctx = new VehicleListContext();

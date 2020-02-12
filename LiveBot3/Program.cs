@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +67,7 @@ namespace LiveBot
 
             bool TestBuild = true;
 
-            var json = "";
+            var json = string.Empty;
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
@@ -117,7 +118,8 @@ namespace LiveBot
 
             // TC Hub
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
-            TimerMethod.UpdateHubInfo();
+            Thread HubThread = new Thread(TimerMethod.UpdateHubInfo);
+            HubThread.Start();
 
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
@@ -258,7 +260,7 @@ namespace LiveBot
                     Description = msgContent,
                     Color = new DiscordColor(0xFF0000) // red
                 };
-                DiscordMessage errorMSG = await e.Context.RespondAsync("", embed: embed);
+                DiscordMessage errorMSG = await e.Context.RespondAsync(string.Empty, embed: embed);
                 await Task.Delay(10000).ContinueWith(t => errorMSG.DeleteAsync());
             }
         }

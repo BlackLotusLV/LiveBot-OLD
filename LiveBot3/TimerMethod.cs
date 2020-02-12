@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace LiveBot
 {
@@ -56,23 +57,38 @@ namespace LiveBot
             List<TCHubJson.Summit> JSummit;
             DateTime endtime;
             using WebClient wc = new WebClient();
-            string JSummitString = wc.DownloadString(Program.TCHubJson.Summit);
-            JSummit = JsonConvert.DeserializeObject<List<TCHubJson.Summit>>(JSummitString);
-            endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
-
-            if (endtime != TCHubLastUpdated)
+            bool Connected = true;
+            string JSummitString="";
+            try
             {
-                TCHubLastUpdated = endtime;
-                Program.TCHubDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(wc.DownloadString(Program.TCHubJson.Dictionary));
-                Program.JSummit = JSummit;
-                Program.TCHub = JsonConvert.DeserializeObject<TCHubJson.TCHub>(wc.DownloadString(Program.TCHubJson.GameData));
-                for (int i = 0; i < JSummit[0].Events.Length; i++)
-                {
-                    var ThisEvent = JSummit[0].Events[i];
+                JSummitString = wc.DownloadString(Program.TCHubJson.Summit);
+            }
+            catch (WebException)
+            {
+                Connected = false;
+            }
+            if (Connected)
+            {
+                JSummit = JsonConvert.DeserializeObject<List<TCHubJson.Summit>>(JSummitString);
+                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
 
-                    EventLogoBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
+                if (endtime != TCHubLastUpdated)
+                {
+                    TCHubLastUpdated = endtime;
+                    Program.TCHubDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(wc.DownloadString(Program.TCHubJson.Dictionary));
+                    Program.JSummit = JSummit;
+                    Program.TCHub = JsonConvert.DeserializeObject<TCHubJson.TCHub>(wc.DownloadString(Program.TCHubJson.GameData));
+                    for (int i = 0; i < JSummit[0].Events.Length; i++)
+                    {
+                        var ThisEvent = JSummit[0].Events[i];
+                        EventLogoBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
+                    }
+                    Console.WriteLine($"[TCHub] Info downloaded for {JSummit[0].Summit_ID} summit.");
                 }
-                Console.WriteLine($"[TCHub] Info downloaded for {JSummit[0].Summit_ID} summit.");
+            }
+            else
+            {
+                Console.WriteLine("[TCHub] Connection error. Either wrong API link, or the Hub is down.");
             }
         }
     }

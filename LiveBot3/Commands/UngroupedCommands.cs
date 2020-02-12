@@ -30,11 +30,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Bot reacting to DMs and trying to find user stats(followers/bucks)\n" +
-                "[FIX] Moderator log should now correctly show who unbanned the user.\n" +
-                "[NEW] Bulk delete log added for prune and deleted messages on ban.\n" +
-                "[OPTIMISATION] `/summit` command optimised.\n" +
-                "";
+            string changelog = "[OPTIMISATION] Startup speed improved, startup error fix\n" +
+                "[OPTIMISATION] Code cleanup";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -579,7 +576,7 @@ namespace LiveBot.Commands
             {
                 user = ctx.Member;
             }
-            string output = "";
+            string output = string.Empty;
             int rank = 0;
             List<DB.ServerRanks> SR = DB.DBLists.ServerRanks;
             List<DB.ServerRanks> serverRanks = SR.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).OrderByDescending(x => x.Followers).ToList();
@@ -603,7 +600,7 @@ namespace LiveBot.Commands
             {
                 user = ctx.Member;
             }
-            string output = "";
+            string output = string.Empty;
             int rank = 0;
             List<DB.Leaderboard> LB = DB.DBLists.Leaderboard;
             List<DB.Leaderboard> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
@@ -625,7 +622,7 @@ namespace LiveBot.Commands
             [Description("Specify which user to show, if left empty, will take command caster")]DiscordMember user = null)
         {
             await ctx.TriggerTypingAsync();
-            string json = "";
+            string json = string.Empty;
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
@@ -720,7 +717,7 @@ namespace LiveBot.Commands
             background.Mutate(ctx => ctx
             .Fill(backfieldcolour)
             );
-            string info = "";
+            string info = string.Empty;
             int LetterCount = 0, MaxInLine = 50, MaxLines = 8, LineCount = 1;
             foreach (var word in bio.Split(' '))
             {
@@ -823,7 +820,7 @@ namespace LiveBot.Commands
         [Priority(9)]
         public async Task Profile(CommandContext ctx, [Description("profile settings command input, write `/profile help` for info")] params string[] input)
         {
-            string output = "";
+            string output = string.Empty;
             if (input[0] == "update" && input.Length > 1)
             {
                 List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
@@ -1036,7 +1033,7 @@ namespace LiveBot.Commands
             [Description("What you want to buy")] string what,
             [Description("ID of what you want to buy")]int id)
         {
-            string output = "";
+            string output = string.Empty;
             if (what == "background" || what == "bg")
             {
                 List<DB.UserImages> UserImg = DB.DBLists.UserImages;
@@ -1095,7 +1092,7 @@ namespace LiveBot.Commands
         public async Task Summit(CommandContext ctx)
         {
             await ctx.TriggerTypingAsync();
-            string PCJson = "", XBJson = "", PSJson = "";
+            string PCJson = string.Empty, XBJson = string.Empty, PSJson = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summit.png";
             byte[] SummitLogo;
             DateTime endtime;
@@ -1119,7 +1116,7 @@ namespace LiveBot.Commands
                 {
                     if (Events[i].Tier_entries[j].Points == 4294967295)
                     {
-                        pts[i, j] = "";
+                        pts[i, j] = string.Empty;
                     }
                     else
                     {
@@ -1173,15 +1170,15 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
             TimerMethod.UpdateHubInfo();
 
-            string OutMessage = "";
+            string OutMessage = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
 
             bool SendImage = false;
 
             DateTime endtime;
 
-            string search = "";
-            string json = "";
+            string search = string.Empty;
+            string json = string.Empty;
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
@@ -1317,7 +1314,7 @@ namespace LiveBot.Commands
                         if (Activity.Length > 0)
                         {
                             using WebClient wc = new WebClient();
-                            string ThisEventNameID = "";
+                            string ThisEventNameID = string.Empty;
                             if (ThisEvent.Is_Mission)
                             {
                                 ThisEventNameID = Program.TCHub.Missions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
@@ -1326,7 +1323,7 @@ namespace LiveBot.Commands
                             {
                                 ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                             }
-                            string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", "").Split(' ');
+                            string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", string.Empty).Split(' ');
                             TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
@@ -1473,7 +1470,7 @@ namespace LiveBot.Commands
         [Description("Gives a cookie to someone.")]
         public async Task Cookie(CommandContext ctx, DiscordMember member)
         {
-            string output = "";
+            string output = string.Empty;
             if (ctx.Member == member)
             {
                 output = $"{ctx.Member.Mention}, you can't give a cookie to yourself";
