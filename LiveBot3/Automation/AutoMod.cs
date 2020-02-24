@@ -18,7 +18,7 @@ namespace LiveBot.Automation
 
         public static async Task Auto_Moderator_Banned_Words(MessageCreateEventArgs e)
         {
-            if (!e.Author.IsBot)
+            if (!e.Author.IsBot && e.Guild != null)
             {
                 bool permissionCheck = false;
                 DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);

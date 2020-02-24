@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System;
 
 namespace LiveBot.DB
 {
@@ -38,6 +39,8 @@ namespace LiveBot.DB
             new Thread(LoadRankRoles).Start();
             new Thread(LoadCUC).Start();
             new Thread(LoadBannedWords).Start();
+
+            Console.WriteLine($"[Postgres] Latest database data downloaded");
         }
         public static void LoadVehicleList()
         {

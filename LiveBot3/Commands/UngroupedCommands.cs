@@ -30,8 +30,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[OPTIMISATION] Startup speed improved, startup error fix\n" +
-                "[OPTIMISATION] Code cleanup";
+            string changelog = "internal error fix attempt";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
