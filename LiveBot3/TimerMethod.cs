@@ -13,6 +13,7 @@ namespace LiveBot
     {
         private static DateTime TCHubLastUpdated = new DateTime();
         public static byte[][] EventLogoBitArr = new byte[9][];
+        public static byte[][] RewardsImageBitArr = new byte[4][];
 
         public static void StreamListCheck(List<LiveStreamer> list, int StreamCheckDelay)
         {
@@ -82,6 +83,10 @@ namespace LiveBot
                     {
                         var ThisEvent = JSummit[0].Events[i];
                         EventLogoBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
+                    }
+                    for (int i = 0; i < JSummit[0].Rewards.Length; i++)
+                    {
+                        RewardsImageBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Rewards[i].Img_Path}");
                     }
                     Console.WriteLine($"[TCHub] Info downloaded for {JSummit[0].Summit_ID} summit.");
                 }

@@ -85,14 +85,23 @@ namespace LiveBot.Json
 
         public struct Reward
         {
+            [JsonProperty("summit_id")]
+            public ulong Summit_ID { get; private set; }
+
+            [JsonProperty("debug_name")]
+            public string Debug_Name { get; private set; }
+
             [JsonProperty("level")]
             public int Level { get; private set; }
 
+            [JsonProperty("title_text_id")]
+            public string Title_Text_ID { get; private set; }
+
             [JsonProperty("debug_title")]
-            public string Title { get; private set; }
+            public string Debug_Title { get; private set; }
 
             [JsonProperty("debug_subtitle")]
-            public string Sub_Title { get; private set; }
+            public string Debug_Subtitle { get; private set; }
 
             [JsonProperty("img_path")]
             public string Img_Path { get; private set; }
@@ -102,36 +111,6 @@ namespace LiveBot.Json
 
             [JsonProperty("extra")]
             public Dictionary<string, string> Extra { get; private set; }
-        }
-
-        public struct Reward_Extra
-        {
-            [JsonProperty("currency_type")]
-            public string Currency_Type { get; private set; }
-
-            [JsonProperty("currency_amount")]
-            public int Currency_Amount { get; private set; }
-
-            [JsonProperty("type")]
-            public string Type { get; private set; }
-
-            [JsonProperty("slot_img")]
-            public string Part_Img_Path { get; private set; }
-
-            [JsonProperty("affix2")]
-            public string Affix2 { get; private set; }
-
-            [JsonProperty("quality_color")]
-            public string Rarity_Hex_Code { get; private set; }
-
-            [JsonProperty("bonus_icon")]
-            public string Legendary_Bonus { get; private set; }
-
-            [JsonProperty("vcat_icon")]
-            public string Discipline { get; private set; }
-
-            [JsonProperty("vcat_color")]
-            public string Discipline_Color_Hex { get; private set; }
         }
 
         public struct Rank

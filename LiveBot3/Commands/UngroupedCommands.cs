@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace LiveBot.Commands
 {
@@ -1417,6 +1418,55 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondAsync(OutMessage);
             }
+        }
+
+        [Command("summitrewards")]
+        [Aliases("srewards")]
+        [Cooldown(1, 60, CooldownBucketType.User)]
+        [Description("Shows this weeks summit rewards")]
+        public async Task SummitRewards(CommandContext ctx)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            TimerMethod.UpdateHubInfo();
+
+            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
+            int RewardWidth = 412;
+            StringBuilder sb = new StringBuilder();
+            TCHubJson.Reward[] Rewards = Program.JSummit[0].Rewards;
+            Font Font = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+            using (Image<Rgba32> RewardsImage = new Image<Rgba32>(4 * RewardWidth, 328))
+            {
+                Parallel.For(0, Rewards.Length, (i, state) =>
+                {
+                    string RewardTitle = string.Empty;
+                    if (Rewards[i].Title_Text_ID != null)
+                    {
+                        RewardTitle = Regex.Replace(Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value, "<(\\w||[/ =\"'#]){0,}>", "");
+                    }
+                    else if (Rewards[i].Extra != null)
+                    {
+                        if (Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id") && w.Key.Equals("brand_text_id")) != null)
+                        {
+                            RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
+                        }
+                    }
+                    else
+                    {
+                        RewardTitle = "LiveBot needs to be updated to view this reward!";
+                    }
+
+                    using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[i]);
+
+                    RewardsImage.Mutate(ctx => ctx
+                    .DrawImage(RewardImage,new Point((4 - Rewards[i].Level) * RewardWidth), 0,1)
+                    .DrawText(RewardTitle, Font, Color.Black, new PointF((4 - Rewards[i].Level) * RewardWidth, 0)));
+                });
+                RewardsImage.Save(imageLoc);
+            }
+            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+            await ctx.RespondWithFileAsync(upFile);
+
         }
 
         [Command("daily")]
