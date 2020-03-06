@@ -18,8 +18,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace LiveBot.Commands
 {
@@ -31,7 +31,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "internal error fix attempt";
+            string changelog = "[NEW] Command that shows current week summit rewards `/summitrewards` or `/srewards` *(still needs testing)*\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1430,6 +1431,8 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
             TimerMethod.UpdateHubInfo();
 
+            Color[] RewardColours = new Color[] { Color.FromHex("#0060A9"), Color.FromHex("#D5A45F"), Color.FromHex("#C2C2C2"), Color.FromHex("#B07C4D") };
+
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
             int RewardWidth = 412;
             StringBuilder sb = new StringBuilder();
@@ -1440,33 +1443,50 @@ namespace LiveBot.Commands
                 Parallel.For(0, Rewards.Length, (i, state) =>
                 {
                     string RewardTitle = string.Empty;
-                    if (Rewards[i].Title_Text_ID != null)
+                    if (Rewards[i].Type.Equals("phys_part"))
                     {
-                        RewardTitle = Regex.Replace(Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value, "<(\\w||[/ =\"'#]){0,}>", "");
+                        RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("quality_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}" +
+                        $" {Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("bonus_icon")).FirstOrDefault().Value, "\\w{0,}_", "")} {Rewards[i].Extra.Where(w => w.Key.Equals("type")).FirstOrDefault().Value}" +
+                        $"({Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("vcat_icon")).FirstOrDefault().Value, "\\w{0,}_", "")})";
                     }
-                    else if (Rewards[i].Extra != null)
+                    else if (Rewards[i].Type.Equals("vanity"))
                     {
-                        if (Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id") && w.Key.Equals("brand_text_id")) != null)
-                        {
-                            RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
-                        }
+                        RewardTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value;
+                    }
+                    else if (Rewards[i].Type.Equals("generic"))
+                    {
+                        RewardTitle = Rewards[i].Debug_Title;
+                    }
+                    else if (Rewards[i].Type.Equals("currency"))
+                    {
+                        RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.Where(w => w.Key.Equals("currency_amount")).FirstOrDefault().Value}";
+                    }
+                    else if (Rewards[i].Type.Equals("vehicle"))
+                    {
+                        RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
                     }
                     else
                     {
                         RewardTitle = "LiveBot needs to be updated to view this reward!";
                     }
 
-                    using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[i]);
+                    RewardTitle = Regex.Replace(RewardTitle, "((<(\\w||[/=\"'#\\ ]){0,}>)||(&#\\d{0,}; )){0,}", "").ToUpper();
 
+                    using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[i]);
+                    using Image<Rgba32> TopBar = new Image<Rgba32>(RewardImage.Width, 20);
+                    TopBar.Mutate(ctx => ctx.
+                    Fill(RewardColours[i])
+                    );
                     RewardsImage.Mutate(ctx => ctx
-                    .DrawImage(RewardImage,new Point((4 - Rewards[i].Level) * RewardWidth), 0,1)
-                    .DrawText(RewardTitle, Font, Color.Black, new PointF((4 - Rewards[i].Level) * RewardWidth, 0)));
+                    .DrawImage(RewardImage, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
+                    .DrawImage(TopBar, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
+                    .DrawText(RewardTitle, Font, Color.White, new PointF((4 - Rewards[i].Level) * RewardWidth, 0))
+                    );
                 });
                 RewardsImage.Save(imageLoc);
             }
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-            await ctx.RespondWithFileAsync(upFile);
-
+            await ctx.RespondWithFileAsync(upFile, $"{ctx.Member.Mention}, here are this weeks summit rewards:");
         }
 
         [Command("daily")]
