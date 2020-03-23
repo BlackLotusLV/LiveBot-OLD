@@ -31,8 +31,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Command that shows current week summit rewards `/summitrewards` or `/srewards` *(still needs testing)*\n" +
-                "";
+            string changelog = "[NEW] Summit commands added support for Stadia\n" +
+                "[NEW] If command is written correctly, but extra arguments are added, it will ignore them and execute the command\n" +
+                "[FIX] Warning command now deletes the trigger message at the start of the task, not at the end\n" +
+                "[NEW] `/topsummit` command shows the summit board with the rank 1 scores on all events.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1093,7 +1095,7 @@ namespace LiveBot.Commands
         public async Task Summit(CommandContext ctx)
         {
             await ctx.TriggerTypingAsync();
-            string PCJson = string.Empty, XBJson = string.Empty, PSJson = string.Empty;
+            string PCJson = string.Empty, XBJson = string.Empty, PSJson = string.Empty, StadiaJson = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summit.png";
             byte[] SummitLogo;
             DateTime endtime;
@@ -1103,14 +1105,15 @@ namespace LiveBot.Commands
                 PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                StadiaJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/STADIA/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
 
                 SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
 
                 endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
-            TCHubJson.Rank[] Events = new TCHubJson.Rank[3] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson) };
+            TCHubJson.Rank[] Events = new TCHubJson.Rank[4] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(StadiaJson) };
 
-            string[,] pts = new string[3, 4];
+            string[,] pts = new string[4, 4];
             for (int i = 0; i < Events.Length; i++)
             {
                 for (int j = 0; j < Events[i].Tier_entries.Length; j++)
@@ -1128,9 +1131,10 @@ namespace LiveBot.Commands
             using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Assets/Summit/PC.jpeg"))
             using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Assets/Summit/PS.jpg"))
             using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Assets/Summit/XB.png"))
-            using (Image<Rgba32> BaseImg = new Image<Rgba32>(900, 643))
+            using (Image<Rgba32> StadiaImg = Image.Load<Rgba32>("Assets/Summit/STADIA.png"))
+            using (Image<Rgba32> BaseImg = new Image<Rgba32>(1200, 643))
             {
-                Image<Rgba32>[] PlatformImg = new Image<Rgba32>[3] { PCImg, PSImg, XBImg };
+                Image<Rgba32>[] PlatformImg = new Image<Rgba32>[4] { PCImg, PSImg, XBImg, StadiaImg };
                 Parallel.For(0, Events.Length, (i, state) =>
                 {
                     using Image<Rgba32> TierImg = Image.Load<Rgba32>("Assets/Summit/SummitBase.png");
@@ -1164,6 +1168,7 @@ namespace LiveBot.Commands
         }
 
         [Command("mysummit")]
+        [Description("Shows your summit scores.")]
         [Cooldown(1, 300, CooldownBucketType.User)]
         [Aliases("sinfo", "summitinfo")]
         public async Task MySummit(CommandContext ctx, string platform = null)
@@ -1243,6 +1248,9 @@ namespace LiveBot.Commands
                     case "playstation":
                     case "ps":
                         search = "ps4";
+                        break;
+                    case "stadia":
+                        search = "stadia";
                         break;
                 }
                 if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() == 1)
@@ -1421,6 +1429,180 @@ namespace LiveBot.Commands
             }
         }
 
+        [Command("topsummit")]
+        [Description("Shows the summit board with all the world record scores.")]
+        [Cooldown(1, 300, CooldownBucketType.User)]
+        public async Task TopSummit(CommandContext ctx, string platform = null)
+        {
+            await ctx.TriggerTypingAsync();
+            TimerMethod.UpdateHubInfo();
+
+            int TotalPoints = 0;
+
+            string OutMessage = string.Empty;
+            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-topsummit.png";
+
+            bool SendImage = false;
+            bool alleventscompleted = true;
+
+            DateTime endtime;
+
+            if (platform==null)
+            {
+                platform = "pc";
+            }
+
+            switch (platform.ToLower())
+            {
+                case null:
+                case "pc":
+                case "computer":
+                    platform = "pc";
+                    break;
+
+                case "xbox":
+                case "xb1":
+                case "xb":
+                case "x1":
+                    platform = "x1";
+                    break;
+
+                case "ps4":
+                case "playstation":
+                case "ps":
+                    platform = "ps4";
+                    break;
+                case "stadia":
+                    platform = "stadia";
+                    break;
+            }
+
+            List<TCHubJson.Summit> JSummit = Program.JSummit;
+            byte[] EventLogoBit;
+
+            endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
+
+            int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
+
+            Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
+            Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+            Font SummitCaps12 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
+
+            var AllignCenter = new TextGraphicsOptions(true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            var AllignTopLeft = new TextGraphicsOptions(true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            var AllignTopRight = new TextGraphicsOptions(true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+
+            using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 735);
+            Parallel.For(0, 9, (i, state) =>
+            {
+                using WebClient wc = new WebClient();
+                var ThisEvent = JSummit[0].Events[i];
+                var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{JSummit[0].Events[i].ID}"));
+
+                EventLogoBit = TimerMethod.EventLogoBitArr[i];
+                using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
+                if (i == 5)
+                {
+                    EventImage.Mutate(ctx => ctx.
+                    Resize(380, 483)
+                    );
+                }
+                else if (i >= 0 && i <= 3)
+                {
+                    EventImage.Mutate(ctx => ctx.
+                    Resize(368, 239)
+                    );
+                }
+                if (Activity.Entries.Length > 0)
+                {
+                    string ThisEventNameID = string.Empty;
+                    if (ThisEvent.Is_Mission)
+                    {
+                        ThisEventNameID = Program.TCHub.Missions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
+                    }
+                    else
+                    {
+                        ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
+                    }
+                    string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", string.Empty).Split(' ');
+                    TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}"));
+                    StringBuilder sb = new StringBuilder();
+                    for (int j = 0; j < EventTitle.Length; j++)
+                    {
+                        if (j == 3)
+                        {
+                            sb.AppendLine();
+                        }
+                        sb.Append(EventTitle[j] + " ");
+                    }
+                    using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
+                    using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
+                    {
+                        ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                        TitleBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                        EventImage.Mutate(ctx => ctx
+                        .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
+                        .DrawImage(TitleBar, new Point(0, 0), 0.7f)
+                        .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
+                        .DrawText(AllignTopLeft, $"Rank: 1", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
+                        .DrawText(AllignTopRight, $"{(leaderboard.Score_Format == "time" ? $"Time: {CustomMethod.ScoreToTime(Activity.Entries[0].Score)}" : $"Score: {Activity.Entries[0].Score}")}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                        .DrawText(AllignTopRight, $"Points: {Activity.Entries[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                        );
+                    }
+                    BaseImage.Mutate(ctx => ctx
+                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                    );
+                }
+                else
+                {
+                    using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
+                    NotComplete.Mutate(ctx => ctx
+                        .Fill(Rgba32.Black)
+                        .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
+                        );
+                    BaseImage.Mutate(ctx => ctx
+                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
+                    .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
+                    );
+                    alleventscompleted = false;
+                }
+                TotalPoints += Activity.Entries[0].Points;
+            });
+
+            if (alleventscompleted)
+            {
+                TotalPoints += 100000;
+            }
+
+            TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
+            BaseImage.Save(imageLoc);
+            OutMessage = $"{ctx.Member.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+            SendImage = true;
+
+
+            if (SendImage)
+            {
+                using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+                await ctx.RespondWithFileAsync(upFile, OutMessage);
+            }
+            else
+            {
+                await ctx.RespondAsync(OutMessage);
+            }
+        }
+
         [Command("summitrewards")]
         [Aliases("srewards")]
         [Cooldown(1, 60, CooldownBucketType.User)]
@@ -1440,49 +1622,50 @@ namespace LiveBot.Commands
             Font Font = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
             using (Image<Rgba32> RewardsImage = new Image<Rgba32>(4 * RewardWidth, 328))
             {
+                Program.JSummit.Where(w => w.Rewards.Length == 4);
                 Parallel.For(0, Rewards.Length, (i, state) =>
-                {
-                    string RewardTitle = string.Empty;
-                    if (Rewards[i].Type.Equals("phys_part"))
-                    {
-                        RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("quality_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}" +
-                        $" {Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("bonus_icon")).FirstOrDefault().Value, "\\w{0,}_", "")} {Rewards[i].Extra.Where(w => w.Key.Equals("type")).FirstOrDefault().Value}" +
-                        $"({Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("vcat_icon")).FirstOrDefault().Value, "\\w{0,}_", "")})";
-                    }
-                    else if (Rewards[i].Type.Equals("vanity"))
-                    {
-                        RewardTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value;
-                    }
-                    else if (Rewards[i].Type.Equals("generic"))
-                    {
-                        RewardTitle = Rewards[i].Debug_Title;
-                    }
-                    else if (Rewards[i].Type.Equals("currency"))
-                    {
-                        RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.Where(w => w.Key.Equals("currency_amount")).FirstOrDefault().Value}";
-                    }
-                    else if (Rewards[i].Type.Equals("vehicle"))
-                    {
-                        RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
-                    }
-                    else
-                    {
-                        RewardTitle = "LiveBot needs to be updated to view this reward!";
-                    }
+                 {
+                     string RewardTitle = string.Empty;
+                     if (Rewards[i].Type.Equals("phys_part"))
+                     {
+                         RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("quality_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}" +
+                         $" {Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("bonus_icon")).FirstOrDefault().Value, "\\w{0,}_", "")} {Rewards[i].Extra.Where(w => w.Key.Equals("type")).FirstOrDefault().Value}" +
+                         $"({Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("vcat_icon")).FirstOrDefault().Value, "\\w{0,}_", "")})";
+                     }
+                     else if (Rewards[i].Type.Equals("vanity"))
+                     {
+                         RewardTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value;
+                     }
+                     else if (Rewards[i].Type.Equals("generic"))
+                     {
+                         RewardTitle = Rewards[i].Debug_Title;
+                     }
+                     else if (Rewards[i].Type.Equals("currency"))
+                     {
+                         RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.Where(w => w.Key.Equals("currency_amount")).FirstOrDefault().Value}";
+                     }
+                     else if (Rewards[i].Type.Equals("vehicle"))
+                     {
+                         RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
+                     }
+                     else
+                     {
+                         RewardTitle = "LiveBot needs to be updated to view this reward!";
+                     }
 
-                    RewardTitle = Regex.Replace(RewardTitle, "((<(\\w||[/=\"'#\\ ]){0,}>)||(&#\\d{0,}; )){0,}", "").ToUpper();
+                     RewardTitle = Regex.Replace(RewardTitle, "((<(\\w||[/=\"'#\\ ]){0,}>)||(&#\\d{0,}; )){0,}", "").ToUpper();
 
-                    using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[i]);
-                    using Image<Rgba32> TopBar = new Image<Rgba32>(RewardImage.Width, 20);
-                    TopBar.Mutate(ctx => ctx.
-                    Fill(RewardColours[i])
-                    );
-                    RewardsImage.Mutate(ctx => ctx
-                    .DrawImage(RewardImage, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
-                    .DrawImage(TopBar, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
-                    .DrawText(RewardTitle, Font, Color.White, new PointF((4 - Rewards[i].Level) * RewardWidth, 0))
-                    );
-                });
+                     using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[i]);
+                     using Image<Rgba32> TopBar = new Image<Rgba32>(RewardImage.Width, 20);
+                     TopBar.Mutate(ctx => ctx.
+                     Fill(RewardColours[i])
+                     );
+                     RewardsImage.Mutate(ctx => ctx
+                     .DrawImage(RewardImage, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
+                     .DrawImage(TopBar, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
+                     .DrawText(RewardTitle, Font, Color.White, new PointF(((4 - Rewards[i].Level) * RewardWidth) + 5, 0))
+                     );
+                 });
                 RewardsImage.Save(imageLoc);
             }
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
@@ -1611,5 +1794,7 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync("The Crew 2 Server is Offline");
             }
         }
+
+        
     }
 }

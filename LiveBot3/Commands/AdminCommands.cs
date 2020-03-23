@@ -89,9 +89,9 @@ namespace LiveBot.Commands
         [Cooldown(1, 30, CooldownBucketType.Guild)]
         public async Task Warning(CommandContext ctx, DiscordMember username, [RemainingText] string reason = "Reason not specified")
         {
+            await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
             await CustomMethod.WarnUserAsync(username, ctx.Member, ctx.Guild, ctx.Channel, reason, false);
-            await ctx.Message.DeleteAsync();
         }
 
         [Command("unwarn")]

@@ -259,10 +259,8 @@ namespace LiveBot.Automation
                 if (item.CreationTimestamp >= beforetime && item.CreationTimestamp <= aftertime)
                 {
                     var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
-                    Console.WriteLine(UserSettings.Kick_Count);
                     UserCheck = true;
                     UserSettings.Kick_Count++;
-                    Console.WriteLine(UserSettings.Kick_Count);
                     DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
                     if (!UserCheck)
                     {

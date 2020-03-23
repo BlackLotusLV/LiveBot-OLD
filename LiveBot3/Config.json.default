@@ -19,8 +19,8 @@
     "link": "link to tce website"
   },
   "TCHub": {
-    "summit": "summit info link",
-    "gamedata": "data/game? api link",
-    "dictionary": "name id list"
+    "summit": "TCHub API link for Summit info",
+    "gamedata": "TCHub API link for game data",
+    "dictionary": "TCHub API link for text ID dictionary"
   }
 }

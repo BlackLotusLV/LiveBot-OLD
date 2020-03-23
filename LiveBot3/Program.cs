@@ -104,7 +104,8 @@ namespace LiveBot
             var ccfg = new CommandsNextConfiguration
             {
                 StringPrefixes = new string[] { cfgjson.CommandPrefix },
-                CaseSensitive = false
+                CaseSensitive = false,
+                IgnoreExtraArguments = true
             };
             this.Commands = Client.UseCommandsNext(ccfg);
 
