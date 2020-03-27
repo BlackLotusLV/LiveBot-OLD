@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200306_A";
+        public static string BotVersion = $"20200327_A";
 
         // TC Hub
 
@@ -34,6 +34,7 @@ namespace LiveBot
         public static Dictionary<string, string> TCHubDictionary;
         public static TCHubJson.TCHub TCHub;
         public static List<TCHubJson.Summit> JSummit;
+        public static ConfigJson.TCE TCEJson;
 
         // Lists
 
@@ -71,6 +72,8 @@ namespace LiveBot
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
             ConfigJson.Bot cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
+            TCEJson = JsonConvert.DeserializeObject<ConfigJson.TCE>(json);
+
             if (args.Length == 1)
             {
                 if (args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev

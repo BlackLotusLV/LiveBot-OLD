@@ -31,10 +31,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Summit commands added support for Stadia\n" +
-                "[NEW] If command is written correctly, but extra arguments are added, it will ignore them and execute the command\n" +
-                "[FIX] Warning command now deletes the trigger message at the start of the task, not at the end\n" +
-                "[NEW] `/topsummit` command shows the summit board with the rank 1 scores on all events.";
+            string changelog = "[FIX] `/topsummit` command fixed\n" +
+                "[NEW] Random vehicle command now tells how many vehicles are left in the current rotation.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -568,7 +566,8 @@ namespace LiveBot.Commands
             row = r.Next(SelectedVehicles.Count);
             DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, SelectedVehicles, row));
 
-            await ctx.RespondAsync($"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})");
+            await ctx.RespondAsync($"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})\n" +
+                $"*({SelectedVehicles.Count-1} vehicles left in current rotation)*");
         }
 
         [Command("rank")]
@@ -625,17 +624,12 @@ namespace LiveBot.Commands
             [Description("Specify which user to show, if left empty, will take command caster")]DiscordMember user = null)
         {
             await ctx.TriggerTypingAsync();
-            string json = string.Empty;
-            using (var fs = File.OpenRead("Config.json"))
-            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                json = await sr.ReadToEndAsync();
-            ConfigJson.TCE tcejson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
             bool tcelink = false;
             if (user == null)
             {
                 user = ctx.Member;
             }
-            string link = $"{tcejson.Link}api/bot/isAccountLinked/{tcejson.Key}/{user.Id}";
+            string link = $"{Program.TCEJson.Link}api/bot/isAccountLinked/{Program.TCEJson.Key}/{user.Id}";
             try
             {
                 using WebClient wc = new WebClient();
@@ -686,7 +680,7 @@ namespace LiveBot.Commands
             }
             username = sb.ToString();
             string level = global[0].Level.ToString();
-            string followers = $"{global[0].Followers.ToString()}/{(int)global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)}";
+            string followers = $"{global[0].Followers}/{(int)global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)}";
             string bucks = global[0].Bucks.ToString();
             string bio = UserSettings[0].us.User_Info.ToString();
 
@@ -1099,21 +1093,38 @@ namespace LiveBot.Commands
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summit.png";
             byte[] SummitLogo;
             DateTime endtime;
+
+            int platforms = 4;
+
             using (WebClient wc = new WebClient())
             {
                 List<TCHubJson.Summit> JSummit = Program.JSummit;
                 PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                StadiaJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/STADIA/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                try
+                {
+                    StadiaJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/stadia/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                }
+                catch (Exception)
+                {
+                    platforms = 3;
+                }
 
                 SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
 
                 endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
-            TCHubJson.Rank[] Events = new TCHubJson.Rank[4] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(StadiaJson) };
-
-            string[,] pts = new string[4, 4];
+            TCHubJson.Rank[] Events=new TCHubJson.Rank[0];
+            if (platforms == 4)
+            {
+                Events = new TCHubJson.Rank[4] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(StadiaJson) };
+            }
+            else
+            {
+                Events = new TCHubJson.Rank[3] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson)};
+            }
+            string[,] pts = new string[platforms, 4];
             for (int i = 0; i < Events.Length; i++)
             {
                 for (int j = 0; j < Events[i].Tier_entries.Length; j++)
@@ -1132,7 +1143,7 @@ namespace LiveBot.Commands
             using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Assets/Summit/PS.jpg"))
             using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Assets/Summit/XB.png"))
             using (Image<Rgba32> StadiaImg = Image.Load<Rgba32>("Assets/Summit/STADIA.png"))
-            using (Image<Rgba32> BaseImg = new Image<Rgba32>(1200, 643))
+            using (Image<Rgba32> BaseImg = new Image<Rgba32>(300*platforms, 643))
             {
                 Image<Rgba32>[] PlatformImg = new Image<Rgba32>[4] { PCImg, PSImg, XBImg, StadiaImg };
                 Parallel.For(0, Events.Length, (i, state) =>
@@ -1184,12 +1195,7 @@ namespace LiveBot.Commands
             DateTime endtime;
 
             string search = string.Empty;
-            string json = string.Empty;
-            using (var fs = File.OpenRead("Config.json"))
-            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                json = await sr.ReadToEndAsync();
-            ConfigJson.TCE tcejson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
-            string link = $"{tcejson.Link}api/tchub/profileId/{tcejson.Key}/{ctx.Member.Id}";
+            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.Member.Id}";
 
             TCHubJson.TCESummit JTCE;
             using (WebClient wc = new WebClient())
@@ -1249,6 +1255,7 @@ namespace LiveBot.Commands
                     case "ps":
                         search = "ps4";
                         break;
+
                     case "stadia":
                         search = "stadia";
                         break;
@@ -1333,7 +1340,7 @@ namespace LiveBot.Commands
                                 ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                             }
                             string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", string.Empty).Split(' ');
-                            TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}"));
+                            TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}?page_size=1"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
                             {
@@ -1393,7 +1400,7 @@ namespace LiveBot.Commands
                                 }
 
                                 TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points.ToString()}", SummitCaps12, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
+                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points}", SummitCaps12, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
                                 );
                             }
                         });
@@ -1447,7 +1454,7 @@ namespace LiveBot.Commands
 
             DateTime endtime;
 
-            if (platform==null)
+            if (platform == null)
             {
                 platform = "pc";
             }
@@ -1472,6 +1479,7 @@ namespace LiveBot.Commands
                 case "ps":
                     platform = "ps4";
                     break;
+
                 case "stadia":
                     platform = "stadia";
                     break;
@@ -1509,7 +1517,7 @@ namespace LiveBot.Commands
             {
                 using WebClient wc = new WebClient();
                 var ThisEvent = JSummit[0].Events[i];
-                var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{JSummit[0].Events[i].ID}"));
+                var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{JSummit[0].Events[i].ID}?page_size=1"));
 
                 EventLogoBit = TimerMethod.EventLogoBitArr[i];
                 using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
@@ -1537,7 +1545,7 @@ namespace LiveBot.Commands
                         ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                     }
                     string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", string.Empty).Split(' ');
-                    TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}"));
+                    TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}?page_size=1"));
                     StringBuilder sb = new StringBuilder();
                     for (int j = 0; j < EventTitle.Length; j++)
                     {
@@ -1590,7 +1598,6 @@ namespace LiveBot.Commands
             BaseImage.Save(imageLoc);
             OutMessage = $"{ctx.Member.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
             SendImage = true;
-
 
             if (SendImage)
             {
@@ -1670,6 +1677,98 @@ namespace LiveBot.Commands
             }
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             await ctx.RespondWithFileAsync(upFile, $"{ctx.Member.Mention}, here are this weeks summit rewards:");
+        }
+
+        [Command("myfame")]
+        [Cooldown(1, 60, CooldownBucketType.User)]
+        [Description("Tells your followers and rank on the leaderboard")]
+        [RequireRoles(RoleCheckMode.Any, "Patreon", "TCE Patreon", "Ubisoft", "Discord-Moderator")]
+        public async Task MyFame(CommandContext ctx, string platform = null)
+        {
+            await ctx.TriggerTypingAsync();
+
+            string OutMessage = string.Empty;
+            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
+
+            string search = string.Empty;
+
+            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.Member.Id}";
+
+            TCHubJson.TCESummit JTCE;
+            using WebClient wc = new WebClient();
+            try
+            {
+                string Jdown = wc.DownloadString(link);
+                JTCE = JsonConvert.DeserializeObject<TCHubJson.TCESummit>(Jdown);
+            }
+            catch (Exception)
+            {
+                JTCE = new TCHubJson.TCESummit
+                {
+                    Error = "No Connection."
+                };
+            }
+
+            TCHubJson.TCESummitSubs UserInfo = new TCHubJson.TCESummitSubs();
+
+            if (JTCE.Error != null)
+            {
+                if (JTCE.Error == "Unregistered user")
+                {
+                    OutMessage = $"{ctx.Member.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
+                }
+                else if (JTCE.Error == "Invalid API key !" || JTCE.Error == "No Connection.")
+                {
+                    OutMessage = $"{ctx.Member.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
+                        $"<@85017957343694848> Rip API";
+                }
+            }
+            else if (JTCE.Subs.Length == 1)
+            {
+                UserInfo = JTCE.Subs[0];
+                search = UserInfo.Platform;
+            }
+            else if (JTCE.Subs.Length > 1)
+            {
+                switch (platform.ToLower())
+                {
+                    case null:
+                    case "pc":
+                    case "computer":
+                        search = "pc";
+                        break;
+
+                    case "xbox":
+                    case "xb1":
+                    case "xb":
+                    case "x1":
+                        search = "x1";
+                        break;
+
+                    case "ps4":
+                    case "playstation":
+                    case "ps":
+                        search = "ps4";
+                        break;
+
+                    case "stadia":
+                        search = "stadia";
+                        break;
+                }
+                if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() == 1)
+                {
+                    UserInfo = JTCE.Subs.Where(w => w.Platform.Equals(search)).FirstOrDefault();
+                }
+                else if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() != 1)
+                {
+                    UserInfo = JTCE.Subs[0];
+                }
+            }
+
+            TCHubJson.Fame Fame = JsonConvert.DeserializeObject<TCHubJson.Fame>(wc.DownloadString($"https://api.thecrew-hub.com/v1/leaderboard/{UserInfo.Platform}/fame?profile_id={UserInfo.Profile_ID}"));
+            var HubUserInfo = Fame.Scores.Where(w => w.Profile_ID.Equals(UserInfo.Profile_ID)).FirstOrDefault();
+
+            await ctx.RespondAsync($"{ctx.User.Mention}, Your follower count is **{HubUserInfo.Score}**. Your Icon Level is **[WIP]**. You are ranked **{HubUserInfo.Rank} on {search}**");
         }
 
         [Command("daily")]
@@ -1794,7 +1893,5 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync("The Crew 2 Server is Offline");
             }
         }
-
-        
     }
 }

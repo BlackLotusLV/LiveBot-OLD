@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System;
 
 namespace LiveBot.DB
 {
@@ -42,6 +42,7 @@ namespace LiveBot.DB
 
             Console.WriteLine($"[Postgres] Latest database data downloaded");
         }
+
         public static void LoadVehicleList()
         {
             using var ctx = new VehicleListContext();

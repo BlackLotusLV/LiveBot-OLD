@@ -189,7 +189,7 @@ namespace LiveBot.Commands
                 {
                     if ((bool)item.Active == true)
                     {
-                        reason += $"By: <@{item.Admin_ID.ToString()}>\t Reason: {item.Reason.ToString()}\n";
+                        reason += $"By: <@{item.Admin_ID}>\t Reason: {item.Reason}\n";
                     }
                     wcount++;
                 }

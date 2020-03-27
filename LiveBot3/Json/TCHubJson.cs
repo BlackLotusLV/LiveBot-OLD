@@ -301,5 +301,30 @@ namespace LiveBot.Json
             [JsonProperty("text_id")]
             public string Text_ID { get; private set; }
         }
+
+        //Fame board
+        public struct Fame
+        {
+            [JsonProperty("best")]
+            public FameEntity Best { get; private set; }
+
+            [JsonProperty("is_increasing")]
+            public bool Is_Increasing { get; private set; }
+
+            [JsonProperty("scores")]
+            public FameEntity[] Scores { get; private set; }
+        }
+
+        public struct FameEntity
+        {
+            [JsonProperty("profile_id")]
+            public string Profile_ID { get; private set; }
+            
+            [JsonProperty("score")]
+            public int Score { get; private set; }
+
+            [JsonProperty("rank")]
+            public int Rank { get; private set; }
+        }
     }
 }

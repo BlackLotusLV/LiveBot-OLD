@@ -61,13 +61,13 @@ namespace LiveBot
         public struct TCHubAPI
         {
             [JsonProperty("summit")]
-            public string Summit { get; set; }
+            public string Summit { get; private set; }
 
             [JsonProperty("gamedata")]
-            public string GameData { get; set; }
+            public string GameData { get; private set; }
 
             [JsonProperty("dictionary")]
-            public string Dictionary { get; set; }
+            public string Dictionary { get; private set; }
         }
     }
 }

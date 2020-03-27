@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace LiveBot
 {
@@ -59,7 +58,7 @@ namespace LiveBot
             DateTime endtime;
             using WebClient wc = new WebClient();
             bool Connected = true;
-            string JSummitString="";
+            string JSummitString = "";
             try
             {
                 JSummitString = wc.DownloadString(Program.TCHubJson.Summit);

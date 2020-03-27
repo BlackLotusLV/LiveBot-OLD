@@ -132,7 +132,6 @@ namespace LiveBot.Automation
 
         public static async Task Bulk_Delete_Log(MessageBulkDeleteEventArgs e)
         {
-
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                  where ss.ID_Server == e.Guild.Id.ToString()
                                  select ss).ToList();
@@ -148,7 +147,7 @@ namespace LiveBot.Automation
                         if (!message.Author.IsBot)
                         {
                             sb.AppendLine($"{message.Author.Username}{message.Author.Mention} {message.Timestamp} " +
-                                $"\n- {message.Content}");
+                                $"\n{message.Channel.Mention} - {message.Content}");
                         }
                     }
                     else
@@ -157,7 +156,7 @@ namespace LiveBot.Automation
                                 $"\n- Bot was offline when this message was created.");
                     }
                 }
-                if (sb.ToString().Length<2000)
+                if (sb.ToString().Length < 2000)
                 {
                     DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                     {
