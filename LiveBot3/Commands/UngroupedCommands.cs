@@ -1688,7 +1688,7 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
 
             string OutMessage = string.Empty;
-            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
+            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-myfame.png";
 
             string search = string.Empty;
 

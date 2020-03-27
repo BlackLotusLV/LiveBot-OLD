@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200327_A";
+        public static string BotVersion = $"20200327_B";
 
         // TC Hub
 
@@ -71,8 +71,8 @@ namespace LiveBot
             using (var fs = File.OpenRead("Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
+            TCEJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
             ConfigJson.Bot cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
-            TCEJson = JsonConvert.DeserializeObject<ConfigJson.TCE>(json);
 
             if (args.Length == 1)
             {
