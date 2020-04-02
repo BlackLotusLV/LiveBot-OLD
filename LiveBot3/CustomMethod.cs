@@ -277,12 +277,22 @@ namespace LiveBot
             return sb.ToString();
         }
 
-        public static async Task WarnUserAsync(DiscordMember user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
+        public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
         {
             DB.DBLists.LoadServerRanks();
             DB.DBLists.LoadServerSettings();
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id.ToString().Equals(f.Server_ID) && user.Id.ToString().Equals(f.User_ID));
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id.ToString().Equals(f.ID_Server));
+            DiscordMember member = null;
+            try
+            {
+                member = await server.GetMemberAsync(user.Id);
+            }
+            catch (Exception)
+            {
+                await channel.SendMessageAsync($"{user.Username} is no longer in the server.");
+            }
+
             string modinfo = "";
             StringBuilder SB = new StringBuilder();
             string uid = user.Id.ToString(), aid = admin.Id.ToString();
@@ -306,6 +316,14 @@ namespace LiveBot
                 else
                 {
                     WarnedUserStats.Warning_Level++;
+                    if (WarnedUserStats.Followers <= 1000 * WarnedUserStats.Warning_Level)
+                    {
+                        WarnedUserStats.Followers = 0;
+                    }
+                    else
+                    {
+                        WarnedUserStats.Followers -= (1000 * WarnedUserStats.Warning_Level);
+                    }
                     DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { WarnedUserStats });
                 }
 
@@ -351,7 +369,7 @@ namespace LiveBot
 
                 try
                 {
-                    await user.SendMessageAsync(SB.ToString());
+                    await member.SendMessageAsync(SB.ToString());
                 }
                 catch
                 {
@@ -360,9 +378,9 @@ namespace LiveBot
 
                 await modlog.SendMessageAsync(modinfo, embed: embed);
 
-                if (kick == true)
+                if (kick == true && member != null)
                 {
-                    await user.RemoveAsync("Exceeded warning limit!");
+                    await member.RemoveAsync("Exceeded warning limit!");
                 }
 
                 DiscordMessage info = await channel.SendMessageAsync($"{user.Username}, Has been warned!");
@@ -372,6 +390,16 @@ namespace LiveBot
             {
                 await channel.SendMessageAsync("This server has not set up this feature!");
             }
+        }
+        public static string HubTextConverter(string Text_ID)
+        {
+            string text = Program.TCHubDictionary.Where(w => w.Key.Equals(Text_ID)).FirstOrDefault().Value;
+            if (text!=null)
+            {
+                string EndString = Regex.Replace(text, "&#8209;", "-");
+                return EndString;
+            }
+            return "";
         }
     }
 }

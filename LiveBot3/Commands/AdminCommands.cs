@@ -87,7 +87,7 @@ namespace LiveBot.Commands
         [Command("warn")]
         [Description("Warns a user")]
         [Cooldown(1, 30, CooldownBucketType.Guild)]
-        public async Task Warning(CommandContext ctx, DiscordMember username, [RemainingText] string reason = "Reason not specified")
+        public async Task Warning(CommandContext ctx, DiscordUser username, [RemainingText] string reason = "Reason not specified")
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
@@ -96,7 +96,7 @@ namespace LiveBot.Commands
 
         [Command("unwarn")]
         [Description("Removes a warning from a user")]
-        public async Task Unwarning(CommandContext ctx, DiscordMember username)
+        public async Task Unwarning(CommandContext ctx, DiscordUser username)
         {
             await ctx.TriggerTypingAsync();
             await ctx.Message.DeleteAsync();
@@ -104,7 +104,16 @@ namespace LiveBot.Commands
             var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
             var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID)).ToList();
             string MSGOut, modmsg = "";
-            bool check = true;
+            bool check = true; 
+            DiscordMember member = null;
+            try
+            {
+                member = await ctx.Guild.GetMemberAsync(username.Id);
+            }
+            catch (Exception)
+            {
+                await ctx.Channel.SendMessageAsync($"{username.Username} is no longer in the server.");
+            }
             if (ServerSettings.WKB_Log != "0")
             {
                 DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
@@ -142,7 +151,7 @@ namespace LiveBot.Commands
                         };
                         try
                         {
-                            await username.SendMessageAsync($"Your warning level in **{ctx.Guild.Name}** has been lowerd to {WarnedUserStats.Warning_Level} by {ctx.User.Mention}");
+                            await member.SendMessageAsync($"Your warning level in **{ctx.Guild.Name}** has been lowerd to {WarnedUserStats.Warning_Level} by {ctx.User.Mention}");
                         }
                         catch
                         {

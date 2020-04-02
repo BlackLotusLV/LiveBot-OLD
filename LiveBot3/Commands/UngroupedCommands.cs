@@ -31,8 +31,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/topsummit` command fixed\n" +
-                "[NEW] Random vehicle command now tells how many vehicles are left in the current rotation.";
+            string changelog = "[NEW]Users who have left the server can now be warned\n" +
+                "[NEW] Warnings now reduce server followers by 1000*warning_level\n" +
+                "[NEW] Kicks halve your server followers\n" +
+                "[NOT-NEW] Possibly something broken...";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1765,10 +1767,18 @@ namespace LiveBot.Commands
                 }
             }
 
-            TCHubJson.Fame Fame = JsonConvert.DeserializeObject<TCHubJson.Fame>(wc.DownloadString($"https://api.thecrew-hub.com/v1/leaderboard/{UserInfo.Platform}/fame?profile_id={UserInfo.Profile_ID}"));
-            var HubUserInfo = Fame.Scores.Where(w => w.Profile_ID.Equals(UserInfo.Profile_ID)).FirstOrDefault();
+            try
+            {
+                TCHubJson.Fame Fame = JsonConvert.DeserializeObject<TCHubJson.Fame>(wc.DownloadString($"https://api.thecrew-hub.com/v1/leaderboard/{UserInfo.Platform}/fame?profile_id={UserInfo.Profile_ID}"));
+                var HubUserInfo = Fame.Scores.Where(w => w.Profile_ID.Equals(UserInfo.Profile_ID)).FirstOrDefault();
+                OutMessage = $"{ctx.User.Mention}, Your follower count is **{HubUserInfo.Score}**. Your Icon Level is **[WIP]**. You are ranked **{HubUserInfo.Rank} on {search}**";
+            }
+            catch (WebException)
+            {
+                OutMessage = $"{ctx.User.Mention}, The Crew HUB API is currently unavailable.";
+            }
 
-            await ctx.RespondAsync($"{ctx.User.Mention}, Your follower count is **{HubUserInfo.Score}**. Your Icon Level is **[WIP]**. You are ranked **{HubUserInfo.Rank} on {search}**");
+            await ctx.RespondAsync(OutMessage);
         }
 
         [Command("daily")]

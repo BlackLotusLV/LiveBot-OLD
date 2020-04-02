@@ -42,7 +42,7 @@ namespace LiveBot.Automation
                         if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b"))
                         {
                             await e.Message.DeleteAsync();
-                            await CustomMethod.WarnUserAsync(member, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
+                            await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
                         }
                     }
                 }
@@ -260,6 +260,7 @@ namespace LiveBot.Automation
                     var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
                     UserCheck = true;
                     UserSettings.Kick_Count++;
+                    UserSettings.Followers /= 2;
                     DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
                     if (!UserCheck)
                     {
