@@ -15,24 +15,14 @@ namespace LiveBot.Automation
     {
         public static DiscordChannel TC1Photomode;
         public static DiscordChannel TC2Photomode;
+        static List<DiscordMessage> MessageList = new List<DiscordMessage>();
 
         public static async Task Auto_Moderator_Banned_Words(MessageCreateEventArgs e)
         {
             if (!e.Author.IsBot && e.Guild != null)
             {
-                bool permissionCheck = false;
                 DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
-                foreach (DiscordRole role in member.Roles)
-                {
-                    if (role.CheckPermission(Permissions.ManageMessages) == PermissionLevel.Allowed
-                        || role.CheckPermission(Permissions.KickMembers) == PermissionLevel.Allowed
-                        || role.CheckPermission(Permissions.BanMembers) == PermissionLevel.Allowed
-                        || role.CheckPermission(Permissions.Administrator) == PermissionLevel.Allowed)
-                    {
-                        permissionCheck = true;
-                    }
-                }
-                if (!permissionCheck)
+                if (!CustomMethod.CheckIfMemberAdmin(member))
                 {
                     var wordlist = (from bw in DB.DBLists.AMBannedWords
                                     where bw.Server_ID == e.Guild.Id.ToString()
@@ -127,6 +117,11 @@ namespace LiveBot.Automation
                         }
                     }
                 }
+            }
+            var DeletedMSG = MessageList.Where(w => w.Timestamp.Equals(e.Message.Timestamp) && w.Content.Equals(e.Message.Content)).FirstOrDefault();
+            if (DeletedMSG != null)
+            {
+                MessageList.Remove(DeletedMSG);
             }
         }
 
@@ -227,7 +222,6 @@ namespace LiveBot.Automation
             DateTimeOffset beforetime = time.AddSeconds(-5);
             DateTimeOffset aftertime = time.AddSeconds(10);
             string uid = e.Member.Id.ToString();
-            bool UserCheck = false;
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                  where ss.ID_Server == e.Guild.Id.ToString()
                                  select ss).ToList();
@@ -258,11 +252,7 @@ namespace LiveBot.Automation
                 if (item.CreationTimestamp >= beforetime && item.CreationTimestamp <= aftertime)
                 {
                     var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
-                    UserCheck = true;
-                    UserSettings.Kick_Count++;
-                    UserSettings.Followers /= 2;
-                    DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
-                    if (!UserCheck)
+                    if (UserSettings != null)
                     {
                         DB.ServerRanks newEntry = new DB.ServerRanks
                         {
@@ -273,6 +263,12 @@ namespace LiveBot.Automation
                             User_ID = uid
                         };
                         DB.DBLists.InsertServerRanks(newEntry);
+                    }
+                    else
+                    {
+                        UserSettings.Kick_Count++;
+                        UserSettings.Followers /= 2;
+                        DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
                     }
                 }
             }
@@ -346,6 +342,40 @@ namespace LiveBot.Automation
                     Color = new DiscordColor(0x606060),
                 };
                 await wkbLog.SendMessageAsync(embed: embed);
+            }
+        }
+
+        public static async Task Spam_Protection(MessageCreateEventArgs e)
+        {
+            if (!e.Author.IsBot && e.Guild != null)
+            {
+                DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+                if (!CustomMethod.CheckIfMemberAdmin(member))
+                {
+                    MessageList.Add(e.Message);
+                    var duplicatemessages = MessageList.Where(w => w.Author.Equals(e.Author) && w.Content.Equals(e.Message.Content) && e.Guild.Equals(w.Channel.Guild)).ToList();
+                    int i = duplicatemessages.Count();
+                    if (duplicatemessages.Count()>=5)
+                    {
+                        TimeSpan time = (duplicatemessages[i-1].CreationTimestamp - duplicatemessages[i-5].CreationTimestamp)/5;
+                        if (time<TimeSpan.FromSeconds(6))
+                        {
+                            for (int j = 1; j <= 5; j++)
+                            {
+                                await duplicatemessages[i - j].DeleteAsync();
+                                MessageList.Remove(duplicatemessages[i - j]);
+                            }
+                            await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
+                        }
+                    }
+                }
+            }
+        }
+        public static void ClearMSGCache()
+        {
+            if (MessageList.Count > 100)
+            {
+                MessageList.RemoveRange(0, MessageList.Count - 100);
             }
         }
     }

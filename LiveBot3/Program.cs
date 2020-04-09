@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200402_A";
+        public static string BotVersion = $"20200409_A";
 
         // TC Hub
 
@@ -74,6 +74,12 @@ namespace LiveBot
             TCEJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
             ConfigJson.Bot cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
 
+            // TC Hub
+            TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
+            Thread HubThread = new Thread(TimerMethod.UpdateHubInfo);
+            HubThread.Start();
+            //
+
             if (args.Length == 1)
             {
                 if (args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
@@ -88,7 +94,7 @@ namespace LiveBot
                 Token = cfgjson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                ReconnectIndefinitely = true,
+                ReconnectIndefinitely = false,
                 LogLevel = LogLevel.Debug,
                 UseInternalLogHandler = true
             };
@@ -119,11 +125,6 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.AdminCommands>();
             this.Commands.RegisterCommands<Commands.OCommands>();
 
-            // TC Hub
-            TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
-            Thread HubThread = new Thread(TimerMethod.UpdateHubInfo);
-            HubThread.Start();
-
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
             DiscordGuild testserver = await Client.GetGuildAsync(282478449539678210);
@@ -137,6 +138,7 @@ namespace LiveBot
             Timer StreamTimer = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
             Timer RoleTimer = new Timer(e => TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             Timer UpdateTCHubInfo = new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+            Timer ClearSpamMessageCache = new Timer(e => AutoMod.ClearMSGCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
 
             if (!TestBuild) //Only enables these when using live version
             {
@@ -160,8 +162,10 @@ namespace LiveBot
                 Client.GuildMemberAdded += MemberFlow.Welcome_Member;
                 Client.GuildMemberRemoved += MemberFlow.Say_Goodbye;
             }
+            Client.MessageCreated += AutoMod.Spam_Protection;
             await Client.ConnectAsync();
             await Task.Delay(-1);
+
         }
 
         private Task Client_Ready(ReadyEventArgs e)

@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using LiveBot.Automation;
 using LiveBot.Json;
 using Newtonsoft.Json;

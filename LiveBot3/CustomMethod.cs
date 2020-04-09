@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp.PixelFormats;
@@ -400,6 +401,21 @@ namespace LiveBot
                 return EndString;
             }
             return "";
+        }
+
+        public static bool CheckIfMemberAdmin(DiscordMember member)
+        {
+            foreach (DiscordRole role in member.Roles)
+            {
+                if (role.CheckPermission(Permissions.ManageMessages) == PermissionLevel.Allowed
+                    || role.CheckPermission(Permissions.KickMembers) == PermissionLevel.Allowed
+                    || role.CheckPermission(Permissions.BanMembers) == PermissionLevel.Allowed
+                    || role.CheckPermission(Permissions.Administrator) == PermissionLevel.Allowed)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

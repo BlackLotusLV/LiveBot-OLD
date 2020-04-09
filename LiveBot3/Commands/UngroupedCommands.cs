@@ -31,10 +31,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW]Users who have left the server can now be warned\n" +
-                "[NEW] Warnings now reduce server followers by 1000*warning_level\n" +
-                "[NEW] Kicks halve your server followers\n" +
-                "[NOT-NEW] Possibly something broken...";
+            string changelog = "[FIX] Error occuring at user kick given certain parameters\n" +
+                "[CHANGE] `/summit` command cooldown increased to 5 minutes from 2\n" +
+                "[NEW] Prototype Anti-Spam system added.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1086,7 +1086,7 @@ namespace LiveBot.Commands
         }
 
         [Command("summit")]
-        [Cooldown(1, 120, CooldownBucketType.User)]
+        [Cooldown(1, 300, CooldownBucketType.User)]
         [Description("Shows summit tier list and time left.")]
         public async Task Summit(CommandContext ctx)
         {
@@ -1782,6 +1782,7 @@ namespace LiveBot.Commands
         }
 
         [Command("daily")]
+        [Aliases("dailies")]
         [Cooldown(1, 60, CooldownBucketType.User)]
         [Description("Gives 200 bucks to yourself, or 200-400 if you give someone else.")]
         public async Task Daily(CommandContext ctx, DiscordMember member = null)
