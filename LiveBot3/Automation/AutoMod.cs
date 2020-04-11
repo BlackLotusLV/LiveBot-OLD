@@ -15,7 +15,7 @@ namespace LiveBot.Automation
     {
         public static DiscordChannel TC1Photomode;
         public static DiscordChannel TC2Photomode;
-        static List<DiscordMessage> MessageList = new List<DiscordMessage>();
+        private static List<DiscordMessage> MessageList = new List<DiscordMessage>();
 
         public static async Task Auto_Moderator_Banned_Words(MessageCreateEventArgs e)
         {
@@ -349,23 +349,31 @@ namespace LiveBot.Automation
         {
             if (!e.Author.IsBot && e.Guild != null)
             {
-                DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
-                if (!CustomMethod.CheckIfMemberAdmin(member))
+
+                var Server_Settings = (from ss in DB.DBLists.ServerSettings
+                                    where ss.ID_Server == e.Guild.Id.ToString()
+                                    select ss).FirstOrDefault();
+                DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(Server_Settings.ID_Server));
+                if (Server_Settings.WKB_Log != "0" && !Server_Settings.Spam_Exception_Channels.Any(id=> Convert.ToInt64(id).Equals(e.Channel.Id)))
                 {
-                    MessageList.Add(e.Message);
-                    var duplicatemessages = MessageList.Where(w => w.Author.Equals(e.Author) && w.Content.Equals(e.Message.Content) && e.Guild.Equals(w.Channel.Guild)).ToList();
-                    int i = duplicatemessages.Count();
-                    if (duplicatemessages.Count()>=5)
+                    DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+                    if (!CustomMethod.CheckIfMemberAdmin(member))
                     {
-                        TimeSpan time = (duplicatemessages[i-1].CreationTimestamp - duplicatemessages[i-5].CreationTimestamp)/5;
-                        if (time<TimeSpan.FromSeconds(6))
+                        MessageList.Add(e.Message);
+                        var duplicatemessages = MessageList.Where(w => w.Author.Equals(e.Author) && w.Content.Equals(e.Message.Content) && e.Guild.Equals(w.Channel.Guild)).ToList();
+                        int i = duplicatemessages.Count();
+                        if (duplicatemessages.Count() >= 5)
                         {
-                            for (int j = 1; j <= 5; j++)
+                            TimeSpan time = (duplicatemessages[i - 1].CreationTimestamp - duplicatemessages[i - 5].CreationTimestamp) / 5;
+                            if (time < TimeSpan.FromSeconds(6))
                             {
-                                await duplicatemessages[i - j].DeleteAsync();
-                                MessageList.Remove(duplicatemessages[i - j]);
+                                for (int j = 1; j <= 5; j++)
+                                {
+                                    await duplicatemessages[i - j].DeleteAsync();
+                                    MessageList.Remove(duplicatemessages[i - j]);
+                                }
+                                await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
                             }
-                            await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
                         }
                     }
                 }

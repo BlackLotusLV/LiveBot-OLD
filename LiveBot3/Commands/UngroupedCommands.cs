@@ -31,9 +31,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Error occuring at user kick given certain parameters\n" +
-                "[CHANGE] `/summit` command cooldown increased to 5 minutes from 2\n" +
-                "[NEW] Prototype Anti-Spam system added.\n" +
+            string changelog = "[FIX] Spam trigger in photomode channels\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

@@ -27,5 +27,8 @@ namespace LiveBot.DB
 
         [Column("selected_count")]
         public int Selected_Count { get; set; }
+
+        [Column("summit_vehicle")]
+        public bool IsSummitVehicle { get; set; }
     }
 }

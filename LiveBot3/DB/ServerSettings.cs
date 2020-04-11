@@ -21,5 +21,8 @@ namespace LiveBot.DB
 
         [Column("welcome_cwb")]
         public string[] Welcome_Settings { get; set; }
+
+        [Column("spam_exception")]
+        public string[] Spam_Exception_Channels { get; set; }
     }
 }
