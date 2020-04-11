@@ -3,9 +3,9 @@
 --
 
 -- Dumped from database version 12.1 (Debian 12.1-1.pgdg100+1)
--- Dumped by pg_dump version 12.0
+-- Dumped by pg_dump version 12.2
 
--- Started on 2020-02-05 19:39:23
+-- Started on 2020-04-11 13:26:17
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -29,7 +29,7 @@ CREATE SCHEMA livebot;
 ALTER SCHEMA livebot OWNER TO livebot;
 
 --
--- TOC entry 3153 (class 0 OID 0)
+-- TOC entry 3155 (class 0 OID 0)
 -- Dependencies: 6
 -- Name: SCHEMA livebot; Type: COMMENT; Schema: -; Owner: livebot
 --
@@ -113,7 +113,7 @@ CREATE SEQUENCE livebot."AM_Banned_Words_id_banned_word_seq"
 ALTER TABLE livebot."AM_Banned_Words_id_banned_word_seq" OWNER TO livebot;
 
 --
--- TOC entry 3154 (class 0 OID 0)
+-- TOC entry 3156 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: AM_Banned_Words_id_banned_word_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -180,7 +180,7 @@ CREATE SEQUENCE livebot."Commands_Used_Count_command_id_seq"
 ALTER TABLE livebot."Commands_Used_Count_command_id_seq" OWNER TO livebot;
 
 --
--- TOC entry 3155 (class 0 OID 0)
+-- TOC entry 3157 (class 0 OID 0)
 -- Dependencies: 206
 -- Name: Commands_Used_Count_command_id_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -200,7 +200,8 @@ CREATE TABLE livebot."Vehicle_List" (
     model text NOT NULL,
     year text NOT NULL,
     type text NOT NULL,
-    selected_count integer DEFAULT 0 NOT NULL
+    selected_count integer DEFAULT 0 NOT NULL,
+    summit_vehicle boolean DEFAULT false NOT NULL
 );
 
 
@@ -298,7 +299,7 @@ CREATE SEQUENCE livebot."Rank_Roles_id_rank_roles_seq"
 ALTER TABLE livebot."Rank_Roles_id_rank_roles_seq" OWNER TO livebot;
 
 --
--- TOC entry 3156 (class 0 OID 0)
+-- TOC entry 3158 (class 0 OID 0)
 -- Dependencies: 213
 -- Name: Rank_Roles_id_rank_roles_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -351,7 +352,8 @@ CREATE TABLE livebot."Server_Settings" (
     delete_log text DEFAULT '0'::text NOT NULL,
     user_traffic text DEFAULT '0'::text NOT NULL,
     wkb_log text DEFAULT '0'::text NOT NULL,
-    welcome_cwb text[] DEFAULT '{0,0,0}'::text[] NOT NULL
+    welcome_cwb text[] DEFAULT '{0,0,0}'::text[] NOT NULL,
+    spam_exception text[] DEFAULT '{0}'::text[] NOT NULL
 );
 
 
@@ -453,7 +455,7 @@ CREATE SEQUENCE livebot.backgrond_image_id_bg_seq
 ALTER TABLE livebot.backgrond_image_id_bg_seq OWNER TO livebot;
 
 --
--- TOC entry 3157 (class 0 OID 0)
+-- TOC entry 3159 (class 0 OID 0)
 -- Dependencies: 222
 -- Name: backgrond_image_id_bg_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -477,7 +479,7 @@ CREATE SEQUENCE livebot.discipline_list_id_discipline_seq
 ALTER TABLE livebot.discipline_list_id_discipline_seq OWNER TO livebot;
 
 --
--- TOC entry 3158 (class 0 OID 0)
+-- TOC entry 3160 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: discipline_list_id_discipline_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -501,7 +503,7 @@ CREATE SEQUENCE livebot.reaction_roles_id_seq
 ALTER TABLE livebot.reaction_roles_id_seq OWNER TO livebot;
 
 --
--- TOC entry 3159 (class 0 OID 0)
+-- TOC entry 3161 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: reaction_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -525,7 +527,7 @@ CREATE SEQUENCE livebot."server_ranks_Id_server_rank_seq"
 ALTER TABLE livebot."server_ranks_Id_server_rank_seq" OWNER TO livebot;
 
 --
--- TOC entry 3160 (class 0 OID 0)
+-- TOC entry 3162 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: server_ranks_Id_server_rank_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -549,7 +551,7 @@ CREATE SEQUENCE livebot.stream_notification_stream_notification_id_seq
 ALTER TABLE livebot.stream_notification_stream_notification_id_seq OWNER TO livebot;
 
 --
--- TOC entry 3161 (class 0 OID 0)
+-- TOC entry 3163 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: stream_notification_stream_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -573,7 +575,7 @@ CREATE SEQUENCE livebot.user_images_id_user_images_seq
 ALTER TABLE livebot.user_images_id_user_images_seq OWNER TO livebot;
 
 --
--- TOC entry 3162 (class 0 OID 0)
+-- TOC entry 3164 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: user_images_id_user_images_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -597,7 +599,7 @@ CREATE SEQUENCE livebot.user_settings_id_user_settings_seq
 ALTER TABLE livebot.user_settings_id_user_settings_seq OWNER TO livebot;
 
 --
--- TOC entry 3163 (class 0 OID 0)
+-- TOC entry 3165 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: user_settings_id_user_settings_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -621,7 +623,7 @@ CREATE SEQUENCE livebot.vehicle_list_id_vehicle_seq
 ALTER TABLE livebot.vehicle_list_id_vehicle_seq OWNER TO livebot;
 
 --
--- TOC entry 3164 (class 0 OID 0)
+-- TOC entry 3166 (class 0 OID 0)
 -- Dependencies: 229
 -- Name: vehicle_list_id_vehicle_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -645,7 +647,7 @@ CREATE SEQUENCE livebot.warnings_id_warning_seq
 ALTER TABLE livebot.warnings_id_warning_seq OWNER TO livebot;
 
 --
--- TOC entry 3165 (class 0 OID 0)
+-- TOC entry 3167 (class 0 OID 0)
 -- Dependencies: 230
 -- Name: warnings_id_warning_seq; Type: SEQUENCE OWNED BY; Schema: livebot; Owner: livebot
 --
@@ -654,7 +656,7 @@ ALTER SEQUENCE livebot.warnings_id_warning_seq OWNED BY livebot."Warnings".id_wa
 
 
 --
--- TOC entry 2980 (class 2604 OID 16867)
+-- TOC entry 2982 (class 2604 OID 16867)
 -- Name: AM_Banned_Words id_banned_word; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -678,7 +680,7 @@ ALTER TABLE ONLY livebot."Commands_Used_Count" ALTER COLUMN command_id SET DEFAU
 
 
 --
--- TOC entry 2959 (class 2604 OID 16623)
+-- TOC entry 2960 (class 2604 OID 16623)
 -- Name: Discipline_List id_discipline; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -686,7 +688,7 @@ ALTER TABLE ONLY livebot."Discipline_List" ALTER COLUMN id_discipline SET DEFAUL
 
 
 --
--- TOC entry 2965 (class 2604 OID 16624)
+-- TOC entry 2966 (class 2604 OID 16624)
 -- Name: Rank_Roles id_rank_roles; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -694,7 +696,7 @@ ALTER TABLE ONLY livebot."Rank_Roles" ALTER COLUMN id_rank_roles SET DEFAULT nex
 
 
 --
--- TOC entry 2966 (class 2604 OID 16625)
+-- TOC entry 2967 (class 2604 OID 16625)
 -- Name: Reaction_Roles id; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -702,7 +704,7 @@ ALTER TABLE ONLY livebot."Reaction_Roles" ALTER COLUMN id SET DEFAULT nextval('l
 
 
 --
--- TOC entry 2971 (class 2604 OID 16626)
+-- TOC entry 2972 (class 2604 OID 16626)
 -- Name: Server_Ranks id_server_rank; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -710,7 +712,7 @@ ALTER TABLE ONLY livebot."Server_Ranks" ALTER COLUMN id_server_rank SET DEFAULT 
 
 
 --
--- TOC entry 2976 (class 2604 OID 16627)
+-- TOC entry 2978 (class 2604 OID 16627)
 -- Name: Stream_Notification stream_notification_id; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -718,7 +720,7 @@ ALTER TABLE ONLY livebot."Stream_Notification" ALTER COLUMN stream_notification_
 
 
 --
--- TOC entry 2977 (class 2604 OID 16628)
+-- TOC entry 2979 (class 2604 OID 16628)
 -- Name: User_Images id_user_images; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -726,7 +728,7 @@ ALTER TABLE ONLY livebot."User_Images" ALTER COLUMN id_user_images SET DEFAULT n
 
 
 --
--- TOC entry 2978 (class 2604 OID 16629)
+-- TOC entry 2980 (class 2604 OID 16629)
 -- Name: User_Settings id_user_settings; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -742,7 +744,7 @@ ALTER TABLE ONLY livebot."Vehicle_List" ALTER COLUMN id_vehicle SET DEFAULT next
 
 
 --
--- TOC entry 2979 (class 2604 OID 16631)
+-- TOC entry 2981 (class 2604 OID 16631)
 -- Name: Warnings id_warning; Type: DEFAULT; Schema: livebot; Owner: livebot
 --
 
@@ -750,7 +752,7 @@ ALTER TABLE ONLY livebot."Warnings" ALTER COLUMN id_warning SET DEFAULT nextval(
 
 
 --
--- TOC entry 3010 (class 2606 OID 16872)
+-- TOC entry 3012 (class 2606 OID 16872)
 -- Name: AM_Banned_Words AM_Banned_Words_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -759,7 +761,7 @@ ALTER TABLE ONLY livebot."AM_Banned_Words"
 
 
 --
--- TOC entry 2984 (class 2606 OID 16703)
+-- TOC entry 2986 (class 2606 OID 16703)
 -- Name: Commands_Used_Count Commands_Used_Count_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -768,7 +770,7 @@ ALTER TABLE ONLY livebot."Commands_Used_Count"
 
 
 --
--- TOC entry 2994 (class 2606 OID 16705)
+-- TOC entry 2996 (class 2606 OID 16705)
 -- Name: Rank_Roles Rank_Roles_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -777,7 +779,7 @@ ALTER TABLE ONLY livebot."Rank_Roles"
 
 
 --
--- TOC entry 3000 (class 2606 OID 16707)
+-- TOC entry 3002 (class 2606 OID 16707)
 -- Name: Server_Settings Server_Settings_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -786,7 +788,7 @@ ALTER TABLE ONLY livebot."Server_Settings"
 
 
 --
--- TOC entry 2982 (class 2606 OID 16709)
+-- TOC entry 2984 (class 2606 OID 16709)
 -- Name: Background_Image backgrond_image_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -795,7 +797,7 @@ ALTER TABLE ONLY livebot."Background_Image"
 
 
 --
--- TOC entry 2988 (class 2606 OID 16711)
+-- TOC entry 2990 (class 2606 OID 16711)
 -- Name: Discipline_List discipline_list_discipline_name_key; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -804,7 +806,7 @@ ALTER TABLE ONLY livebot."Discipline_List"
 
 
 --
--- TOC entry 2990 (class 2606 OID 16713)
+-- TOC entry 2992 (class 2606 OID 16713)
 -- Name: Discipline_List discipline_list_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -813,7 +815,7 @@ ALTER TABLE ONLY livebot."Discipline_List"
 
 
 --
--- TOC entry 2992 (class 2606 OID 16715)
+-- TOC entry 2994 (class 2606 OID 16715)
 -- Name: Leaderboard leaderboard_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -822,7 +824,7 @@ ALTER TABLE ONLY livebot."Leaderboard"
 
 
 --
--- TOC entry 2996 (class 2606 OID 16717)
+-- TOC entry 2998 (class 2606 OID 16717)
 -- Name: Reaction_Roles reaction_roles_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -831,7 +833,7 @@ ALTER TABLE ONLY livebot."Reaction_Roles"
 
 
 --
--- TOC entry 2998 (class 2606 OID 16719)
+-- TOC entry 3000 (class 2606 OID 16719)
 -- Name: Server_Ranks server_ranks_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -840,7 +842,7 @@ ALTER TABLE ONLY livebot."Server_Ranks"
 
 
 --
--- TOC entry 3002 (class 2606 OID 16721)
+-- TOC entry 3004 (class 2606 OID 16721)
 -- Name: Stream_Notification stream_notification_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -849,7 +851,7 @@ ALTER TABLE ONLY livebot."Stream_Notification"
 
 
 --
--- TOC entry 3004 (class 2606 OID 16723)
+-- TOC entry 3006 (class 2606 OID 16723)
 -- Name: User_Images user_images_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -858,7 +860,7 @@ ALTER TABLE ONLY livebot."User_Images"
 
 
 --
--- TOC entry 3006 (class 2606 OID 16725)
+-- TOC entry 3008 (class 2606 OID 16725)
 -- Name: User_Settings user_settings_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -867,7 +869,7 @@ ALTER TABLE ONLY livebot."User_Settings"
 
 
 --
--- TOC entry 2986 (class 2606 OID 16727)
+-- TOC entry 2988 (class 2606 OID 16727)
 -- Name: Vehicle_List vehicle_list_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -876,7 +878,7 @@ ALTER TABLE ONLY livebot."Vehicle_List"
 
 
 --
--- TOC entry 3008 (class 2606 OID 16729)
+-- TOC entry 3010 (class 2606 OID 16729)
 -- Name: Warnings warnings_pkey; Type: CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -885,7 +887,7 @@ ALTER TABLE ONLY livebot."Warnings"
 
 
 --
--- TOC entry 3012 (class 2606 OID 16757)
+-- TOC entry 3014 (class 2606 OID 16757)
 -- Name: Rank_Roles Server_Settings; Type: FK CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -894,7 +896,7 @@ ALTER TABLE ONLY livebot."Rank_Roles"
 
 
 --
--- TOC entry 3014 (class 2606 OID 16762)
+-- TOC entry 3016 (class 2606 OID 16762)
 -- Name: User_Images background to user list; Type: FK CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -903,7 +905,7 @@ ALTER TABLE ONLY livebot."User_Images"
 
 
 --
--- TOC entry 3013 (class 2606 OID 16767)
+-- TOC entry 3015 (class 2606 OID 16767)
 -- Name: Server_Ranks server_ranks_user_id_fkey; Type: FK CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -912,7 +914,7 @@ ALTER TABLE ONLY livebot."Server_Ranks"
 
 
 --
--- TOC entry 3017 (class 2606 OID 16873)
+-- TOC entry 3019 (class 2606 OID 16873)
 -- Name: AM_Banned_Words server_settings_FK; Type: FK CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -921,7 +923,7 @@ ALTER TABLE ONLY livebot."AM_Banned_Words"
 
 
 --
--- TOC entry 3016 (class 2606 OID 16772)
+-- TOC entry 3018 (class 2606 OID 16772)
 -- Name: User_Settings user settings to user; Type: FK CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -930,7 +932,7 @@ ALTER TABLE ONLY livebot."User_Settings"
 
 
 --
--- TOC entry 3015 (class 2606 OID 16777)
+-- TOC entry 3017 (class 2606 OID 16777)
 -- Name: User_Images user to leaderboard; Type: FK CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -939,7 +941,7 @@ ALTER TABLE ONLY livebot."User_Images"
 
 
 --
--- TOC entry 3011 (class 2606 OID 16782)
+-- TOC entry 3013 (class 2606 OID 16782)
 -- Name: Vehicle_List vehicle_list_discipline_fkey; Type: FK CONSTRAINT; Schema: livebot; Owner: livebot
 --
 
@@ -947,7 +949,7 @@ ALTER TABLE ONLY livebot."Vehicle_List"
     ADD CONSTRAINT vehicle_list_discipline_fkey FOREIGN KEY (discipline) REFERENCES livebot."Discipline_List"(id_discipline);
 
 
--- Completed on 2020-02-05 19:39:36
+-- Completed on 2020-04-11 13:26:31
 
 --
 -- PostgreSQL database dump complete
