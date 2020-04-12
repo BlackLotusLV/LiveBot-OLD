@@ -1291,6 +1291,19 @@ namespace LiveBot.Commands
                                 }
                                 sb.Append(EventTitle[j] + " ");
                             }
+                            string ActivityResult = $"Score: {Activity[0].Score}";
+                            if (leaderboard.Score_Format == "time")
+                            {
+                                ActivityResult = $"Time: {CustomMethod.ScoreToTime(Activity[0].Score)}";
+                            }
+                            else if (sb.ToString().Contains("SPEEDTRAP"))
+                            {
+                                ActivityResult = $"Speed: {Activity[0].Score.ToString().Insert(3, ".")} km/h";
+                            }
+                            else if (sb.ToString().Contains("ESCAPE"))
+                            {
+                                ActivityResult = $"Distance: {Activity[0].Score}m";
+                            }
                             using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
                             using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
                             {
@@ -1301,7 +1314,7 @@ namespace LiveBot.Commands
                                 .DrawImage(TitleBar, new Point(0, 0), 0.7f)
                                 .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
                                 .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank + 1}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
-                                .DrawText(AllignTopRight, $"{(leaderboard.Score_Format == "time" ? $"Time: {CustomMethod.ScoreToTime(Activity[0].Score)}" : $"Score: {Activity[0].Score}")}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                                .DrawText(AllignTopRight, ActivityResult, Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
                                 .DrawText(AllignTopRight, $"Points: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                                 );
                             }
@@ -1496,6 +1509,19 @@ namespace LiveBot.Commands
                         }
                         sb.Append(EventTitle[j] + " ");
                     }
+                    string ActivityResult = $"Score: {Activity.Entries[0].Score}";
+                    if (leaderboard.Score_Format == "time")
+                    {
+                        ActivityResult = $"Time: {CustomMethod.ScoreToTime(Activity.Entries[0].Score)}";
+                    }
+                    else if (sb.ToString().Contains("SPEEDTRAP"))
+                    {
+                        ActivityResult = $"Speed: {Activity.Entries[0].Score.ToString().Insert(3, ".")} km/h";
+                    }
+                    else if (sb.ToString().Contains("ESCAPE"))
+                    {
+                        ActivityResult = $"Distance: {Activity.Entries[0].Score}m";
+                    }
                     using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
                     using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
                     {
@@ -1506,7 +1532,7 @@ namespace LiveBot.Commands
                         .DrawImage(TitleBar, new Point(0, 0), 0.7f)
                         .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
                         .DrawText(AllignTopLeft, $"Rank: 1", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
-                        .DrawText(AllignTopRight, $"{(leaderboard.Score_Format == "time" ? $"Time: {CustomMethod.ScoreToTime(Activity.Entries[0].Score)}" : $"Score: {Activity.Entries[0].Score}")}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                        .DrawText(AllignTopRight, ActivityResult, Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
                         .DrawText(AllignTopRight, $"Points: {Activity.Entries[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                         );
                     }
