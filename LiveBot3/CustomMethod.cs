@@ -417,5 +417,31 @@ namespace LiveBot
             }
             return false;
         }
+
+        public static string GetCommandOutput(CommandContext ctx,string command,string language,DiscordMember member)
+        {
+            DB.DBLists.LoadBotOutputList();
+
+            if (language == null)
+            {
+                language = LanguageIfNull(ctx);
+            }
+            if (member is null)
+            {
+                member = ctx.Member;
+            }
+
+            var OutputEntry = DB.DBLists.BotOutputList.Where(w => w.Command.Equals(command) && w.Language.Equals(language)).FirstOrDefault();
+            if (OutputEntry is null)
+            {
+                OutputEntry = DB.DBLists.BotOutputList.Where(w => w.Command.Equals(command) && w.Language.Equals("gb")).FirstOrDefault();
+                if (OutputEntry is null)
+                {
+                    return $"{ctx.Member.Mention}, Command output not found. Contact an admin.";
+                }
+            }
+            return $"{member.Mention}, {OutputEntry.Command_Text}";
+        }
+        
     }
 }

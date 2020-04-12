@@ -31,7 +31,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Spam trigger in photomode channels\n" +
+            string changelog = "[Internal] Move certain command outputs to database\n" +
+                "[NEW] `/mysummit` command now says speed and distance for speedtraps and escapes\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -77,29 +78,14 @@ namespace LiveBot.Commands
             [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null,
             [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
-            if (language == null)
-            {
-                language = CustomMethod.LanguageIfNull(ctx);
-            }
-            string content = (language) switch
-            {
-                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/share.txt"),
-                ("de") => File.ReadAllText(@"Assets/TextFiles/german/share.txt"),
-                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/share.txt"),
-                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/share.txt"),
-                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/share.txt"),
-                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/share.txt"),
-                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/share.txt"),
-                _ => File.ReadAllText(@"Assets/TextFiles/english/share.txt")
-            };
             await ctx.Message.DeleteAsync(); //deletes command message
             if (username is null) //checks if user name is not specified
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"share",language,ctx.Member));
             }
             else // if user name specified
             {
-                await ctx.RespondAsync($"{username.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"share", language, username));
             }
         }
 
@@ -108,29 +94,14 @@ namespace LiveBot.Commands
         [Description("Informs the user about the platform roles.")] //platform selection command
         public async Task Platform(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
-            if (language == null)
-            {
-                language = CustomMethod.LanguageIfNull(ctx);
-            }
-            string content = language switch
-            {
-                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/platform.txt"),
-                ("de") => File.ReadAllText(@"Assets/TextFiles/german/platform.txt"),
-                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/platform.txt"),
-                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/platform.txt"),
-                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/platform.txt"),
-                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/platform.txt"),
-                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/platform.txt"),
-                _ => File.ReadAllText(@"Assets/TextFiles/english/platform.txt")
-            };
             await ctx.Message.DeleteAsync();
             if (username is null)
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"platform", language, ctx.Member));
             }
             else
             {
-                await ctx.RespondAsync($"{username.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"share", language, username));
             }
         }
 
@@ -139,29 +110,14 @@ namespace LiveBot.Commands
         [Description("Explains how to get maximum car level in The Crew 1.")] // how to get max level for cars in TC1
         public async Task MaxCarlvl(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
-            if (language == null)
-            {
-                language = CustomMethod.LanguageIfNull(ctx);
-            }
-            string content = (language) switch
-            {
-                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/maxlvl.txt"),
-                ("de") => File.ReadAllText(@"Assets/TextFiles/german/maxlvl.txt"),
-                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/maxlvl.txt"),
-                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/maxlvl.txt"),
-                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/maxlvl.txt"),
-                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/maxlvl.txt"),
-                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/maxlvl.txt"),
-                _ => File.ReadAllText(@"Assets/TextFiles/english/maxlvl.txt")
-            };
             await ctx.Message.DeleteAsync();
             if (username is null)
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "maxlvl", language, ctx.Member));
             }
             else
             {
-                await ctx.RespondAsync($"{username.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "maxlvl", language, username));
             }
         }
 
@@ -170,29 +126,14 @@ namespace LiveBot.Commands
         [Description("Informs the user about The Crew Exchange website.")]
         public async Task TCE(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
-            if (language == null)
-            {
-                language = CustomMethod.LanguageIfNull(ctx);
-            }
-            string content = language switch
-            {
-                ("gb") => File.ReadAllText(@"Assets/TextFiles/english/tce.txt"),
-                ("de") => File.ReadAllText(@"Assets/TextFiles/german/tce.txt"),
-                ("fr") => File.ReadAllText(@"Assets/TextFiles/french/tce.txt"),
-                ("nl") => File.ReadAllText(@"Assets/TextFiles/dutch/tce.txt"),
-                ("se") => File.ReadAllText(@"Assets/TextFiles/swedish/tce.txt"),
-                ("ru") => File.ReadAllText(@"Assets/TextFiles/russian/tce.txt"),
-                ("lv") => File.ReadAllText(@"Assets/TextFiles/latvian/tce.txt"),
-                _ => File.ReadAllText(@"Assets/TextFiles/english/tce.txt")
-            };
             await ctx.Message.DeleteAsync();
             if (username is null)
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "tce", language, ctx.Member));
             }
             else
             {
-                await ctx.RespondAsync($"{username.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "tce", language, username));
             }
         }
 
@@ -201,7 +142,7 @@ namespace LiveBot.Commands
         [Description("Informs the user of using the LFC channels, or to get the platform role if they don't have it.")]
         public async Task LFC(CommandContext ctx, DiscordMember username = null)
         {
-            string content = File.ReadAllText(@"Assets/TextFiles/english/lfcnorole.txt");
+            string content = CustomMethod.GetCommandOutput(ctx, "lfc2", null, username);
             DiscordRole pc = ctx.Guild.GetRole(223867454642716673);
             DiscordRole ps = ctx.Guild.GetRole(223867009484587008);
             DiscordRole xb = ctx.Guild.GetRole(223867264246611970);
@@ -214,10 +155,10 @@ namespace LiveBot.Commands
             {
                 if ((item == pc || item == ps || item == xb) && check == false)
                 {
-                    content = File.ReadAllText(@"Assets/TextFiles/english/lfcrole.txt");
+                    content = CustomMethod.GetCommandOutput(ctx,"lfc1",null,username);
                 }
             }
-            await ctx.RespondAsync($"{username.Mention}, {content}");
+            await ctx.RespondAsync(content);
             await ctx.Message.DeleteAsync();
         }
 

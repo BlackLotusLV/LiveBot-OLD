@@ -20,6 +20,7 @@ namespace LiveBot.DB
         public static List<ServerSettings> ServerSettings;
         public static List<RankRoles> RankRoles;
         public static List<CommandsUsedCount> CommandsUsedCount;
+        public static List<BotOutputList> BotOutputList;
 
         public static List<AMBannedWords> AMBannedWords;
 
@@ -39,6 +40,7 @@ namespace LiveBot.DB
             new Thread(LoadRankRoles).Start();
             new Thread(LoadCUC).Start();
             new Thread(LoadBannedWords).Start();
+            new Thread(LoadBotOutputList).Start();
 
             Console.WriteLine($"[Postgres] Latest database data downloaded");
         }
@@ -141,6 +143,13 @@ namespace LiveBot.DB
                              select c).ToList();
         }
 
+        public static void LoadBotOutputList()
+        {
+            using var ctx = new BotOutputListContext();
+            BotOutputList = (from c in ctx.BotOutputList
+                             select c).ToList();
+        }
+
         public static void UpdateLeaderboard(List<Leaderboard> o)
         {
             using var ctx = new LeaderboardContext();
@@ -207,6 +216,13 @@ namespace LiveBot.DB
         public static void UpdateBannedWords(List<AMBannedWords> o)
         {
             using var ctx = new AMBannedWordsContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+
+        public static void UpdateBotOutputList(List<BotOutputList> o)
+        {
+            using var ctx = new BotOutputListContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
@@ -279,6 +295,14 @@ namespace LiveBot.DB
         {
             using var ctx = new AMBannedWordsContext();
             ctx.AMBannedWords.Add(o);
+            ctx.SaveChanges();
+            LoadRankRoles();
+        }
+
+        public static void InsertBotOutputList(BotOutputList o)
+        {
+            using var ctx = new BotOutputListContext();
+            ctx.BotOutputList.Add(o);
             ctx.SaveChanges();
             LoadRankRoles();
         }

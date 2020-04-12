@@ -15,7 +15,9 @@ namespace LiveBot.Automation
     {
         public static DiscordChannel TC1Photomode;
         public static DiscordChannel TC2Photomode;
+#pragma warning disable IDE0044 // Add readonly modifier
         private static List<DiscordMessage> MessageList = new List<DiscordMessage>();
+#pragma warning restore IDE0044 // Add readonly modifier
 
         public static async Task Auto_Moderator_Banned_Words(MessageCreateEventArgs e)
         {
@@ -354,7 +356,8 @@ namespace LiveBot.Automation
                                     where ss.ID_Server == e.Guild.Id.ToString()
                                     select ss).FirstOrDefault();
                 DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(Server_Settings.ID_Server));
-                if (Server_Settings.WKB_Log != "0" && !Server_Settings.Spam_Exception_Channels.Any(id=> Convert.ToInt64(id).Equals(e.Channel.Id)))
+
+                if (Server_Settings.WKB_Log != "0" && !Server_Settings.Spam_Exception_Channels.Any(id=>id.Equals(e.Channel.Id.ToString())))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                     if (!CustomMethod.CheckIfMemberAdmin(member))
