@@ -31,9 +31,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Internal] Move certain command outputs to database\n" +
-                "[NEW] `/mysummit` command now says speed and distance for speedtraps and escapes\n" +
-                "";
+            string changelog = "[FIX] `/platform` command wrong output\n" +
+                "[NEW] Admin command added to change certain command outputs.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -101,7 +100,7 @@ namespace LiveBot.Commands
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"share", language, username));
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"platform", language, username));
             }
         }
 

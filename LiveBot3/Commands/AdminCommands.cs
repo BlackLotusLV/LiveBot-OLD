@@ -438,5 +438,29 @@ namespace LiveBot.Commands
             DiscordMessage msg = await ctx.RespondAsync(info);
             await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
         }
+        [Command("cmdupdate")]
+        [Description("Changes the text output of a command")]
+        public async Task CMDUpdated(CommandContext ctx,
+            [Description("The name of the command you want to change the output of")] string command,
+            [Description("Language tag (e.g. english is gb)")] string language,
+            [Description("Text you want the bot to output for this command")][RemainingText] string BotResponse)
+        {
+            await ctx.TriggerTypingAsync();
+            await ctx.Message.DeleteAsync();
+            var BotOutputEntry = DB.DBLists.BotOutputList.Where(w => w.Command.Equals(command) && w.Language.Equals(language)).FirstOrDefault();
+            if (BotOutputEntry is null)
+            {
+                await ctx.RespondAsync($"{ctx.Member.Mention}, This combination of command and language tag does not exist in the databse.");
+            }
+            else
+            {
+                string completion_response = $"The response for `/{command}` was changed\n**From:** `{BotOutputEntry.Command_Text}`\n**To:** `{BotResponse}`";
+                BotOutputEntry.Command_Text = BotResponse;
+                DB.DBLists.UpdateBotOutputList(new List<DB.BotOutputList> { BotOutputEntry });
+                DB.DBLists.LoadBotOutputList();
+                DiscordMessage OutMSG = await ctx.RespondAsync(completion_response);
+                await Task.Delay(10000).ContinueWith(t => OutMSG.DeleteAsync());
+            }
+        }
     }
 }
