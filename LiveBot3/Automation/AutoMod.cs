@@ -370,10 +370,10 @@ namespace LiveBot.Automation
                             TimeSpan time = (duplicatemessages[i - 1].CreationTimestamp - duplicatemessages[i - 5].CreationTimestamp) / 5;
                             if (time < TimeSpan.FromSeconds(6))
                             {
-                                for (int j = 1; j <= 5; j++)
+                                List<DiscordChannel> ChannelList = duplicatemessages.GetRange(i - 5, 5).Select(s => s.Channel).Distinct().ToList();
+                                foreach (DiscordChannel channel in ChannelList)
                                 {
-                                    await duplicatemessages[i - j].DeleteAsync();
-                                    MessageList.Remove(duplicatemessages[i - j]);
+                                    await channel.DeleteMessagesAsync(duplicatemessages.GetRange(i - 5, 5));
                                 }
                                 await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
                             }

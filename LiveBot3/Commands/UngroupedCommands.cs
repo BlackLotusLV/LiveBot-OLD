@@ -31,8 +31,11 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/platform` command wrong output\n" +
-                "[NEW] Admin command added to change certain command outputs.";
+            string changelog = "[FIX] `/topsummit` saying PC when showing stadia stats.\n" +
+                "[FIX] `/mysummit` sayin PC when showing stadia stats\n" +
+                "[INTERNAL] Moved `/prosettings`, `/forums` and `/support` comamand output to the database.\n" +
+                "[INTERNAL] Spam protector now bulk deletes\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -183,14 +186,13 @@ namespace LiveBot.Commands
         public async Task Support(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
-            string content = "seems like you should contact support: https://support.ubi.com";
             if (username is null)
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "support", null, ctx.Member));
             }
             else
             {
-                await ctx.RespondAsync($"{username.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "support", null, username));
             }
         }
 
@@ -200,14 +202,13 @@ namespace LiveBot.Commands
         public async Task Forums(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
-            string content = "seems like what you are discussing would better fit to be posted on the forums: https://forums.ubi.com/forumdisplay.php/497-The-Crew";
             if (username is null)
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "forums", null, ctx.Member));
             }
             else
             {
-                await ctx.RespondAsync($"{username.Mention}, {content}");
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "forums", null, username));
             }
         }
 
@@ -215,16 +216,19 @@ namespace LiveBot.Commands
         [Aliases("psettings")]
         [Cooldown(1, 10, CooldownBucketType.Channel)]
         [Description("Explains how to find pro settings")]
-        public async Task ProSettings(CommandContext ctx, DiscordMember user = null)
+        public async Task ProSettings(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            if (user is null)
+
+            if (username is null)
             {
-                user = ctx.Member;
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "prosettings", null, ctx.Member));
             }
-            await ctx.RespondAsync($"{user.Mention}, Go to <#469920096962478080> -> Open pinned messages -> Jump to \"COLLECTION OF ALL OUR PRO TUNES\" message -> Click the link -> Select the discipline -> Press `ctrl+f` -> Write the name of the vehicle.\n" +
-                $"If you are having trouble following the steps, here is a gif to help you https://cdn.discordapp.com/attachments/438354175668256768/672037424649601044/coXUaa7P66.gif");
+            else
+            {
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "prosettings", null, username));
+            }
         }
 
         [Command("quote")]
@@ -1369,7 +1373,7 @@ namespace LiveBot.Commands
 
                     TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
                     BaseImage.Save(imageLoc);
-                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : search == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
                     SendImage = true;
                 }
                 else
@@ -1562,7 +1566,7 @@ namespace LiveBot.Commands
 
             TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             BaseImage.Save(imageLoc);
-            OutMessage = $"{ctx.Member.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+            OutMessage = $"{ctx.Member.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : platform == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
             SendImage = true;
 
             if (SendImage)
