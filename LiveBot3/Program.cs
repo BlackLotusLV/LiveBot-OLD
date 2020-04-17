@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200417_A";
+        public static string BotVersion = $"20200417_B";
         public static bool TestBuild;
 
         // TC Hub
@@ -136,6 +136,7 @@ namespace LiveBot
             BotErrorLogChannel = testserver.GetChannel(673105806778040320);
 
             //*/
+            Weather.StartTimer();
             Timer StreamTimer = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
             Timer RoleTimer = new Timer(e => TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             Timer UpdateTCHubInfo = new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));

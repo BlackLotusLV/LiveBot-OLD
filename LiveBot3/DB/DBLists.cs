@@ -31,6 +31,7 @@ namespace LiveBot.DB
         public static void LoadAllLists()
         {
             LoadServerSettings();
+            LoadWeatherSchedule();
             new Thread(LoadVehicleList).Start();
             new Thread(LoadDisciplineList).Start();
             new Thread(LoadReactionRoles).Start();
@@ -45,7 +46,6 @@ namespace LiveBot.DB
             new Thread(LoadCUC).Start();
             new Thread(LoadBannedWords).Start();
             new Thread(LoadBotOutputList).Start();
-            new Thread(LoadWeatherSchedule).Start();
         }
 
         public static void LoadVehicleList()
