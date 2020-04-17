@@ -462,5 +462,48 @@ namespace LiveBot.Commands
                 await Task.Delay(10000).ContinueWith(t => OutMSG.DeleteAsync());
             }
         }
+
+        [Command("addweather")]
+        [Description("Adds a new entry to the weather list")]
+        public async Task AddWeather(CommandContext ctx, string timestring, int day, string weather)
+        {
+            string[] weatheroptions = new string[] { "clear", "*", "rain", "rain*", "snow", "snow*" };
+            DiscordMessage msg;
+            TimeSpan time=TimeSpan.Zero;
+            bool timecheck = true;
+            try
+            {
+                time = TimeSpan.Parse(timestring);
+            }
+            catch (Exception)
+            {
+                timecheck = false;
+            }
+            if (day < 6 && day > 0 && weatheroptions.Contains(weather.ToLower()) && timecheck)
+            {
+                var existingEntry = DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day) && w.Time.Equals(time)).FirstOrDefault();
+                if (existingEntry is null)
+                {
+                    DB.WeatherSchedule newEntry = new DB.WeatherSchedule
+                    {
+                        Time = time,
+                        Day = day,
+                        Weather = weather.ToLower()
+                    };
+                    DB.DBLists.InsertWeatherSchedule(newEntry);
+                    DB.DBLists.LoadWeatherSchedule();
+                    msg = await ctx.RespondAsync($"Entry added to the list.");
+                }
+                else
+                {
+                    msg = await ctx.RespondAsync($"This time and day combination already exists.");
+                }
+            }
+            else
+            {
+                msg = await ctx.RespondAsync($"{ctx.Member.Mention}, input incorrect, entry not added to the list.");
+            }
+            await Task.Delay(10000).ContinueWith(t => msg.DeleteAsync());
+        }
     }
 }

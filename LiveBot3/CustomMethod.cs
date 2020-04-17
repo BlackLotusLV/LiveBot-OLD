@@ -442,6 +442,5 @@ namespace LiveBot
             }
             return $"{member.Mention}, {OutputEntry.Command_Text}";
         }
-        
     }
 }

@@ -31,10 +31,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/topsummit` saying PC when showing stadia stats.\n" +
-                "[FIX] `/mysummit` sayin PC when showing stadia stats\n" +
-                "[INTERNAL] Moved `/prosettings`, `/forums` and `/support` comamand output to the database.\n" +
-                "[INTERNAL] Spam protector now bulk deletes\n" +
+            string changelog = "[NEW] Weather channel. Checks databse every 15 seconds, posts current weather every minute.\n" +
+                "[NEW] `/@ addweather` command added for moderators. Detailed description in mod-chat\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

@@ -1,7 +1,10 @@
-﻿using System;
+﻿using LiveBot.Automation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LiveBot.DB
 {
@@ -21,6 +24,7 @@ namespace LiveBot.DB
         public static List<RankRoles> RankRoles;
         public static List<CommandsUsedCount> CommandsUsedCount;
         public static List<BotOutputList> BotOutputList;
+        public static List<WeatherSchedule> WeatherSchedule;
 
         public static List<AMBannedWords> AMBannedWords;
 
@@ -41,8 +45,7 @@ namespace LiveBot.DB
             new Thread(LoadCUC).Start();
             new Thread(LoadBannedWords).Start();
             new Thread(LoadBotOutputList).Start();
-
-            Console.WriteLine($"[Postgres] Latest database data downloaded");
+            new Thread(LoadWeatherSchedule).Start();
         }
 
         public static void LoadVehicleList()
@@ -50,6 +53,7 @@ namespace LiveBot.DB
             using var ctx = new VehicleListContext();
             VehicleList = (from c in ctx.VehicleList
                            select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Vehicle List Loaded");
         }
 
         public static void LoadDisciplineList()
@@ -57,6 +61,7 @@ namespace LiveBot.DB
             using var ctx = new DisciplineListContext();
             DisciplineList = (from c in ctx.DisciplineList
                               select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Discipline List Loaded");
         }
 
         public static void LoadReactionRoles()
@@ -64,6 +69,7 @@ namespace LiveBot.DB
             using var ctx = new ReactionRolesContext();
             ReactionRoles = (from c in ctx.ReactionRoles
                              select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Reaction Roles Loaded");
         }
 
         public static void LoadStreamNotifications()
@@ -71,6 +77,7 @@ namespace LiveBot.DB
             using var ctx = new StreamNotificationsContext();
             StreamNotifications = (from c in ctx.StreamNotifications
                                    select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Stream Notifications Loaded");
         }
 
         public static void LoadBackgroundImage()
@@ -78,6 +85,7 @@ namespace LiveBot.DB
             using var ctx = new BackgroundImageContext();
             BackgroundImage = (from c in ctx.BackgroundImage
                                select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Background Images Loaded");
         }
 
         public static void LoadLeaderboard()
@@ -85,6 +93,7 @@ namespace LiveBot.DB
             using var ctx = new LeaderboardContext();
             Leaderboard = (from c in ctx.Leaderboard
                            select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Leaderboard Loaded");
         }
 
         public static void LoadServerRanks()
@@ -92,6 +101,7 @@ namespace LiveBot.DB
             using var ctx = new ServerRanksContext();
             ServerRanks = (from c in ctx.ServerRanks
                            select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Server Ranks Loaded");
         }
 
         public static void LoadUserSettings()
@@ -99,6 +109,7 @@ namespace LiveBot.DB
             using var ctx = new UserSettingsContext();
             UserSettings = (from c in ctx.UserSettings
                             select c).ToList();
+            Console.WriteLine("[POSTGRESQL] User Settings Loaded");
         }
 
         public static void LoadUserImages()
@@ -106,6 +117,7 @@ namespace LiveBot.DB
             using var ctx = new UserImagesContext();
             UserImages = (from c in ctx.UserImages
                           select c).ToList();
+            Console.WriteLine("[POSTGRESQL] User Images Loaded");
         }
 
         public static void LoadWarnings()
@@ -113,6 +125,7 @@ namespace LiveBot.DB
             using var ctx = new WarningsContext();
             Warnings = (from c in ctx.Warnings
                         select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Warnings Loaded");
         }
 
         public static void LoadServerSettings()
@@ -120,6 +133,7 @@ namespace LiveBot.DB
             using var ctx = new ServerSettingsContext();
             ServerSettings = (from c in ctx.ServerSettings
                               select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Server Settings Loaded");
         }
 
         public static void LoadRankRoles()
@@ -127,6 +141,7 @@ namespace LiveBot.DB
             using var ctx = new RankRolesContext();
             RankRoles = (from c in ctx.RankRoles
                          select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Rank Roles Loaded");
         }
 
         public static void LoadCUC()
@@ -141,6 +156,7 @@ namespace LiveBot.DB
             using var ctx = new AMBannedWordsContext();
             AMBannedWords = (from c in ctx.AMBannedWords
                              select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Banned Words Loaded");
         }
 
         public static void LoadBotOutputList()
@@ -148,6 +164,16 @@ namespace LiveBot.DB
             using var ctx = new BotOutputListContext();
             BotOutputList = (from c in ctx.BotOutputList
                              select c).ToList();
+            Console.WriteLine("[POSTGRESQL] BotOutputList Loaded");
+        }
+
+        public static void LoadWeatherSchedule()
+        {
+            using var ctx = new WeatherScheduleContext();
+            WeatherSchedule = (from c in ctx.WeatherSchedule
+                             select c).ToList();
+            Weather.StartTimer();
+            Console.WriteLine("[POSTGRESQL] WeatherSchedule Loaded");
         }
 
         public static void UpdateLeaderboard(List<Leaderboard> o)
@@ -223,6 +249,13 @@ namespace LiveBot.DB
         public static void UpdateBotOutputList(List<BotOutputList> o)
         {
             using var ctx = new BotOutputListContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+
+        public static void UpdateWeatherSchedule(List<WeatherSchedule> o)
+        {
+            using var ctx = new WeatherScheduleContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
@@ -303,6 +336,14 @@ namespace LiveBot.DB
         {
             using var ctx = new BotOutputListContext();
             ctx.BotOutputList.Add(o);
+            ctx.SaveChanges();
+            LoadRankRoles();
+        }
+
+        public static void InsertWeatherSchedule(WeatherSchedule o)
+        {
+            using var ctx = new WeatherScheduleContext();
+            ctx.WeatherSchedule.Add(o);
             ctx.SaveChanges();
             LoadRankRoles();
         }

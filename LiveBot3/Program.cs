@@ -26,7 +26,8 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200415_A";
+        public static string BotVersion = $"20200417_A";
+        public static bool TestBuild;
 
         // TC Hub
 
@@ -65,7 +66,7 @@ namespace LiveBot
             DB.DBLists.LoadAllLists();
             fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
 
-            bool TestBuild = true;
+            TestBuild = true;
 
             var json = string.Empty;
             using (var fs = File.OpenRead("Config.json"))
