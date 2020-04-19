@@ -31,8 +31,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Weather channel. Checks databse every 15 seconds, posts current weather every minute.\n" +
-                "[NEW] `/@ addweather` command added for moderators. Detailed description in mod-chat\n" +
+            string changelog = "[FIX] `/summiterewards` command breaking when an emote is a reward.\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -1601,29 +1600,37 @@ namespace LiveBot.Commands
                 Parallel.For(0, Rewards.Length, (i, state) =>
                  {
                      string RewardTitle = string.Empty;
-                     if (Rewards[i].Type.Equals("phys_part"))
+                     switch (Rewards[i].Type)
                      {
-                         RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("quality_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}" +
-                         $" {Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("bonus_icon")).FirstOrDefault().Value, "\\w{0,}_", "")} {Rewards[i].Extra.Where(w => w.Key.Equals("type")).FirstOrDefault().Value}" +
-                         $"({Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("vcat_icon")).FirstOrDefault().Value, "\\w{0,}_", "")})";
+                         case "phys_part":
+                             RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("quality_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}" +
+                             $" {Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("bonus_icon")).FirstOrDefault().Value, "\\w{0,}_", "")} {Rewards[i].Extra.Where(w => w.Key.Equals("type")).FirstOrDefault().Value}" +
+                             $"({Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("vcat_icon")).FirstOrDefault().Value, "\\w{0,}_", "")})";
+                             break;
+                         case "vanity":
+                             RewardTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value;
+                             if (RewardTitle is null)
+                             {
+                                 if (Rewards[i].Img_Path.Contains("emote"))
+                                 {
+                                     RewardTitle = "Emote";
+                                 }
+                             }
+                             break;
+                         case "generic":
+                             RewardTitle = Rewards[i].Debug_Title;
+                             break;
+                         case "currency":
+                             RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.Where(w => w.Key.Equals("currency_amount")).FirstOrDefault().Value}";
+                             break;
+                         case "vehicle":
+                             RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
+                             break;
+                         default:
+                             RewardTitle = "LiveBot needs to be updated to view this reward!";
+                             break;
                      }
-                     else if (Rewards[i].Type.Equals("vanity"))
-                     {
-                         RewardTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value;
-                     }
-                     else if (Rewards[i].Type.Equals("generic"))
-                     {
-                         RewardTitle = Rewards[i].Debug_Title;
-                     }
-                     else if (Rewards[i].Type.Equals("currency"))
-                     {
-                         RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.Where(w => w.Key.Equals("currency_amount")).FirstOrDefault().Value}";
-                     }
-                     else if (Rewards[i].Type.Equals("vehicle"))
-                     {
-                         RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
-                     }
-                     else
+                     if (RewardTitle is null)
                      {
                          RewardTitle = "LiveBot needs to be updated to view this reward!";
                      }

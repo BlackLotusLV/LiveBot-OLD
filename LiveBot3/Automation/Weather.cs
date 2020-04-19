@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -23,50 +24,68 @@ namespace LiveBot.Automation
                 Console.WriteLine("weather timer started");
             }
         }
-
         private static async void CheckWeather()
         {
-            string weathertext = string.Empty;
+            StringBuilder sb = new StringBuilder();
+            TimeSpan now = DateTime.UtcNow.TimeOfDay;
+            TimeSpan CurrentTime = new TimeSpan(now.Hours, now.Minutes, 0);
             string weathercondition = string.Empty;
-            bool current = true;
-            var entry = DB.DBLists.WeatherSchedule.Where(w => w.Time.Equals(DateTime.UtcNow.TimeOfDay) && w.Day.Equals((int)DateTime.Today.DayOfWeek)).FirstOrDefault();
-            if (entry == null)
+
+            var Weather = DB.DBLists.WeatherSchedule.Where(w => w.Time >= CurrentTime && w.Day.Equals((int)DateTime.Today.DayOfWeek)).OrderBy(o=>o.Time).ToList();
+            if (Weather.Count()<60)
             {
-                current = false;
-                entry = DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals((int)DateTime.Today.DayOfWeek)).OrderBy(o => o.Time).Where(w => w.Time > DateTime.UtcNow.TimeOfDay).FirstOrDefault();
-                if (entry == null)
+                int day = (int)DateTime.Today.DayOfWeek + 1;
+                if (day is 7)
                 {
-                    int day = (int)DateTime.Today.DayOfWeek + 1;
-                    if (day>6)
-                    {
-                        day = 0;
-                    }
-                    entry = DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day)).OrderBy(o => o.Time).FirstOrDefault();
+                    day = 0;
+                }
+                try
+                {
+                    Weather.AddRange(DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day)).OrderBy(o => o.Time).ToList().GetRange(0, 61 - Weather.Count()));
+                }
+                catch (Exception)
+                {
+                    Weather.AddRange(DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day)).OrderBy(o => o.Time).ToList());
                 }
             }
-            switch (entry.Weather)
+            sb.AppendLine($"**--------------------------------------------------------**");
+            sb.AppendLine($"Current UTC time is {CurrentTime:hh\\:mm}. Here is the upcomming hour of weather!");
+            for (int i = 0; i < 60; i++)
             {
-                case "clear":
-                    weathercondition = "**Clear** :sunny: ";
-                    break;
-                case "*":
-                    weathercondition = "**Fog** :fog: ";
-                    break;
-                case "rain":
-                    weathercondition = "**Rain** :cloud_rain: ";
-                    break;
-                case "rain*":
-                    weathercondition = "**Fog and Rain** :fog::cloud_rain:";
-                    break;
-                case "snow":
-                    weathercondition = "**Snow** :snowflake: ";
-                    break;
-                case "snow*":
-                    weathercondition = "**Fog and Snow** :fog::snowflake: ";
-                    break;
+                var WeatherSpeciffic = Weather.Where(w => w.Time.Hours.Equals(CurrentTime.Hours) && w.Time.Minutes.Equals(CurrentTime.Minutes)).FirstOrDefault();
+                if (WeatherSpeciffic is null)
+                {
+                    sb.AppendLine($"{CurrentTime:hh\\:mm} - Weather is unknown");
+                }
+                else
+                {
+                    switch (WeatherSpeciffic.Weather)
+                    {
+                        case "clear":
+                            weathercondition = ":sunny: **Clear**";
+                            break;
+                        case "*":
+                            weathercondition = ":fog **Fog**";
+                            break;
+                        case "rain":
+                            weathercondition = ":cloud_rain: **Rain**";
+                            break;
+                        case "rain*":
+                            weathercondition = ":fog::cloud_rain: **Fog and Rain**";
+                            break;
+                        case "snow":
+                            weathercondition = ":snowflake: **Snow**";
+                            break;
+                        case "snow*":
+                            weathercondition = ":fog::snowflake: **Fog and Snow**";
+                            break;
+                    }
+                    sb.AppendLine($"{WeatherSpeciffic.Time:hh\\:mm} - {weathercondition}");
+                }
+                CurrentTime += TimeSpan.FromMinutes(1);
             }
-            weathertext = $"{(current?"Current":"Next known")} weather for {(DayOfWeek)entry.Day} at {entry.Time.Hours}:{entry.Time.Minutes}(UTC) is {weathercondition}";
-
+            sb.AppendLine($"**--------------------------------------------------------**");
+            string weathertext = sb.ToString();
             if (OldWeather != weathertext)
             {
                 var messages = await WeatherChannel.GetMessagesAsync(50);

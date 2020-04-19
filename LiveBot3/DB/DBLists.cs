@@ -172,7 +172,6 @@ namespace LiveBot.DB
             using var ctx = new WeatherScheduleContext();
             WeatherSchedule = (from c in ctx.WeatherSchedule
                              select c).ToList();
-            Weather.StartTimer();
             Console.WriteLine("[POSTGRESQL] WeatherSchedule Loaded");
         }
 
