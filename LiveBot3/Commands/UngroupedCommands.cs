@@ -31,7 +31,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/summiterewards` command breaking when an emote is a reward.\n" +
+            string changelog = "[FIX] Not being able to add weather entries for saturday\n" +
+                "[NEW] `/@ addweather` command now will ask if you want to replace a weather entry if it already exists.\n" +
+                "[Internal] `/@ prune` command changed\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

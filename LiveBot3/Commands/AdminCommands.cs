@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -346,21 +347,12 @@ namespace LiveBot.Commands
         [Cooldown(1, 180, CooldownBucketType.Channel)]
         public async Task Prune(CommandContext ctx, int MessageCount = 1)
         {
-            await ctx.Message.DeleteAsync().ContinueWith(t => ctx.TriggerTypingAsync());
-            var lid = 0ul;
-            int count = 0;
-            for (int i = 0; i < MessageCount; i += 100)
+            if (MessageCount>100)
             {
-                var msgs = await ctx.Channel.GetMessagesBeforeAsync(lid != 0 ? lid : ctx.Message.Id, Math.Min(MessageCount - i, 100)).ConfigureAwait(false);
-                var lmsg = msgs.FirstOrDefault();
-                if (lmsg == null)
-                {
-                    break;
-                }
-                lid = lmsg.Id;
-                count++;
-                await ctx.Channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
+                MessageCount = 100;
             }
+            await ctx.Message.DeleteAsync().ContinueWith(t => ctx.TriggerTypingAsync());
+            await ctx.Channel.DeleteMessagesAsync(await ctx.Channel.GetMessagesBeforeAsync(ctx.Message.Id, MessageCount));
             DiscordMessage info = await ctx.RespondAsync($"{MessageCount} messages deleted");
             await Task.Delay(5000).ContinueWith(t => info.DeleteAsync());
         }
@@ -479,7 +471,7 @@ namespace LiveBot.Commands
             {
                 timecheck = false;
             }
-            if (day < 6 && day > 0 && weatheroptions.Contains(weather.ToLower()) && timecheck)
+            if (day < 7 && day > 0 && weatheroptions.Contains(weather.ToLower()) && timecheck)
             {
                 var existingEntry = DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day) && w.Time.Equals(time)).FirstOrDefault();
                 if (existingEntry is null)
@@ -496,7 +488,31 @@ namespace LiveBot.Commands
                 }
                 else
                 {
-                    msg = await ctx.RespondAsync($"This time and day combination already exists.");
+                    msg = await ctx.RespondAsync($"This time and day combination already exists. Do you want to replace this entry?");
+                    DiscordEmoji Yes = DiscordEmoji.FromName(ctx.Client, ":white_check_mark:");
+                    DiscordEmoji No = DiscordEmoji.FromName(ctx.Client, ":x:");
+
+                    await msg.CreateReactionAsync(Yes);
+                    await Task.Delay(300).ContinueWith(t => msg.CreateReactionAsync(No));
+
+                    var Result = await msg.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+
+                    if (Result.TimedOut)
+                    {
+                        await msg.ModifyAsync($"You didn't select anything, not changing the entry.");
+                        return;
+                    }
+                    else if (Result.Result.Emoji == Yes)
+                    {
+                        existingEntry.Weather = weather.ToLower();
+                        DB.DBLists.UpdateWeatherSchedule(new List<DB.WeatherSchedule> { existingEntry });
+                        await msg.ModifyAsync($"Weather entry updated");
+                    }
+                    else if (Result.Result.Emoji == No)
+                    {
+                        await msg.ModifyAsync($"Weather entry not changed");
+                    }
+                    await msg.DeleteAllReactionsAsync();
                 }
             }
             else

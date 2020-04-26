@@ -10,7 +10,6 @@ namespace LiveBot.Automation
 {
     class Weather
     {
-        static Timer WeatherTimer;
         static DiscordChannel WeatherChannel;
         static int Interval = Timeout.Infinite;
         static string OldWeather = string.Empty;
@@ -19,7 +18,7 @@ namespace LiveBot.Automation
             if (Interval == Timeout.Infinite && !Program.TestBuild)
             {
                 Interval = 15000;
-                WeatherTimer = new Timer(e => CheckWeather(), null, 0, Interval);
+                Timer WeatherTimer = new Timer(e => CheckWeather(), null, 0, Interval);
                 WeatherChannel = Program.TCGuild.GetChannel(700414491749253220);
                 Console.WriteLine("weather timer started");
             }
@@ -49,7 +48,7 @@ namespace LiveBot.Automation
                 }
             }
             sb.AppendLine($"**--------------------------------------------------------**");
-            sb.AppendLine($"Current UTC time is {CurrentTime:hh\\:mm}. Here is the upcomming hour of weather!");
+            sb.AppendLine($"Current UTC time is {CurrentTime:hh\\:mm}. Here is the weather for the upcoming hour!");
             for (int i = 0; i < 60; i++)
             {
                 var WeatherSpeciffic = Weather.Where(w => w.Time.Hours.Equals(CurrentTime.Hours) && w.Time.Minutes.Equals(CurrentTime.Minutes)).FirstOrDefault();
@@ -65,7 +64,7 @@ namespace LiveBot.Automation
                             weathercondition = ":sunny: **Clear**";
                             break;
                         case "*":
-                            weathercondition = ":fog **Fog**";
+                            weathercondition = ":fog: **Fog**";
                             break;
                         case "rain":
                             weathercondition = ":cloud_rain: **Rain**";
