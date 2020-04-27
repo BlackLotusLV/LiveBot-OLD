@@ -13,12 +13,13 @@ namespace LiveBot.Automation
         static DiscordChannel WeatherChannel;
         static int Interval = Timeout.Infinite;
         static string OldWeather = string.Empty;
+        static readonly Timer WeatherTimer = new Timer(e => CheckWeather(), null, 0, Interval);
         public static void StartTimer()
         {
             if (Interval == Timeout.Infinite && !Program.TestBuild)
             {
                 Interval = 15000;
-                Timer WeatherTimer = new Timer(e => CheckWeather(), null, 0, Interval);
+                WeatherTimer.Change(0, Interval);
                 WeatherChannel = Program.TCGuild.GetChannel(700414491749253220);
                 Console.WriteLine("weather timer started");
             }
