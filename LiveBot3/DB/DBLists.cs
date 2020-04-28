@@ -1,10 +1,7 @@
-﻿using LiveBot.Automation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace LiveBot.DB
 {
@@ -171,7 +168,7 @@ namespace LiveBot.DB
         {
             using var ctx = new WeatherScheduleContext();
             WeatherSchedule = (from c in ctx.WeatherSchedule
-                             select c).ToList();
+                               select c).ToList();
             Console.WriteLine("[POSTGRESQL] WeatherSchedule Loaded");
         }
 

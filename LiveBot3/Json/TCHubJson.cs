@@ -319,7 +319,7 @@ namespace LiveBot.Json
         {
             [JsonProperty("profile_id")]
             public string Profile_ID { get; private set; }
-            
+
             [JsonProperty("score")]
             public int Score { get; private set; }
 

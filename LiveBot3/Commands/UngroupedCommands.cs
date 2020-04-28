@@ -31,7 +31,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Weather channel breaking after 1st loadin.";
+            string changelog = "[FIX] Possible fix for kick logging";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -79,11 +79,11 @@ namespace LiveBot.Commands
             await ctx.Message.DeleteAsync(); //deletes command message
             if (username is null) //checks if user name is not specified
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"share",language,ctx.Member));
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "share", language, ctx.Member));
             }
             else // if user name specified
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"share", language, username));
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "share", language, username));
             }
         }
 
@@ -95,11 +95,11 @@ namespace LiveBot.Commands
             await ctx.Message.DeleteAsync();
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"platform", language, ctx.Member));
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "platform", language, ctx.Member));
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx,"platform", language, username));
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "platform", language, username));
             }
         }
 
@@ -153,7 +153,7 @@ namespace LiveBot.Commands
             {
                 if ((item == pc || item == ps || item == xb) && check == false)
                 {
-                    content = CustomMethod.GetCommandOutput(ctx,"lfc1",null,username);
+                    content = CustomMethod.GetCommandOutput(ctx, "lfc1", null, username);
                 }
             }
             await ctx.RespondAsync(content);
@@ -507,7 +507,7 @@ namespace LiveBot.Commands
             DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, SelectedVehicles, row));
 
             await ctx.RespondAsync($"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})\n" +
-                $"*({SelectedVehicles.Count-1} vehicles left in current rotation)*");
+                $"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*");
         }
 
         [Command("rank")]
@@ -1055,14 +1055,14 @@ namespace LiveBot.Commands
 
                 endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
-            TCHubJson.Rank[] Events=new TCHubJson.Rank[0];
+            TCHubJson.Rank[] Events = new TCHubJson.Rank[0];
             if (platforms == 4)
             {
                 Events = new TCHubJson.Rank[4] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(StadiaJson) };
             }
             else
             {
-                Events = new TCHubJson.Rank[3] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson)};
+                Events = new TCHubJson.Rank[3] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson) };
             }
             string[,] pts = new string[platforms, 4];
             for (int i = 0; i < Events.Length; i++)
@@ -1083,7 +1083,7 @@ namespace LiveBot.Commands
             using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Assets/Summit/PS.jpg"))
             using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Assets/Summit/XB.png"))
             using (Image<Rgba32> StadiaImg = Image.Load<Rgba32>("Assets/Summit/STADIA.png"))
-            using (Image<Rgba32> BaseImg = new Image<Rgba32>(300*platforms, 643))
+            using (Image<Rgba32> BaseImg = new Image<Rgba32>(300 * platforms, 643))
             {
                 Image<Rgba32>[] PlatformImg = new Image<Rgba32>[4] { PCImg, PSImg, XBImg, StadiaImg };
                 Parallel.For(0, Events.Length, (i, state) =>
@@ -1606,6 +1606,7 @@ namespace LiveBot.Commands
                              $" {Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("bonus_icon")).FirstOrDefault().Value, "\\w{0,}_", "")} {Rewards[i].Extra.Where(w => w.Key.Equals("type")).FirstOrDefault().Value}" +
                              $"({Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("vcat_icon")).FirstOrDefault().Value, "\\w{0,}_", "")})";
                              break;
+
                          case "vanity":
                              RewardTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value;
                              if (RewardTitle is null)
@@ -1616,15 +1617,19 @@ namespace LiveBot.Commands
                                  }
                              }
                              break;
+
                          case "generic":
                              RewardTitle = Rewards[i].Debug_Title;
                              break;
+
                          case "currency":
                              RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.Where(w => w.Key.Equals("currency_amount")).FirstOrDefault().Value}";
                              break;
+
                          case "vehicle":
                              RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
                              break;
+
                          default:
                              RewardTitle = "LiveBot needs to be updated to view this reward!";
                              break;

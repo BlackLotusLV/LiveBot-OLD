@@ -392,10 +392,11 @@ namespace LiveBot
                 await channel.SendMessageAsync("This server has not set up this feature!");
             }
         }
+
         public static string HubTextConverter(string Text_ID)
         {
             string text = Program.TCHubDictionary.Where(w => w.Key.Equals(Text_ID)).FirstOrDefault().Value;
-            if (text!=null)
+            if (text != null)
             {
                 string EndString = Regex.Replace(text, "&#8209;", "-");
                 return EndString;
@@ -418,7 +419,7 @@ namespace LiveBot
             return false;
         }
 
-        public static string GetCommandOutput(CommandContext ctx,string command,string language,DiscordMember member)
+        public static string GetCommandOutput(CommandContext ctx, string command, string language, DiscordMember member)
         {
             DB.DBLists.LoadBotOutputList();
 

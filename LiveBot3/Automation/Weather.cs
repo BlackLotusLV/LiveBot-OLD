@@ -1,19 +1,18 @@
 ﻿using DSharpPlus.Entities;
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 
 namespace LiveBot.Automation
 {
-    class Weather
+    internal class Weather
     {
-        static DiscordChannel WeatherChannel;
-        static int Interval = Timeout.Infinite;
-        static string OldWeather = string.Empty;
-        static readonly Timer WeatherTimer = new Timer(e => CheckWeather(), null, 0, Interval);
+        private static DiscordChannel WeatherChannel;
+        private static int Interval = Timeout.Infinite;
+        private static string OldWeather = string.Empty;
+        private static readonly Timer WeatherTimer = new Timer(e => CheckWeather(), null, 0, Interval);
+
         public static void StartTimer()
         {
             if (Interval == Timeout.Infinite && !Program.TestBuild)
@@ -24,6 +23,7 @@ namespace LiveBot.Automation
                 Console.WriteLine("weather timer started");
             }
         }
+
         private static async void CheckWeather()
         {
             StringBuilder sb = new StringBuilder();
@@ -31,8 +31,8 @@ namespace LiveBot.Automation
             TimeSpan CurrentTime = new TimeSpan(now.Hours, now.Minutes, 0);
             string weathercondition = string.Empty;
 
-            var Weather = DB.DBLists.WeatherSchedule.Where(w => w.Time >= CurrentTime && w.Day.Equals((int)DateTime.Today.DayOfWeek)).OrderBy(o=>o.Time).ToList();
-            if (Weather.Count()<60)
+            var Weather = DB.DBLists.WeatherSchedule.Where(w => w.Time >= CurrentTime && w.Day.Equals((int)DateTime.Today.DayOfWeek)).OrderBy(o => o.Time).ToList();
+            if (Weather.Count() < 60)
             {
                 int day = (int)DateTime.Today.DayOfWeek + 1;
                 if (day is 7)
@@ -64,18 +64,23 @@ namespace LiveBot.Automation
                         case "clear":
                             weathercondition = ":sunny: **Clear**";
                             break;
+
                         case "*":
                             weathercondition = ":fog: **Fog**";
                             break;
+
                         case "rain":
                             weathercondition = ":cloud_rain: **Rain**";
                             break;
+
                         case "rain*":
                             weathercondition = ":fog::cloud_rain: **Fog and Rain**";
                             break;
+
                         case "snow":
                             weathercondition = ":snowflake: **Snow**";
                             break;
+
                         case "snow*":
                             weathercondition = ":fog::snowflake: **Fog and Snow**";
                             break;

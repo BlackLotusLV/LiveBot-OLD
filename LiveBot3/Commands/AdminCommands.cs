@@ -105,7 +105,7 @@ namespace LiveBot.Commands
             var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
             var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID)).ToList();
             string MSGOut, modmsg = "";
-            bool check = true; 
+            bool check = true;
             DiscordMember member = null;
             try
             {
@@ -347,7 +347,7 @@ namespace LiveBot.Commands
         [Cooldown(1, 180, CooldownBucketType.Channel)]
         public async Task Prune(CommandContext ctx, int MessageCount = 1)
         {
-            if (MessageCount>100)
+            if (MessageCount > 100)
             {
                 MessageCount = 100;
             }
@@ -430,6 +430,7 @@ namespace LiveBot.Commands
             DiscordMessage msg = await ctx.RespondAsync(info);
             await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
         }
+
         [Command("cmdupdate")]
         [Description("Changes the text output of a command")]
         public async Task CMDUpdated(CommandContext ctx,
@@ -461,7 +462,7 @@ namespace LiveBot.Commands
         {
             string[] weatheroptions = new string[] { "clear", "*", "rain", "rain*", "snow", "snow*" };
             DiscordMessage msg;
-            TimeSpan time=TimeSpan.Zero;
+            TimeSpan time = TimeSpan.Zero;
             bool timecheck = true;
             try
             {

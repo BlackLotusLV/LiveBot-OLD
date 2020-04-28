@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200427_A";
+        public static string BotVersion = $"20200428_A";
         public static bool TestBuild;
 
         // TC Hub
@@ -167,7 +167,6 @@ namespace LiveBot
             }
             await Client.ConnectAsync();
             await Task.Delay(-1);
-
         }
 
         private Task Client_Ready(ReadyEventArgs e)
@@ -192,7 +191,7 @@ namespace LiveBot
                     User_Traffic = "0",
                     Welcome_Settings = arr,
                     WKB_Log = "0",
-                    Spam_Exception_Channels = new string[] {"0"}
+                    Spam_Exception_Channels = new string[] { "0" }
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }

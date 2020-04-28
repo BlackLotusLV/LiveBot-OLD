@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using System;
 using System.Collections.Generic;
@@ -246,13 +245,7 @@ namespace LiveBot.Automation
                         Color = new DiscordColor(0xff0000),
                     };
                     await wkbLog.SendMessageAsync(embed: embed);
-                }
-            }
-            // Checks if user was kicked.
-            foreach (var item in logs)
-            {
-                if (item.CreationTimestamp >= beforetime && item.CreationTimestamp <= aftertime)
-                {
+
                     var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
                     if (UserSettings != null)
                     {
@@ -262,6 +255,7 @@ namespace LiveBot.Automation
                             Ban_Count = 0,
                             Kick_Count = 1,
                             Warning_Level = 0,
+                            Followers = 0,
                             User_ID = uid
                         };
                         DB.DBLists.InsertServerRanks(newEntry);
@@ -351,13 +345,12 @@ namespace LiveBot.Automation
         {
             if (!e.Author.IsBot && e.Guild != null)
             {
-
                 var Server_Settings = (from ss in DB.DBLists.ServerSettings
-                                    where ss.ID_Server == e.Guild.Id.ToString()
-                                    select ss).FirstOrDefault();
+                                       where ss.ID_Server == e.Guild.Id.ToString()
+                                       select ss).FirstOrDefault();
                 DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(Server_Settings.ID_Server));
 
-                if (Server_Settings.WKB_Log != "0" && !Server_Settings.Spam_Exception_Channels.Any(id=>id.Equals(e.Channel.Id.ToString())))
+                if (Server_Settings.WKB_Log != "0" && !Server_Settings.Spam_Exception_Channels.Any(id => id.Equals(e.Channel.Id.ToString())))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                     if (!CustomMethod.CheckIfMemberAdmin(member))
@@ -382,6 +375,7 @@ namespace LiveBot.Automation
                 }
             }
         }
+
         public static void ClearMSGCache()
         {
             if (MessageList.Count > 100)
