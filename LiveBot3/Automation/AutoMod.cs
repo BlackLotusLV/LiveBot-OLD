@@ -247,7 +247,7 @@ namespace LiveBot.Automation
                     await wkbLog.SendMessageAsync(embed: embed);
 
                     var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
-                    if (UserSettings != null)
+                    if (UserSettings is null)
                     {
                         DB.ServerRanks newEntry = new DB.ServerRanks
                         {

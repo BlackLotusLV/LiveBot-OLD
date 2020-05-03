@@ -31,7 +31,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Possible fix for kick logging";
+            string changelog = "[FIX] Fixed kick logging issue";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -651,6 +651,7 @@ namespace LiveBot.Commands
             Point pfplocation = new Point(440, 230);
             Point bgcolourlocation = new Point(20, 220);
             int BadgeX = 155, BadgeY = 260, BadgeCount = 0;
+
             background.Mutate(ctx => ctx
             .Fill(backfieldcolour)
             );

@@ -11,7 +11,7 @@ namespace LiveBot.Automation
         private static DiscordChannel WeatherChannel;
         private static int Interval = Timeout.Infinite;
         private static string OldWeather = string.Empty;
-        private static readonly Timer WeatherTimer = new Timer(e => CheckWeather(), null, 0, Interval);
+        private static readonly Timer WeatherTimer = new Timer(e => CheckWeather(), null, Timeout.Infinite, Interval);
 
         public static void StartTimer()
         {
