@@ -15,7 +15,7 @@ namespace LiveBot.Automation
 
         public static void StartTimer()
         {
-            if (Interval == Timeout.Infinite && !Program.TestBuild)
+            if (Interval == Timeout.Infinite && Program.TestBuild)
             {
                 Interval = 15000;
                 WeatherTimer.Change(0, Interval);
@@ -49,8 +49,8 @@ namespace LiveBot.Automation
                 }
             }
             sb.AppendLine($"**--------------------------------------------------------**");
-            sb.AppendLine($"Current UTC time is {CurrentTime:hh\\:mm}. Here is the weather for the upcoming hour!");
-            for (int i = 0; i < 60; i++)
+            CurrentTime = CurrentTime.Add(TimeSpan.FromMinutes(60));
+            for (int i = 60; i >= 0; i--)
             {
                 var WeatherSpeciffic = Weather.Where(w => w.Time.Hours.Equals(CurrentTime.Hours) && w.Time.Minutes.Equals(CurrentTime.Minutes)).FirstOrDefault();
                 if (WeatherSpeciffic is null)
@@ -87,10 +87,12 @@ namespace LiveBot.Automation
                     }
                     sb.AppendLine($"{WeatherSpeciffic.Time:hh\\:mm} - {weathercondition}");
                 }
-                CurrentTime += TimeSpan.FromMinutes(1);
+                CurrentTime -= TimeSpan.FromMinutes(1);
             }
+            sb.AppendLine($"Current UTC time is {CurrentTime:hh\\:mm}. Here is the weather for the upcoming hour!");
             sb.AppendLine($"**--------------------------------------------------------**");
             string weathertext = sb.ToString();
+            //weathertext = string.Join("\r\n", weathertext.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Reverse());
             if (OldWeather != weathertext)
             {
                 var messages = await WeatherChannel.GetMessagesAsync(50);

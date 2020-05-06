@@ -10,6 +10,7 @@ namespace LiveBot.DB
         [Column("stream_notification_id")]
         public int Stream_Notification_ID { get; set; }
 
+        [Required]
         [Column("server_id")]
         public string Server_ID { get; set; }
 
@@ -19,6 +20,7 @@ namespace LiveBot.DB
         [Column("roles_id")]
         public string[] Roles_ID { get; set; }
 
+        [Required]
         [Column("channel_id")]
         public string Channel_ID { get; set; }
     }

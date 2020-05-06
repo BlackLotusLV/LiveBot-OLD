@@ -80,15 +80,6 @@ namespace LiveBot
             return $"Host={cfgjson.Host};Username={cfgjson.Username};Password={cfgjson.Password};Database={cfgjson.Database}; Port={cfgjson.Port}";
         }
 
-        public static List<DB.VehicleList> UpdateVehicle(List<DB.VehicleList> Full, List<DB.VehicleList> Small, int row)
-        {
-            var vehicle = (from f in Full
-                           where f.ID_Vehicle == Small[row].ID_Vehicle
-                           select f).ToList();
-            vehicle[0].Selected_Count++;
-            return vehicle;
-        }
-
         public static DateTime EpochConverter(long ms)
         {
             DateTime f = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

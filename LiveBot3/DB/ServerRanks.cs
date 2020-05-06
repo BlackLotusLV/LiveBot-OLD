@@ -10,21 +10,27 @@ namespace LiveBot.DB
         [Column("id_server_rank")]
         public int ID_Server_Rank { get; set; }
 
+        [Required]
         [Column("user_id")]
         public string User_ID { get; set; }
 
+        [Required]
         [Column("server_id")]
         public string Server_ID { get; set; }
 
+        [Required]
         [Column("followers")]
         public long Followers { get; set; }
 
+        [Required]
         [Column("warning_level")]
         public int Warning_Level { get; set; }
 
+        [Required]
         [Column("kick_count")]
         public int Kick_Count { get; set; }
 
+        [Required]
         [Column("ban_count")]
         public int Ban_Count { get; set; }
     }

@@ -10,21 +10,26 @@ namespace LiveBot.DB
         [Column("id_user")]
         public string ID_User { get; set; }
 
+        [Required]
         [Column("followers")]
         public long Followers { get; set; }
 
+        [Required]
         [Column("level")]
         public int Level { get; set; }
 
+        [Required]
         [Column("bucks")]
         public long Bucks { get; set; }
 
         [Column("daily_used")]
         public string Daily_Used { get; set; }
 
+        [Required]
         [Column("cookie_given")]
         public int Cookies_Given { get; set; }
 
+        [Required]
         [Column("cookie_taken")]
         public int Cookies_Taken { get; set; }
 

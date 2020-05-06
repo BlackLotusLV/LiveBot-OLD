@@ -31,7 +31,12 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Fixed kick logging issue";
+            string changelog = "[Internal] Changed how `/randomvehicle` command checks duplicates.\n" +
+                "[Internal] Specified not null values in code.\n" +
+                "[FIX] Bot not logging deleted messages when message+description was over 2000 characters, now uploads .txt file.\n" +
+                "[Change] <#700414491749253220> now shows current time at the bottom, so you don't need to scroll to see what will be in the next few minutes.\n" +
+                "[NEO] Follow the white rabbit.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -450,11 +455,6 @@ namespace LiveBot.Commands
             List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w => w.Discipline_Name == disciplinename).ToList();
             Random r = new Random();
             int row = 0;
-            int maxCount = (from vl in VehicleList
-                            join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
-                            where dl.Discipline_Name == disciplinename
-                            select vl).ToList().Max(m => m.Selected_Count);
-
             List<DB.VehicleList> SelectedVehicles = new List<DB.VehicleList>();
 
             if (disciplinename == "Street Race")
@@ -497,14 +497,19 @@ namespace LiveBot.Commands
                                     where dl.Discipline_Name == disciplinename
                                     select vl).ToList();
             }
-            if (SelectedVehicles.Min(m => m.Selected_Count) != maxCount)
+
+            if (SelectedVehicles.Count(c=>c.IsSelected is true) == SelectedVehicles.Count())
             {
-                SelectedVehicles = (from sv in SelectedVehicles
-                                    where sv.Selected_Count < maxCount
-                                    select sv).ToList();
+                DB.DBLists.UpdateVehicleList(SelectedVehicles.Select(s => { s.IsSelected = false; return s; }).ToList());
+
             }
+
+            SelectedVehicles = (from sv in SelectedVehicles
+                                where sv.IsSelected is false
+                                select sv).ToList();
             row = r.Next(SelectedVehicles.Count);
-            DB.DBLists.UpdateVehicleList(CustomMethod.UpdateVehicle(VehicleList, SelectedVehicles, row));
+
+            DB.DBLists.UpdateVehicleList(SelectedVehicles.Where(w => w.ID_Vehicle.Equals(SelectedVehicles[row].ID_Vehicle)).Select(s => { s.IsSelected = true; return s; }).ToList());
 
             await ctx.RespondAsync($"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})\n" +
                 $"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*");

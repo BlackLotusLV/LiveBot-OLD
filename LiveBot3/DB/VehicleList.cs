@@ -10,25 +10,32 @@ namespace LiveBot.DB
         [Column("id_vehicle")]
         public int ID_Vehicle { get; set; }
 
+        [Required]
         [Column("discipline")]
         public int Discipline { get; set; }
 
+        [Required]
         [Column("brand")]
         public string Brand { get; set; }
 
+        [Required]
         [Column("model")]
         public string Model { get; set; }
 
+        [Required]
         [Column("year")]
         public string Year { get; set; }
 
+        [Required]
         [Column("type")]
         public string Type { get; set; }
 
-        [Column("selected_count")]
-        public int Selected_Count { get; set; }
-
+        [Required]
         [Column("summit_vehicle")]
         public bool IsSummitVehicle { get; set; }
+
+        [Required]
+        [Column("selected")]
+        public bool IsSelected { get; set; }
     }
 }

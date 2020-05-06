@@ -11,12 +11,15 @@ namespace LiveBot.DB
         [Column("id")]
         public int ID { get; set; }
 
+        [Required]
         [Column("time")]
         public TimeSpan Time { get; set; }
 
+        [Required]
         [Column("day")]
         public int Day { get; set; }
 
+        [Required]
         [Column("weather")]
         public string Weather { get; set; }
     }

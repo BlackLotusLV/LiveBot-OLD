@@ -10,9 +10,11 @@ namespace LiveBot.DB
         [Column("command_id")]
         public long Command_ID { get; set; }
 
+        [Required]
         [Column("command")]
         public string Name { get; set; }
 
+        [Required]
         [Column("used_count")]
         public long Used_Count { get; set; }
     }

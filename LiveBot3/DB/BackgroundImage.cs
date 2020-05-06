@@ -10,9 +10,11 @@ namespace LiveBot.DB
         [Column("id_bg")]
         public int ID_BG { get; set; }
 
+        [Required]
         [Column("image")]
         public byte[] Image { get; set; }
 
+        [Required]
         [Column("name")]
         public string Name { get; set; }
 

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -69,6 +70,8 @@ namespace LiveBot.Automation
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                  where ss.ID_Server == e.Guild.Id.ToString()
                                  select ss).ToList();
+            string Description = string.Empty;
+
             if (GuildSettings[0].Delete_Log != "0")
             {
                 DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
@@ -80,20 +83,10 @@ namespace LiveBot.Automation
                         string converteddeletedmsg = msg.Content;
                         if (converteddeletedmsg.StartsWith("/"))
                         {
-                            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-                            {
-                                Color = new DiscordColor(0xFF6600),
-                                Author = new DiscordEmbedBuilder.EmbedAuthor
-                                {
-                                    IconUrl = author.AvatarUrl,
-                                    Name = author.Username
-                                },
-                                Description = $"Command initialization was deleted in {e.Channel.Mention}\n" +
+                            Description = $"Command initialization was deleted in {e.Channel.Mention}\n" +
                                 $"**Author:** {author.Username}\t ID:{author.Id}\n" +
                                 $"**Content:** {converteddeletedmsg}\n" +
-                                $"**Time Posted:** {msg.CreationTimestamp}"
-                            };
-                            await DeleteLog.SendMessageAsync(embed: embed);
+                                $"**Time Posted:** {msg.CreationTimestamp}";
                         }
                         else
                         {
@@ -102,6 +95,12 @@ namespace LiveBot.Automation
                                 converteddeletedmsg = "*message didn't contain any text, probably file*";
                             }
 
+                            Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
+                                $"**Contents:** {converteddeletedmsg}\n" +
+                                $"Time posted: {msg.CreationTimestamp}";
+                        }
+                        if (Description.Length<=2000)
+                        {
                             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                             {
                                 Color = new DiscordColor(0xFF6600),
@@ -110,11 +109,15 @@ namespace LiveBot.Automation
                                     IconUrl = author.AvatarUrl,
                                     Name = author.Username
                                 },
-                                Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
-                                $"**Contents:** {converteddeletedmsg}\n" +
-                                $"Time posted: {msg.CreationTimestamp}"
+                                Description = Description
                             };
                             await DeleteLog.SendMessageAsync(embed: embed);
+                        }
+                        else
+                        {
+                            File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", Description);
+                            using var upFile = new FileStream($"{Program.tmpLoc}{e.Message.Id}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+                            await DeleteLog.SendFileAsync(upFile, $"Deleted message and info too long, uploading fail instead.");
                         }
                     }
                 }

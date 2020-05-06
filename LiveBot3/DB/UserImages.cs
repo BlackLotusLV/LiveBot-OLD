@@ -10,9 +10,11 @@ namespace LiveBot.DB
         [Column("id_user_images", TypeName = "Serial")]
         public int ID_User_Images { get; set; }
 
+        [Required]
         [Column("user_id")]
         public string User_ID { get; set; }
 
+        [Required]
         [Column("bg_id")]
         public int BG_ID { get; set; }
     }
