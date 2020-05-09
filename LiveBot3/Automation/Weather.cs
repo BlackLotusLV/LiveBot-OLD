@@ -15,7 +15,7 @@ namespace LiveBot.Automation
 
         public static void StartTimer()
         {
-            if (Interval == Timeout.Infinite && Program.TestBuild)
+            if (Interval == Timeout.Infinite && !Program.TestBuild)
             {
                 Interval = 15000;
                 WeatherTimer.Change(0, Interval);
@@ -29,6 +29,7 @@ namespace LiveBot.Automation
             StringBuilder sb = new StringBuilder();
             TimeSpan now = DateTime.UtcNow.TimeOfDay;
             TimeSpan CurrentTime = new TimeSpan(now.Hours, now.Minutes, 0);
+            TimeSpan TimeNow = new TimeSpan(now.Hours, now.Minutes, 0);
             string weathercondition = string.Empty;
 
             var Weather = DB.DBLists.WeatherSchedule.Where(w => w.Time >= CurrentTime && w.Day.Equals((int)DateTime.Today.DayOfWeek)).OrderBy(o => o.Time).ToList();
@@ -49,8 +50,8 @@ namespace LiveBot.Automation
                 }
             }
             sb.AppendLine($"**--------------------------------------------------------**");
-            CurrentTime = CurrentTime.Add(TimeSpan.FromMinutes(60));
-            for (int i = 60; i >= 0; i--)
+            CurrentTime = CurrentTime.Add(TimeSpan.FromMinutes(59));
+            for (int i = 0; i < 60; i++)
             {
                 var WeatherSpeciffic = Weather.Where(w => w.Time.Hours.Equals(CurrentTime.Hours) && w.Time.Minutes.Equals(CurrentTime.Minutes)).FirstOrDefault();
                 if (WeatherSpeciffic is null)
@@ -89,10 +90,9 @@ namespace LiveBot.Automation
                 }
                 CurrentTime -= TimeSpan.FromMinutes(1);
             }
-            sb.AppendLine($"Current UTC time is {CurrentTime:hh\\:mm}. Here is the weather for the upcoming hour!");
+            sb.AppendLine($"Current UTC time is {TimeNow:hh\\:mm}. Here is the weather for the upcoming hour!");
             sb.AppendLine($"**--------------------------------------------------------**");
             string weathertext = sb.ToString();
-            //weathertext = string.Join("\r\n", weathertext.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Reverse());
             if (OldWeather != weathertext)
             {
                 var messages = await WeatherChannel.GetMessagesAsync(50);

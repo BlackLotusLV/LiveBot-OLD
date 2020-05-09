@@ -31,12 +31,13 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Internal] Changed how `/randomvehicle` command checks duplicates.\n" +
-                "[Internal] Specified not null values in code.\n" +
-                "[FIX] Bot not logging deleted messages when message+description was over 2000 characters, now uploads .txt file.\n" +
-                "[Change] <#700414491749253220> now shows current time at the bottom, so you don't need to scroll to see what will be in the next few minutes.\n" +
-                "[NEO] Follow the white rabbit.\n" +
-                "";
+            string changelog = "[FIX] Minor fixes and adjustments to the weather channel\n" +
+                "[Internal] Merged some methods, deleted old, unused, code.\n" +
+                "[Change] Moved the points needed in `/summit` command by 5 pixels.\n" +
+                "[Change] `/summit` Shows \"-\" where no points are needed.\n" +
+                "[NEW] Added `/supra` command. Tags the user with the \"Is that a supra?\" gif.\n" +
+                "" +
+                "[?] Vincent, we happy?";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -159,6 +160,7 @@ namespace LiveBot.Commands
                 if ((item == pc || item == ps || item == xb) && check == false)
                 {
                     content = CustomMethod.GetCommandOutput(ctx, "lfc1", null, username);
+                    check = true;
                 }
             }
             await ctx.RespondAsync(content);
@@ -179,6 +181,22 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondWithFileAsync(ITImage, username.Mention);
             }
+        }
+
+        [Command("supra")]
+        [Description("Sends the supra gif.")]
+        [Cooldown(1,60,CooldownBucketType.Channel)]
+        public async Task Supra(CommandContext ctx, DiscordMember username = null)
+        {
+            await ctx.Message.DeleteAsync();
+            if (username == null)
+            {
+                await ctx.RespondAsync($"{ctx.User.Mention}, https://cdn.discordapp.com/attachments/438354175668256768/708594879063916614/is_that_a_supra.gif");
+    }
+            else
+            {
+                await ctx.RespondAsync($"{username.Mention}, https://cdn.discordapp.com/attachments/438354175668256768/708594879063916614/is_that_a_supra.gif");
+}
         }
 
         [Command("support")]
@@ -1077,7 +1095,7 @@ namespace LiveBot.Commands
                 {
                     if (Events[i].Tier_entries[j].Points == 4294967295)
                     {
-                        pts[i, j] = string.Empty;
+                        pts[i, j] = "-";
                     }
                     else
                     {
@@ -1109,10 +1127,10 @@ namespace LiveBot.Commands
                     BaseImg.Mutate(ctx => ctx
                         .DrawImage(SummitImg, SummitLocation, 1)
                         .DrawImage(TierImg, SummitLocation, 1)
-                        .DrawText(pts[i, 3], Basefont, TextColour, new PointF(80 + (300 * i), 370))
-                        .DrawText(pts[i, 2], Basefont, TextColour, new PointF(80 + (300 * i), 440))
-                        .DrawText(pts[i, 1], Basefont, TextColour, new PointF(80 + (300 * i), 510))
-                        .DrawText(pts[i, 0], Basefont, TextColour, new PointF(80 + (300 * i), 580))
+                        .DrawText(pts[i, 3], Basefont, TextColour, new PointF(80 + (300 * i), 365))
+                        .DrawText(pts[i, 2], Basefont, TextColour, new PointF(80 + (300 * i), 435))
+                        .DrawText(pts[i, 1], Basefont, TextColour, new PointF(80 + (300 * i), 505))
+                        .DrawText(pts[i, 0], Basefont, TextColour, new PointF(80 + (300 * i), 575))
                         .DrawImage(FooterImg, new Point(0 + (300 * i), 613), 1)
                         .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
                         );
