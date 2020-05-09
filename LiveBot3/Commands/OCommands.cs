@@ -24,23 +24,6 @@ namespace LiveBot.Commands
             await ctx.Message.DeleteAsync();
         }
 
-        [Command("textupdate")]
-        [Aliases("txtup")]
-        public async Task TextUpdate(CommandContext ctx, string language, string command, params string[] text)
-        {
-            string location = "Assets/TextFiles/" + language.ToLower() + "/" + command.ToLower() + ".txt";
-            string f = CustomMethod.ParamsStringConverter(text);
-            if (File.Exists(location))
-            {
-                File.WriteAllText(location, f);
-                await ctx.RespondAsync("Command updated");
-            }
-            else
-            {
-                await ctx.RespondAsync("Specified file locations incorrect.");
-            }
-        }
-
         [Command("update")]
         public async Task Update(CommandContext ctx, [Description("Which database to update. (All will update all db)")] string db = null)
         {

@@ -16,48 +16,6 @@ namespace LiveBot
 {
     internal class CustomMethod
     {
-        public static string LanguageIfNull(CommandContext ctx)
-        {
-            DiscordChannel current = ctx.Channel;
-            return (current.Id) switch
-            {
-                (150283740172517376) => "gb",
-                (249586001167515650) => "de",
-                (253231012492869632) => "fr",
-                (410790788738580480) => "nl",
-                (410835311602565121) => "se",
-                (363977914196295681) => "ru",
-                (423845614686699521) => "lv",
-                _ => "gb"
-            };
-        }
-
-        public static string ParamsStringConverter(string[] words)
-        {
-            string fullmsg = "";
-            foreach (string item in words)
-            {
-                fullmsg += item + " ";
-            }
-            return fullmsg;
-        }
-
-        public static List<string> WebToHTML(string url, string regex)
-        {
-            HttpWebRequest WebReq = (HttpWebRequest)HttpWebRequest.Create(url);
-            WebReq.Method = "GET";
-            HttpWebResponse WebRes = (HttpWebResponse)WebReq.GetResponse();
-            StreamReader WebSource = new StreamReader(WebRes.GetResponseStream());
-            string source = WebSource.ReadToEnd();
-            WebRes.Close();
-            List<string> list = new List<string>();
-            foreach (Match item in Regex.Matches(source, regex))
-            {
-                list.Add(item.ToString());
-            }
-            return list;
-        }
-
         public static Rgba32 GetColour(string incolour)
         {
             return (incolour) switch
@@ -384,17 +342,6 @@ namespace LiveBot
             }
         }
 
-        public static string HubTextConverter(string Text_ID)
-        {
-            string text = Program.TCHubDictionary.Where(w => w.Key.Equals(Text_ID)).FirstOrDefault().Value;
-            if (text != null)
-            {
-                string EndString = Regex.Replace(text, "&#8209;", "-");
-                return EndString;
-            }
-            return "";
-        }
-
         public static bool CheckIfMemberAdmin(DiscordMember member)
         {
             foreach (DiscordRole role in member.Roles)
@@ -416,7 +363,17 @@ namespace LiveBot
 
             if (language == null)
             {
-                language = LanguageIfNull(ctx);
+                language = (ctx.Channel.Id) switch
+                {
+                    (150283740172517376) => "gb",
+                    (249586001167515650) => "de",
+                    (253231012492869632) => "fr",
+                    (410790788738580480) => "nl",
+                    (410835311602565121) => "se",
+                    (363977914196295681) => "ru",
+                    (423845614686699521) => "lv",
+                    _ => "gb"
+                };
             }
             if (member is null)
             {
