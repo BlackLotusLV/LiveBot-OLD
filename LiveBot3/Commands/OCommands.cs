@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -77,6 +78,24 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             System.Environment.Exit(0);
+        }
+
+        [Command("getguilds")]
+        public async Task GetGuilds(CommandContext ctx)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var guild in Program.Client.Guilds)
+            {
+                sb.AppendLine($"{guild.Value.Name} ({guild.Value.Id})");
+            }
+            await ctx.RespondAsync(sb.ToString());
+        }
+
+        [Command("leaveguild")]
+        public async Task LeaveGuild(CommandContext ctx, DiscordGuild guild)
+        {
+            await guild.LeaveAsync();
+            await ctx.RespondAsync($"The bot has left {guild.Name} guild!");
         }
     }
 }
