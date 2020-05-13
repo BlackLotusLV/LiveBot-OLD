@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200510_A";
+        public static string BotVersion = $"20200513_A";
         public static bool TestBuild;
 
         // TC Hub
@@ -65,6 +65,8 @@ namespace LiveBot
             // fills all database lists
             DB.DBLists.LoadAllLists();
             fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
+            fonts.Install("Assets/Fonts/Inconsolata-Bold.ttf");
+            fonts.Install("Assets/Fonts/Inconsolata-Regular.ttf");
 
             TestBuild = true;
 

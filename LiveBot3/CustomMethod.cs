@@ -2,14 +2,13 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LiveBot
@@ -20,11 +19,11 @@ namespace LiveBot
         {
             return (incolour) switch
             {
-                "black" => Rgba32.Black,
-                "white" => Rgba32.WhiteSmoke,
-                "red" => Rgba32.Red,
-                "green" => Rgba32.Green,
-                _ => Rgba32.Transparent
+                "black" => Color.Black,
+                "white" => Color.WhiteSmoke,
+                "red" => Color.Red,
+                "green" => Color.Green,
+                _ => Color.Transparent
             };
         }
 

@@ -7,9 +7,9 @@ using LiveBot.Json;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,6 +20,8 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Point = SixLabors.ImageSharp.Point;
+using PointF = SixLabors.ImageSharp.PointF;
 
 namespace LiveBot.Commands
 {
@@ -31,13 +33,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Minor fixes and adjustments to the weather channel\n" +
-                "[Internal] Merged some methods, deleted old, unused, code.\n" +
-                "[Change] Moved the points needed in `/summit` command by 5 pixels.\n" +
-                "[Change] `/summit` Shows \"-\" where no points are needed.\n" +
-                "[NEW] Added `/supra` command. Tags the user with the \"Is that a supra?\" gif.\n" +
-                "" +
-                "[?] Vincent, we happy?";
+            string changelog = "[Change] `/profile` command using a different font.\n" +
+                "[Internal] Updated to the latest imagesharp build, thus minor code adjustments.\n" +
+                "[Change] `/supra` command is now among the updatable commands.\n" +
+                "[?] As you can see, we’ve had our eye on you for some time now, Mr. Anderson.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -77,7 +76,7 @@ namespace LiveBot.Commands
 
         [Command("share")]
         [Cooldown(1, 10, CooldownBucketType.Channel)]
-        [Description("Informs the user about the content sharing channels and how to get the share role")] // photomode info command
+        [Description("Informs the user, how to get access to the share channels.")] // photomode info command
         public async Task Share(CommandContext ctx,
             [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null,
             [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
@@ -185,18 +184,17 @@ namespace LiveBot.Commands
 
         [Command("supra")]
         [Description("Sends the supra gif.")]
-        [Cooldown(1,60,CooldownBucketType.Channel)]
+        [Cooldown(1, 60, CooldownBucketType.Channel)]
         public async Task Supra(CommandContext ctx, DiscordMember username = null)
         {
-            await ctx.Message.DeleteAsync();
-            if (username == null)
+            if (username is null)
             {
-                await ctx.RespondAsync($"{ctx.User.Mention}, https://cdn.discordapp.com/attachments/438354175668256768/708594879063916614/is_that_a_supra.gif");
-    }
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "supra", null, ctx.Member));
+            }
             else
             {
-                await ctx.RespondAsync($"{username.Mention}, https://cdn.discordapp.com/attachments/438354175668256768/708594879063916614/is_that_a_supra.gif");
-}
+                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "supra", null, username));
+            }
         }
 
         [Command("support")]
@@ -620,13 +618,13 @@ namespace LiveBot.Commands
             byte[] profilepic = webclinet.DownloadData(user.AvatarUrl);
             string username;
             StringBuilder sb = new StringBuilder();
-            int usernameSize = 21;
+            int usernameSize = 30;
             for (int i = 0; i < user.Username.Length; i++)
             {
                 if (i == 20)
                 {
                     sb.AppendLine();
-                    usernameSize = 15;
+                    usernameSize = 20;
                 }
                 else if (i == 41)
                 {
@@ -660,15 +658,25 @@ namespace LiveBot.Commands
             using Image<Rgba32> background = new Image<Rgba32>(560, 360);
             using Image<Rgba32> bg = Image.Load<Rgba32>(baseBG);
             using Image<Rgba32> FollowersBar = new Image<Rgba32>(System.Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20);
-            Font UsernameFont = SystemFonts.CreateFont("Consolas", usernameSize, FontStyle.Bold);
-            Font Basefont = SystemFonts.CreateFont("Consolas", 21, FontStyle.Bold);
-            Font LevelText = SystemFonts.CreateFont("Consolas", 30, FontStyle.Regular);
-            Font LevelNumber = SystemFonts.CreateFont("Consolas", 50, FontStyle.Regular);
-            Font InfoTextFont = SystemFonts.CreateFont("Consolas", 19, FontStyle.Regular);
-            var AllignCenter = new TextGraphicsOptions(true)
+            Font UsernameFont = Program.fonts.CreateFont("Inconsolata", usernameSize, FontStyle.Bold);
+            Font Basefont = Program.fonts.CreateFont("Inconsolata", 21, FontStyle.Bold);
+            Font LevelText = Program.fonts.CreateFont("Inconsolata", 30, FontStyle.Regular);
+            Font LevelNumber = Program.fonts.CreateFont("Inconsolata", 50, FontStyle.Regular);
+            Font InfoTextFont = Program.fonts.CreateFont("Inconsolata", 19, FontStyle.Regular);
+            var InfoWrap = new TextGraphicsOptions()
             {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top
+                TextOptions =
+                {
+                    WrapTextWidth = 540f
+                }
+            };
+            var AllignCenter = new TextGraphicsOptions()
+            {
+                TextOptions =
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Top
+                }
             };
             Point bglocation = new Point(10, 10);
             Point pfplocation = new Point(440, 230);
@@ -703,6 +711,9 @@ namespace LiveBot.Commands
                     LineCount++;
                 }
             }
+
+            float LeftMargin = 35f;
+
             pfp.Mutate(ctx => ctx.Resize(128, 128));
             FollowersBar.Mutate(ctx => ctx.BackgroundColor(Color.Gray));
             picture.Mutate(ctx => ctx
@@ -720,22 +731,22 @@ namespace LiveBot.Commands
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y),
                 new PointF(pfplocation.X + pfp.Width, pfplocation.Y + pfp.Height),
                 new PointF(pfplocation.X, pfplocation.Y + pfp.Height)) //profile picture border
-                .DrawImage(FollowersBar, new Point(152, 320), 1)
+                .DrawImage(FollowersBar, new Point(150, 320), 1)
                 .DrawPolygon(bordercolour, 1,
-                new PointF(152, 320),
-                new PointF(412, 320),
-                new PointF(412, 340),
-                new PointF(152, 340)) // follower bar border
+                new PointF(150, 320),
+                new PointF(410, 320),
+                new PointF(410, 340),
+                new PointF(150, 340)) // follower bar border
                 .DrawText(AllignCenter, username, UsernameFont, textcolour, new PointF(270, 225)) // username
-                .DrawText($"LEVEL", LevelText, textcolour, new PointF(40, 230)) // levels
-                .DrawText(level, LevelNumber, textcolour, new PointF(40, 260))
-                .DrawText($"Followers:", Basefont, textcolour, new PointF(40, 320))
-                .DrawText(followers, InfoTextFont, textcolour, new PointF(155, 322))
-                .DrawText($"Bucks:", Basefont, textcolour, new PointF(40, 340))
-                .DrawText(bucks, InfoTextFont, textcolour, new PointF(110, 342))
-                .DrawText($"User info:", Basefont, textcolour, new PointF(40, 380))
-                .DrawText(info, InfoTextFont, textcolour, new PointF(30, 400))
-                .DrawLines(GraphicsOptions.Default, bordercolour, 1, new PointF(30, pfplocation.Y + pfp.Height + 10), new PointF(570, pfplocation.Y + pfp.Height + 10))
+                .DrawText($"LEVEL", LevelText, textcolour, new PointF(LeftMargin, 230)) // levels
+                .DrawText(level, LevelNumber, textcolour, new PointF(LeftMargin, 260))
+                .DrawText($"Followers:", Basefont, textcolour, new PointF(LeftMargin, 319f))
+                .DrawText(followers, InfoTextFont, textcolour, new PointF(150f, 319f))
+                .DrawText($"Bucks:", Basefont, textcolour, new PointF(LeftMargin, 340))
+                .DrawText(bucks, InfoTextFont, textcolour, new PointF(105f, 342))
+                .DrawLines(bordercolour, 1, new PointF(30, pfplocation.Y + pfp.Height + 10), new PointF(570, pfplocation.Y + pfp.Height + 10))
+                .DrawText($"User info:", Basefont, textcolour, new PointF(LeftMargin, 380))
+                .DrawText(InfoWrap, info, InfoTextFont, textcolour, new PointF(30, 400))
                 );
             if (tcelink == true)
             {
@@ -1116,12 +1127,12 @@ namespace LiveBot.Commands
                     using Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo);
                     using Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30);
                     SummitImg.Mutate(ctx => ctx.Crop(300, SummitImg.Height));
-                    Rgba32 TextColour = Rgba32.WhiteSmoke;
+                    Color TextColour = Color.WhiteSmoke;
                     Point SummitLocation = new Point(0 + (300 * i), 0);
                     Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
                     Font FooterFont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                     FooterImg.Mutate(ctx => ctx
-                    .Fill(Rgba32.Black)
+                    .Fill(Color.Black)
                     .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
                     );
                     BaseImg.Mutate(ctx => ctx
@@ -1253,20 +1264,29 @@ namespace LiveBot.Commands
                 Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                 Font SummitCaps12 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
 
-                var AllignCenter = new TextGraphicsOptions(true)
+                var AllignCenter = new TextGraphicsOptions()
                 {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Top
+                    TextOptions =
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Top
+                    }
                 };
-                var AllignTopLeft = new TextGraphicsOptions(true)
+                var AllignTopLeft = new TextGraphicsOptions()
                 {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Top
+                    TextOptions =
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top
+                    }
                 };
-                var AllignTopRight = new TextGraphicsOptions(true)
+                var AllignTopRight = new TextGraphicsOptions()
                 {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Top
+                    TextOptions =
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Top
+                    }
                 };
 
                 if (Events.Points != 0)
@@ -1330,15 +1350,15 @@ namespace LiveBot.Commands
                             using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
                             using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
                             {
-                                ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
-                                TitleBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                                ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
+                                TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
                                 EventImage.Mutate(ctx => ctx
                                 .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
                                 .DrawImage(TitleBar, new Point(0, 0), 0.7f)
-                                .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
-                                .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank + 1}", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
-                                .DrawText(AllignTopRight, ActivityResult, Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
-                                .DrawText(AllignTopRight, $"Points: {Activity[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                                .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Color.White, new PointF(5, 0))
+                                .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank + 1}", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
+                                .DrawText(AllignTopRight, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                                .DrawText(AllignTopRight, $"Points: {Activity[0].Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                                 );
                             }
                             BaseImage.Mutate(ctx => ctx
@@ -1349,8 +1369,8 @@ namespace LiveBot.Commands
                         {
                             using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
                             NotComplete.Mutate(ctx => ctx
-                                .Fill(Rgba32.Black)
-                                .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
+                                .Fill(Color.Black)
+                                .DrawText(AllignCenter, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
                                 );
                             BaseImage.Mutate(ctx => ctx
                             .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
@@ -1360,7 +1380,7 @@ namespace LiveBot.Commands
                     });
                     using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Assets/Summit/TierBar.png"))
                     {
-                        TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Rgba32.Black), new Point(0, 0), 0.35f));
+                        TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Color.Black), new Point(0, 0), 0.35f));
                         int[] TierXPos = new int[4] { 845, 563, 281, 0 };
                         bool[] Tier = new bool[] { false, false, false, false };
                         Parallel.For(0, Events.Tier_entries.Length, (i, state) =>
@@ -1377,13 +1397,13 @@ namespace LiveBot.Commands
                                 }
 
                                 TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points}", SummitCaps12, Rgba32.White, new PointF(TierXPos[i] + 5, 15))
+                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points}", SummitCaps12, Color.White, new PointF(TierXPos[i] + 5, 15))
                                 );
                             }
                         });
 
                         TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Rgba32.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
+                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Color.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
                                 );
 
                         BaseImage.Mutate(ctx => ctx
@@ -1473,20 +1493,29 @@ namespace LiveBot.Commands
             Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
             Font SummitCaps12 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
 
-            var AllignCenter = new TextGraphicsOptions(true)
+            var AllignCenter = new TextGraphicsOptions()
             {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top
+                TextOptions =
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Top
+                }
             };
-            var AllignTopLeft = new TextGraphicsOptions(true)
+            var AllignTopLeft = new TextGraphicsOptions()
             {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top
+                TextOptions =
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top
+                }
             };
-            var AllignTopRight = new TextGraphicsOptions(true)
+            var AllignTopRight = new TextGraphicsOptions()
             {
-                HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment = VerticalAlignment.Top
+                TextOptions =
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Top
+                }
             };
 
             using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 735);
@@ -1548,15 +1577,15 @@ namespace LiveBot.Commands
                     using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
                     using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
                     {
-                        ScoreBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
-                        TitleBar.Mutate(ctx => ctx.Fill(Rgba32.Black));
+                        ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
+                        TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
                         EventImage.Mutate(ctx => ctx
                         .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
                         .DrawImage(TitleBar, new Point(0, 0), 0.7f)
-                        .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Rgba32.White, new PointF(5, 0))
-                        .DrawText(AllignTopLeft, $"Rank: 1", Basefont, Rgba32.White, new PointF(5, EventImage.Height - 22))
-                        .DrawText(AllignTopRight, ActivityResult, Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
-                        .DrawText(AllignTopRight, $"Points: {Activity.Entries[0].Points}", Basefont, Rgba32.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                        .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Color.White, new PointF(5, 0))
+                        .DrawText(AllignTopLeft, $"Rank: 1", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
+                        .DrawText(AllignTopRight, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                        .DrawText(AllignTopRight, $"Points: {Activity.Entries[0].Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                         );
                     }
                     BaseImage.Mutate(ctx => ctx
@@ -1567,8 +1596,8 @@ namespace LiveBot.Commands
                 {
                     using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
                     NotComplete.Mutate(ctx => ctx
-                        .Fill(Rgba32.Black)
-                        .DrawText(AllignCenter, "Event not completed!", Basefont, Rgba32.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
+                        .Fill(Color.Black)
+                        .DrawText(AllignCenter, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
                         );
                     BaseImage.Mutate(ctx => ctx
                     .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
@@ -1610,7 +1639,7 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
             TimerMethod.UpdateHubInfo();
 
-            Color[] RewardColours = new Color[] { Color.FromHex("#0060A9"), Color.FromHex("#D5A45F"), Color.FromHex("#C2C2C2"), Color.FromHex("#B07C4D") };
+            Color[] RewardColours = new Color[] { Rgba32.ParseHex("#0060A9"), Rgba32.ParseHex("#D5A45F"), Rgba32.ParseHex("#C2C2C2"), Rgba32.ParseHex("#B07C4D") };
 
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
             int RewardWidth = 412;
