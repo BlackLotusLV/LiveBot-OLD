@@ -8,7 +8,7 @@ namespace LiveBot.DB
     {
         [Key]
         [Column("id_user")]
-        public string ID_User { get; set; }
+        public decimal ID_User { get; set; }
 
         [Required]
         [Column("followers")]

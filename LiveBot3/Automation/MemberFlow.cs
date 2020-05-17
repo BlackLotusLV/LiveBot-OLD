@@ -11,10 +11,10 @@ namespace LiveBot.Automation
         public static async Task Welcome_Member(GuildMemberAddEventArgs e)
         {
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
             var JoinRole = (from rr in DB.DBLists.RankRoles
-                            where rr.Server_ID == e.Guild.Id.ToString()
+                            where rr.Server_ID == e.Guild.Id
                             where rr.Server_Rank == 0
                             select rr).ToList();
             DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
@@ -38,7 +38,7 @@ namespace LiveBot.Automation
         public static async Task Say_Goodbye(GuildMemberRemoveEventArgs e)
         {
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
             DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
             if (GuildSettings[0].Welcome_Settings[0] != "0")

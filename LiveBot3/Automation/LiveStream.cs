@@ -64,9 +64,9 @@ namespace LiveBot.Automation
                                 {
                                     foreach (DiscordRole urole in StreamMember.Roles)
                                     {
-                                        foreach (string roleid in (string[])row.Roles_ID)
+                                        foreach (decimal roleid in row.Roles_ID)
                                         {
-                                            if (urole.Id.ToString() == roleid)
+                                            if (urole.Id == roleid)
                                             {
                                                 role = true;
                                             }

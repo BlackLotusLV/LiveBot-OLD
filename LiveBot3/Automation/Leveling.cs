@@ -43,7 +43,7 @@ namespace LiveBot.Automation
                         {
                             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
                             var global = (from lb in Leaderboard
-                                          where lb.ID_User == e.Author.Id.ToString()
+                                          where lb.ID_User == e.Author.Id
                                           select lb).ToList();
                             global[0].Followers = (long)global[0].Followers + points_added;
                             global[0].Bucks = (long)global[0].Bucks + money_added;
@@ -67,8 +67,8 @@ namespace LiveBot.Automation
                             {
                                 List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
                                 var local = (from lb in Leaderboard
-                                             where lb.User_ID == e.Author.Id.ToString()
-                                             where lb.Server_ID == e.Channel.Guild.Id.ToString()
+                                             where lb.User_ID == e.Author.Id
+                                             where lb.Server_ID == e.Channel.Guild.Id
                                              select lb).ToList();
                                 local[0].Followers = (long)local[0].Followers + points_added;
                                 Suser.Time = DateTime.Now; DB.DBLists.UpdateServerRanks(local);
@@ -80,14 +80,14 @@ namespace LiveBot.Automation
                 {
                     List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
                     var global = (from lb in Leaderboard
-                                  where lb.ID_User == e.Author.Id.ToString()
+                                  where lb.ID_User == e.Author.Id
                                   select lb).ToList();
                     if (global.Count == 0)
                     {
                         CustomMethod.AddUserToLeaderboard(e.Author);
                     }
                     global = (from lb in Leaderboard
-                              where lb.ID_User == e.Author.Id.ToString()
+                              where lb.ID_User == e.Author.Id
                               select lb).ToList();
                     points_added = r.Next(MinInterval, MaxInterval);
                     if (global.Count == 1)
@@ -112,8 +112,8 @@ namespace LiveBot.Automation
                     List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
                     CustomMethod.AddUserToServerRanks(e.Author, e.Guild);
                     var local = (from lb in Leaderboard
-                                 where lb.User_ID == e.Author.Id.ToString()
-                                 where lb.Server_ID == e.Channel.Guild.Id.ToString()
+                                 where lb.User_ID == e.Author.Id
+                                 where lb.Server_ID == e.Channel.Guild.Id
                                  select lb).ToList();
                     if (local.Count > 0)
                     {
@@ -130,18 +130,18 @@ namespace LiveBot.Automation
                 }
                 //*/
                 var userrank = (from sr in DB.DBLists.ServerRanks
-                                where sr.Server_ID == e.Guild.Id.ToString()
-                                where sr.User_ID == e.Author.Id.ToString()
+                                where sr.Server_ID == e.Guild.Id
+                                where sr.User_ID == e.Author.Id
                                 select sr).ToList()[0].Followers;
                 var rankedroles = (from rr in DB.DBLists.RankRoles
                                    where rr.Server_Rank != 0
                                    where rr.Server_Rank <= userrank
-                                   where rr.Server_ID == e.Guild.Id.ToString()
+                                   where rr.Server_ID == e.Guild.Id
                                    select rr).ToList();
                 List<DiscordRole> roles = new List<DiscordRole>();
                 foreach (var item in rankedroles)
                 {
-                    if (item.Server_ID == e.Guild.Id.ToString())
+                    if (item.Server_ID == e.Guild.Id)
                     {
                         roles.Add(e.Guild.GetRole(Convert.ToUInt64(item.Role_ID)));
                     }
@@ -164,15 +164,15 @@ namespace LiveBot.Automation
         public static async Task Add_To_Leaderboards(GuildMemberAddEventArgs e)
         {
             var global = (from lb in DB.DBLists.Leaderboard
-                          where lb.ID_User == e.Member.Id.ToString()
+                          where lb.ID_User == e.Member.Id
                           select lb).ToList();
             if (global.Count == 0)
             {
                 CustomMethod.AddUserToLeaderboard(e.Member);
             }
             var local = (from lb in DB.DBLists.ServerRanks
-                         where lb.User_ID == e.Member.Id.ToString()
-                         where lb.Server_ID == e.Guild.Id.ToString()
+                         where lb.User_ID == e.Member.Id
+                         where lb.Server_ID == e.Guild.Id
                          select lb).ToList();
             if (local.Count == 0)
             {

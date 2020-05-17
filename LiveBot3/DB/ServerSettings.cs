@@ -8,19 +8,19 @@ namespace LiveBot.DB
     {
         [Key]
         [Column("id_server")]
-        public string ID_Server { get; set; }
+        public decimal ID_Server { get; set; }
 
         [Required]
         [Column("delete_log")]
-        public string Delete_Log { get; set; }
+        public decimal Delete_Log { get; set; }
 
         [Required]
         [Column("user_traffic")]
-        public string User_Traffic { get; set; }
+        public decimal User_Traffic { get; set; }
 
         [Required]
         [Column("wkb_log")]
-        public string WKB_Log { get; set; }
+        public decimal WKB_Log { get; set; }
 
         [Required]
         [Column("welcome_cwb")]
@@ -28,6 +28,6 @@ namespace LiveBot.DB
 
         [Required]
         [Column("spam_exception")]
-        public string[] Spam_Exception_Channels { get; set; }
+        public decimal[] Spam_Exception_Channels { get; set; }
     }
 }

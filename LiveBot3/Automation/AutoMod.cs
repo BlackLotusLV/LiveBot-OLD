@@ -26,7 +26,7 @@ namespace LiveBot.Automation
                 if (!CustomMethod.CheckIfMemberAdmin(member))
                 {
                     var wordlist = (from bw in DB.DBLists.AMBannedWords
-                                    where bw.Server_ID == e.Guild.Id.ToString()
+                                    where bw.Server_ID == e.Guild.Id
                                     select bw).ToList();
                     foreach (var word in wordlist)
                     {
@@ -67,11 +67,11 @@ namespace LiveBot.Automation
             DiscordMessage msg = e.Message;
             DiscordUser author = msg.Author;
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
             string Description = string.Empty;
 
-            if (GuildSettings[0].Delete_Log != "0")
+            if (GuildSettings[0].Delete_Log != 0)
             {
                 DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
                 DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
@@ -131,9 +131,9 @@ namespace LiveBot.Automation
         public static async Task Bulk_Delete_Log(MessageBulkDeleteEventArgs e)
         {
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
-            if (GuildSettings[0].Delete_Log != "0")
+            if (GuildSettings[0].Delete_Log != 0)
             {
                 DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
                 DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
@@ -176,10 +176,10 @@ namespace LiveBot.Automation
         public static async Task User_Join_Log(GuildMemberAddEventArgs e)
         {
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
             DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
-            if (GuildSettings[0].User_Traffic != "0")
+            if (GuildSettings[0].User_Traffic != 0)
             {
                 DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -199,10 +199,10 @@ namespace LiveBot.Automation
         public static async Task User_Leave_Log(GuildMemberRemoveEventArgs e)
         {
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
             DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
-            if (GuildSettings[0].User_Traffic != "0")
+            if (GuildSettings[0].User_Traffic != 0)
             {
                 DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -224,13 +224,13 @@ namespace LiveBot.Automation
             DateTimeOffset time = DateTimeOffset.Now.UtcDateTime;
             DateTimeOffset beforetime = time.AddSeconds(-5);
             DateTimeOffset aftertime = time.AddSeconds(10);
-            string uid = e.Member.Id.ToString();
+            decimal uid = e.Member.Id;
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id.ToString()
+                                 where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
             DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
             var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Kick);
-            if (GuildSettings[0].WKB_Log != "0")
+            if (GuildSettings[0].WKB_Log != 0)
             {
                 DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].WKB_Log));
                 if (logs[0].CreationTimestamp >= beforetime && logs[0].CreationTimestamp <= aftertime)
@@ -248,12 +248,12 @@ namespace LiveBot.Automation
                     };
                     await wkbLog.SendMessageAsync(embed: embed);
 
-                    var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
+                    var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.Equals(f.User_ID));
                     if (UserSettings is null)
                     {
                         DB.ServerRanks newEntry = new DB.ServerRanks
                         {
-                            Server_ID = e.Guild.Id.ToString(),
+                            Server_ID = e.Guild.Id,
                             Ban_Count = 0,
                             Kick_Count = 1,
                             Warning_Level = 0,
@@ -275,10 +275,10 @@ namespace LiveBot.Automation
         public static async Task User_Banned_Log(GuildBanAddEventArgs e)
         {
             var wkb_Settings = (from ss in DB.DBLists.ServerSettings
-                                where ss.ID_Server == e.Guild.Id.ToString()
+                                where ss.ID_Server == e.Guild.Id
                                 select ss).ToList();
             DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
-            if (wkb_Settings[0].WKB_Log != "0")
+            if (wkb_Settings[0].WKB_Log != 0)
             {
                 await Task.Delay(2000);
                 var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
@@ -296,7 +296,7 @@ namespace LiveBot.Automation
                 };
                 await wkbLog.SendMessageAsync(embed: embed);
             }
-            var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.ToString().Equals(f.User_ID));
+            var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.Equals(f.User_ID));
             bool UserCheck = false;
             UserCheck = true;
             UserSettings.Ban_Count += 1;
@@ -306,11 +306,11 @@ namespace LiveBot.Automation
             {
                 DB.ServerRanks newEntry = new DB.ServerRanks
                 {
-                    Server_ID = e.Guild.Id.ToString(),
+                    Server_ID = e.Guild.Id,
                     Ban_Count = 1,
                     Kick_Count = 0,
                     Warning_Level = 0,
-                    User_ID = e.Member.Id.ToString()
+                    User_ID = e.Member.Id
                 };
                 DB.DBLists.InsertServerRanks(newEntry);
             }
@@ -320,10 +320,10 @@ namespace LiveBot.Automation
         public static async Task User_Unbanned(GuildBanRemoveEventArgs e)
         {
             var wkb_Settings = (from ss in DB.DBLists.ServerSettings
-                                where ss.ID_Server == e.Guild.Id.ToString()
+                                where ss.ID_Server == e.Guild.Id
                                 select ss).ToList();
             DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
-            if (wkb_Settings[0].WKB_Log != "0")
+            if (wkb_Settings[0].WKB_Log != 0)
             {
                 await Task.Delay(1000);
                 var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Unban);
@@ -348,11 +348,11 @@ namespace LiveBot.Automation
             if (!e.Author.IsBot && e.Guild != null)
             {
                 var Server_Settings = (from ss in DB.DBLists.ServerSettings
-                                       where ss.ID_Server == e.Guild.Id.ToString()
+                                       where ss.ID_Server == e.Guild.Id
                                        select ss).FirstOrDefault();
                 DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(Server_Settings.ID_Server));
 
-                if (Server_Settings.WKB_Log != "0" && !Server_Settings.Spam_Exception_Channels.Any(id => id.Equals(e.Channel.Id.ToString())))
+                if (Server_Settings.WKB_Log != 0 && !Server_Settings.Spam_Exception_Channels.Any(id => id.Equals(e.Channel.Id)))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                     if (!CustomMethod.CheckIfMemberAdmin(member))

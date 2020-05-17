@@ -47,7 +47,7 @@ namespace LiveBot
         {
             DB.Leaderboard newEntry = new DB.Leaderboard
             {
-                ID_User = user.Id.ToString(),
+                ID_User = user.Id,
                 Followers = (long)0,
                 Level = 0,
                 Bucks = (long)0
@@ -57,7 +57,7 @@ namespace LiveBot
             var idui = UserImg.Max(m => m.ID_User_Images);
             DB.UserImages newUImage = new DB.UserImages
             {
-                User_ID = user.Id.ToString(),
+                User_ID = user.Id,
                 BG_ID = 1,
                 ID_User_Images = idui + 1
             };
@@ -66,7 +66,7 @@ namespace LiveBot
             var us = UserSet.Max(m => m.ID_User_Settings);
             DB.UserSettings newUSettings = new DB.UserSettings
             {
-                User_ID = user.Id.ToString(),
+                User_ID = user.Id,
                 Background_Colour = "white",
                 Text_Colour = "black",
                 Border_Colour = "black",
@@ -81,15 +81,15 @@ namespace LiveBot
         {
             List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
             var local = (from lb in Leaderboard
-                         where lb.User_ID == user.Id.ToString()
-                         where lb.Server_ID == guild.Id.ToString()
+                         where lb.User_ID == user.Id
+                         where lb.Server_ID == guild.Id
                          select lb).ToList();
             if (local.Count == 0)
             {
                 DB.ServerRanks newEntry = new DB.ServerRanks
                 {
-                    User_ID = user.Id.ToString(),
-                    Server_ID = guild.Id.ToString(),
+                    User_ID = user.Id,
+                    Server_ID = guild.Id,
                     Followers = 0
                 };
                 DB.DBLists.InsertServerRanks(newEntry);
@@ -128,7 +128,7 @@ namespace LiveBot
             string personalscore = "";
             List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
             var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
-            user = user.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
+            user = user.Where(w => w.Server_ID == ctx.Guild.Id).ToList();
             sb.AppendLine("```csharp\n📋 Rank | Username");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
@@ -142,11 +142,11 @@ namespace LiveBot
             int rank = 0;
             List<DB.ServerRanks> LB = DB.DBLists.ServerRanks;
             List<DB.ServerRanks> leaderbaords = LB.OrderByDescending(x => x.Followers).ToList();
-            leaderbaords = leaderbaords.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).ToList();
+            leaderbaords = leaderbaords.Where(w => w.Server_ID == ctx.Guild.Id).ToList();
             foreach (var item in leaderbaords)
             {
                 rank++;
-                if (item.User_ID == ctx.User.Id.ToString())
+                if (item.User_ID == ctx.User.Id)
                 {
                     personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t";
                     break;
@@ -180,7 +180,7 @@ namespace LiveBot
             foreach (var item in leaderbaords)
             {
                 rank++;
-                if (item.ID_User == ctx.User.Id.ToString())
+                if (item.ID_User == ctx.User.Id)
                 {
                     personalscore = $"⭐Rank: {rank}\t Followers: {item.Followers}\t Level {item.Level}";
                 }
@@ -196,7 +196,7 @@ namespace LiveBot
             List<DB.BackgroundImage> Backgrounds = DB.DBLists.BackgroundImage.OrderBy(o => o.ID_BG).ToList();
             var List = (from bi in Backgrounds
                         join ui in userImages on bi.ID_BG equals ui.BG_ID
-                        where ui.User_ID == ctx.User.Id.ToString()
+                        where ui.User_ID == ctx.User.Id
                         select bi).ToList();
 
             StringBuilder sb = new StringBuilder();
@@ -244,21 +244,21 @@ namespace LiveBot
 
             string modinfo = "";
             StringBuilder SB = new StringBuilder();
-            string uid = user.Id.ToString(), aid = admin.Id.ToString();
+            decimal uid = user.Id, aid = admin.Id;
             bool kick = false;
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
-            if (ServerSettings.WKB_Log != "0")
+            if (ServerSettings.WKB_Log != 0)
             {
                 DiscordChannel modlog = server.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
                 if (WarnedUserStats is null) // creates new entry in DB (Followers set to default value)
                 {
                     DB.ServerRanks newEntry = new DB.ServerRanks
                     {
-                        Server_ID = server.Id.ToString(),
+                        Server_ID = server.Id,
                         Ban_Count = 0,
                         Kick_Count = 0,
                         Warning_Level = 1,
-                        User_ID = user.Id.ToString()
+                        User_ID = user.Id
                     };
                     DB.DBLists.InsertServerRanks(newEntry);
                 }
@@ -283,11 +283,11 @@ namespace LiveBot
                     Date = DateTime.Now.ToString("yyyy-MM-dd"),
                     Admin_ID = aid,
                     User_ID = uid,
-                    Server_ID = server.Id.ToString()
+                    Server_ID = server.Id
                 };
                 DB.DBLists.InsertWarnings(newWarning);
 
-                int warning_count = DB.DBLists.Warnings.Where(w => w.User_ID == user.Id.ToString() && w.Server_ID == server.Id.ToString()).Count();
+                int warning_count = DB.DBLists.Warnings.Where(w => w.User_ID == user.Id && w.Server_ID == server.Id).Count();
 
                 SB.AppendLine($"You have been warned by <@{admin.Id}>.\n**Warning Reason:**\t{reason}\n**Warning Level:** {WarnedUserStats.Warning_Level}\n**Server:** {server.Name}");
                 embed = new DiscordEmbedBuilder

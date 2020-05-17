@@ -24,14 +24,14 @@ namespace LiveBot.DB
 
         [Required]
         [Column("admin_id")]
-        public string Admin_ID { get; set; }
+        public decimal Admin_ID { get; set; }
 
         [Required]
         [Column("user_id")]
-        public string User_ID { get; set; }
+        public decimal User_ID { get; set; }
 
         [Required]
         [Column("server_id")]
-        public string Server_ID { get; set; }
+        public decimal Server_ID { get; set; }
     }
 }

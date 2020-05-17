@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200513_A";
+        public static string BotVersion = $"20200517_A";
         public static bool TestBuild;
 
         // TC Hub
@@ -181,19 +181,19 @@ namespace LiveBot
         {
             ServerIdList.Add(e.Guild.Id);
             var list = (from ss in DB.DBLists.ServerSettings
-                        where ss.ID_Server == e.Guild.Id.ToString()
+                        where ss.ID_Server == e.Guild.Id
                         select ss).ToList();
             if (list.Count == 0)
             {
                 string[] arr = new string[] { "0", "0", "0" };
                 var newEntry = new DB.ServerSettings()
                 {
-                    ID_Server = e.Guild.Id.ToString(),
-                    Delete_Log = "0",
-                    User_Traffic = "0",
+                    ID_Server = e.Guild.Id,
+                    Delete_Log = 0,
+                    User_Traffic = 0,
                     Welcome_Settings = arr,
-                    WKB_Log = "0",
-                    Spam_Exception_Channels = new string[] { "0" }
+                    WKB_Log = 0,
+                    Spam_Exception_Channels = new decimal[] { 0 }
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }

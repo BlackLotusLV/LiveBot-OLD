@@ -16,7 +16,7 @@ namespace LiveBot.DB
 
         [Required]
         [Column("server_id")]
-        public string Server_ID { get; set; }
+        public decimal Server_ID { get; set; }
 
         [Required]
         [Column("offense")]

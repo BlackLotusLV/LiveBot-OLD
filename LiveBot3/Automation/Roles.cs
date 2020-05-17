@@ -21,9 +21,9 @@ namespace LiveBot.Automation
 
                 List<DB.ReactionRoles> ReactionRoles = DB.DBLists.ReactionRoles;
                 var RoleInfo = (from rr in ReactionRoles
-                                where rr.Server_ID == e.Channel.Guild.Id.ToString()
-                                where rr.Message_ID == sourcemsg.Id.ToString()
-                                where rr.Reaction_ID == used.Id.ToString()
+                                where rr.Server_ID == e.Channel.Guild.Id
+                                where rr.Message_ID == sourcemsg.Id
+                                where rr.Reaction_ID == used.Id
                                 select rr).ToList();
                 if (RoleInfo.Count == 1)
                 {

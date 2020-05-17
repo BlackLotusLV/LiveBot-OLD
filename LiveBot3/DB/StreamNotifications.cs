@@ -12,16 +12,16 @@ namespace LiveBot.DB
 
         [Required]
         [Column("server_id")]
-        public string Server_ID { get; set; }
+        public decimal Server_ID { get; set; }
 
         [Column("games")]
         public string[] Games { get; set; }
 
         [Column("roles_id")]
-        public string[] Roles_ID { get; set; }
+        public decimal[] Roles_ID { get; set; }
 
         [Required]
         [Column("channel_id")]
-        public string Channel_ID { get; set; }
+        public decimal Channel_ID { get; set; }
     }
 }

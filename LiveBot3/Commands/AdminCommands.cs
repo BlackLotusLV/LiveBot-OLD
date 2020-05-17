@@ -44,7 +44,7 @@ namespace LiveBot.Commands
             DB.DBLists.LoadServerSettings();
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
 
-            if (ServerSettings.WKB_Log != "0")
+            if (ServerSettings.WKB_Log != 0)
             {
                 if (username.Guild == ctx.Guild && message != "")
                 {
@@ -115,7 +115,7 @@ namespace LiveBot.Commands
             {
                 await ctx.Channel.SendMessageAsync($"{username.Username} is no longer in the server.");
             }
-            if (ServerSettings.WKB_Log != "0")
+            if (ServerSettings.WKB_Log != 0)
             {
                 DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
                 if (WarnedUserStats is null)
@@ -183,7 +183,7 @@ namespace LiveBot.Commands
             DB.DBLists.LoadWarnings();
             List<DB.ServerRanks> ServerRanks = DB.DBLists.ServerRanks;
             List<DB.Warnings> warnings = DB.DBLists.Warnings;
-            string uid = username.Id.ToString();
+            decimal uid = username.Id;
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
@@ -194,7 +194,7 @@ namespace LiveBot.Commands
                 kcount = UserStats.Kick_Count;
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == uid && w.Server_ID == ctx.Guild.Id.ToString()).ToList();
+                var WarningsList = warnings.Where(w => w.User_ID == uid && w.Server_ID == ctx.Guild.Id).ToList();
                 foreach (var item in WarningsList)
                 {
                     if ((bool)item.Active == true)
@@ -381,7 +381,7 @@ namespace LiveBot.Commands
             string info = "";
             DB.DBLists.LoadBannedWords();
             var duplicate = (from bw in DB.DBLists.AMBannedWords
-                             where bw.Server_ID == ctx.Guild.Id.ToString()
+                             where bw.Server_ID == ctx.Guild.Id
                              where bw.Word == BannedWord.ToLower()
                              select bw).FirstOrDefault();
             if (duplicate is null)
@@ -390,7 +390,7 @@ namespace LiveBot.Commands
                 {
                     Word = BannedWord.ToLower(),
                     Offense = warning,
-                    Server_ID = ctx.Guild.Id.ToString()
+                    Server_ID = ctx.Guild.Id
                 };
                 DB.DBLists.InsertBannedWords(newEntry);
                 info = $"The word `{BannedWord.ToLower()}` has been added to the list. They will be warned with `{warning}`";
@@ -413,7 +413,7 @@ namespace LiveBot.Commands
             string info = "";
             DB.DBLists.LoadBannedWords();
             var DBEntry = (from bw in DB.DBLists.AMBannedWords
-                           where bw.Server_ID == ctx.Guild.Id.ToString()
+                           where bw.Server_ID == ctx.Guild.Id
                            where bw.Word == word.ToLower()
                            select bw).FirstOrDefault();
             if (DBEntry != null)

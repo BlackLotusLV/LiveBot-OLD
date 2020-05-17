@@ -12,11 +12,11 @@ namespace LiveBot.DB
 
         [Required]
         [Column("server_id")]
-        public string Server_ID { get; set; }
+        public decimal Server_ID { get; set; }
 
         [Required]
         [Column("role_id")]
-        public string Role_ID { get; set; }
+        public decimal Role_ID { get; set; }
 
         [Required]
         [Column("server_rank")]

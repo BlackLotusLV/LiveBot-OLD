@@ -12,7 +12,7 @@ namespace LiveBot.DB
 
         [Required]
         [Column("user_id")]
-        public string User_ID { get; set; }
+        public decimal User_ID { get; set; }
 
         [Required]
         [Column("bg_id")]

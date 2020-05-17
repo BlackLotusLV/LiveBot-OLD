@@ -33,10 +33,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Change] `/profile` command using a different font.\n" +
-                "[Internal] Updated to the latest imagesharp build, thus minor code adjustments.\n" +
-                "[Change] `/supra` command is now among the updatable commands.\n" +
-                "[?] As you can see, we’ve had our eye on you for some time now, Mr. Anderson.";
+            string changelog = "[Internal] Databse values for discord IDs changed from text(strig) to numeric(decimal)\n" +
+                "[?] The things you own end up owning you.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -542,11 +540,11 @@ namespace LiveBot.Commands
             string output = string.Empty;
             int rank = 0;
             List<DB.ServerRanks> SR = DB.DBLists.ServerRanks;
-            List<DB.ServerRanks> serverRanks = SR.Where(w => w.Server_ID == ctx.Guild.Id.ToString()).OrderByDescending(x => x.Followers).ToList();
+            List<DB.ServerRanks> serverRanks = SR.Where(w => w.Server_ID == ctx.Guild.Id).OrderByDescending(x => x.Followers).ToList();
             foreach (var item in serverRanks)
             {
                 rank++;
-                if (item.User_ID == user.Id.ToString())
+                if (item.User_ID == user.Id)
                 {
                     output = $"{user.Username}'s rank:{rank}\t Followers: {item.Followers}";
                 }
@@ -570,7 +568,7 @@ namespace LiveBot.Commands
             foreach (var item in leaderbaords)
             {
                 rank++;
-                if (item.ID_User == user.Id.ToString())
+                if (item.ID_User == user.Id)
                 {
                     output = $"{user.Username}'s rank:{rank}\t Followers: {item.Followers}\t Level {item.Level}";
                 }
@@ -604,13 +602,13 @@ namespace LiveBot.Commands
             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
             List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
             var global = (from gl in Leaderboard
-                          where gl.ID_User == user.Id.ToString()
+                          where gl.ID_User == user.Id
                           select gl).ToList();
             var UserSettings = (from us in USettings
                                 join ui in DB.DBLists.UserImages on us.Image_ID equals ui.ID_User_Images
                                 join bi in DB.DBLists.BackgroundImage on ui.BG_ID equals bi.ID_BG
                                 where us.User_ID == ui.User_ID
-                                where us.User_ID == user.Id.ToString()
+                                where us.User_ID == user.Id
                                 select new { us, ui, bi }).ToList();
 
             byte[] baseBG = (byte[])UserSettings[0].bi.Image;
@@ -797,13 +795,13 @@ namespace LiveBot.Commands
             {
                 List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
                 var UserSettings = (from us in USettings
-                                    where us.User_ID == ctx.User.Id.ToString()
+                                    where us.User_ID == ctx.User.Id
                                     select us).ToList();
                 if (input.Length > 2 && (input[1] == "bg" || input[1] == "background"))
                 {
                     List<DB.UserImages> UImages = DB.DBLists.UserImages;
                     var UserImages = (from ui in UImages
-                                      where ui.User_ID == ctx.User.Id.ToString()
+                                      where ui.User_ID == ctx.User.Id
                                       where ui.BG_ID == Int32.Parse(input[2])
                                       select ui).ToList();
                     if (UserImages.Count == 0)
@@ -1010,7 +1008,7 @@ namespace LiveBot.Commands
             {
                 List<DB.UserImages> UserImg = DB.DBLists.UserImages;
                 var backgroundrow = (from ui in UserImg
-                                     where ui.User_ID == ctx.User.Id.ToString()
+                                     where ui.User_ID == ctx.User.Id
                                      where ui.BG_ID == id
                                      select ui).ToList();
                 List<DB.BackgroundImage> BG = DB.DBLists.BackgroundImage;
@@ -1019,7 +1017,7 @@ namespace LiveBot.Commands
                                   select bg).ToList();
                 List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
                 var user = (from lb in Leaderboard
-                            where lb.ID_User == ctx.User.Id.ToString()
+                            where lb.ID_User == ctx.User.Id
                             select lb).ToList();
 
                 if (background.Count == 1)
@@ -1032,7 +1030,7 @@ namespace LiveBot.Commands
                             user[0].Bucks -= (long)background[0].Price;
                             DB.UserImages newEntry = new DB.UserImages
                             {
-                                User_ID = ctx.User.Id.ToString(),
+                                User_ID = ctx.User.Id,
                                 BG_ID = id,
                                 ID_User_Images = idui + 1
                             };
