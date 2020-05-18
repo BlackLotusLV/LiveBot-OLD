@@ -19,10 +19,10 @@ namespace LiveBot.Automation
                 List<DB.StreamNotifications> StreamNotifications = DB.DBLists.StreamNotifications;
                 foreach (var row in StreamNotifications)
                 {
-                    if (Program.ServerIdList.Contains(Convert.ToUInt64(row.Server_ID.ToString())))
+                    if (Program.ServerIdList.Contains(Convert.ToUInt64(row.Server_ID)))
                     {
-                        DiscordGuild guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(row.Server_ID.ToString()));
-                        DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(row.Channel_ID.ToString()));
+                        DiscordGuild guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(row.Server_ID));
+                        DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(row.Channel_ID));
                         if (e.User.Presence.Guild.Id == guild.Id)
                         {
                             LiveStreamer streamer = new LiveStreamer

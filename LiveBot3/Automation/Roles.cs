@@ -27,24 +27,24 @@ namespace LiveBot.Automation
                                 select rr).ToList();
                 if (RoleInfo.Count == 1)
                 {
-                    DiscordGuild guild = await Program.Client.GetGuildAsync(UInt64.Parse(RoleInfo[0].Server_ID.ToString()));
+                    DiscordGuild guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(RoleInfo[0].Server_ID));
                     if (RoleInfo[0].Type == "acquire")
                     {
                         DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                        if (rolemember.Roles.Where(w => w.Id == UInt64.Parse(RoleInfo[0].Role_ID.ToString())).Count() > 0)
+                        if (rolemember.Roles.Where(w => w.Id == Convert.ToUInt64(RoleInfo[0].Role_ID)).Count() > 0)
                         {
-                            await rolemember.RevokeRoleAsync(guild.GetRole(UInt64.Parse(RoleInfo[0].Role_ID.ToString())));
+                            await rolemember.RevokeRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo[0].Role_ID)));
                         }
                         else
                         {
-                            await rolemember.GrantRoleAsync(guild.GetRole(UInt64.Parse(RoleInfo[0].Role_ID.ToString())));
+                            await rolemember.GrantRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo[0].Role_ID)));
                         }
 
                         await Task.Delay(5000).ContinueWith(t => sourcemsg.DeleteReactionAsync(used, e.User, null));
                     }
                     else if (RoleInfo[0].Type == "activate")
                     {
-                        DiscordRole role = guild.GetRole(UInt64.Parse(RoleInfo[0].Role_ID.ToString()));
+                        DiscordRole role = guild.GetRole(Convert.ToUInt64(RoleInfo[0].Role_ID));
                         string msg = $"---";
                         if (role.IsMentionable)
                         {

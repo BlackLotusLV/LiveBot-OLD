@@ -42,7 +42,7 @@ namespace LiveBot.Commands
         {
             await ctx.TriggerTypingAsync();
             DB.DBLists.LoadServerSettings();
-            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
+            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id==f.ID_Server);
 
             if (ServerSettings.WKB_Log != 0)
             {
@@ -101,9 +101,9 @@ namespace LiveBot.Commands
         {
             await ctx.TriggerTypingAsync();
             await ctx.Message.DeleteAsync();
-            var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID));
-            var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id.ToString().Equals(f.ID_Server));
-            var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id.ToString().Equals(f.Server_ID) && username.Id.ToString().Equals(f.User_ID)).ToList();
+            var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id==f.Server_ID && username.Id==f.User_ID);
+            var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id==f.ID_Server);
+            var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id==f.Server_ID && username.Id==f.User_ID).ToList();
             string MSGOut, modmsg = "";
             bool check = true;
             DiscordMember member = null;
@@ -187,7 +187,7 @@ namespace LiveBot.Commands
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
-            var UserStats = ServerRanks.FirstOrDefault(f => uid.Equals(f.User_ID) && ctx.Guild.Id.ToString().Equals(f.Server_ID));
+            var UserStats = ServerRanks.FirstOrDefault(f => uid==f.User_ID && ctx.Guild.Id==f.Server_ID);
             if (UserStats != null)
             {
                 UserCheck = true;

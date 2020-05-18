@@ -248,7 +248,7 @@ namespace LiveBot.Automation
                     };
                     await wkbLog.SendMessageAsync(embed: embed);
 
-                    var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.Equals(f.User_ID));
+                    var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id==f.User_ID);
                     if (UserSettings is null)
                     {
                         DB.ServerRanks newEntry = new DB.ServerRanks
@@ -296,7 +296,7 @@ namespace LiveBot.Automation
                 };
                 await wkbLog.SendMessageAsync(embed: embed);
             }
-            var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id.Equals(f.User_ID));
+            var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id==f.User_ID);
             bool UserCheck = false;
             UserCheck = true;
             UserSettings.Ban_Count += 1;
@@ -352,13 +352,13 @@ namespace LiveBot.Automation
                                        select ss).FirstOrDefault();
                 DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(Server_Settings.ID_Server));
 
-                if (Server_Settings.WKB_Log != 0 && !Server_Settings.Spam_Exception_Channels.Any(id => id.Equals(e.Channel.Id)))
+                if (Server_Settings.WKB_Log != 0 && !Server_Settings.Spam_Exception_Channels.Any(id => id==e.Channel.Id))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                     if (!CustomMethod.CheckIfMemberAdmin(member))
                     {
                         MessageList.Add(e.Message);
-                        var duplicatemessages = MessageList.Where(w => w.Author.Equals(e.Author) && w.Content.Equals(e.Message.Content) && e.Guild.Equals(w.Channel.Guild)).ToList();
+                        var duplicatemessages = MessageList.Where(w => w.Author==e.Author && w.Content==e.Message.Content && e.Guild==w.Channel.Guild).ToList();
                         int i = duplicatemessages.Count();
                         if (duplicatemessages.Count() >= 5)
                         {

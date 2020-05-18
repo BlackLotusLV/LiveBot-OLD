@@ -33,8 +33,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Internal] Databse values for discord IDs changed from text(strig) to numeric(decimal)\n" +
-                "[?] The things you own end up owning you.";
+            string changelog = "[FIX] Cookie, Daily and Warning command was still using old DB value types.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1820,8 +1820,8 @@ namespace LiveBot.Commands
             {
                 member = ctx.Member;
             }
-            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(ctx.Member.Id.ToString()));
-            var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(member.Id.ToString()));
+            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==ctx.Member.Id);
+            var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==member.Id);
             DateTime? dailyused = null;
             if (user.Daily_Used != null)
             {
@@ -1867,8 +1867,8 @@ namespace LiveBot.Commands
             }
             else
             {
-                var giver = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(ctx.Member.Id.ToString()));
-                var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(member.Id.ToString()));
+                var giver = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==ctx.Member.Id);
+                var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==member.Id);
                 DateTime? dailyused = null;
                 if (giver.Cookies_Used != null)
                 {
@@ -1898,7 +1898,7 @@ namespace LiveBot.Commands
         [Description("See your cookie stats")]
         public async Task Cookie(CommandContext ctx)
         {
-            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User.Equals(ctx.Member.Id.ToString()));
+            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==ctx.Member.Id);
             bool cookiecheck = false;
             DateTime? dailyused = null;
             if (user.Cookies_Used != null)

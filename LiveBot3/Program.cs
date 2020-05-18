@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200517_A";
+        public static string BotVersion = $"20200518_A";
         public static bool TestBuild;
 
         // TC Hub

@@ -132,7 +132,7 @@ namespace LiveBot
             sb.AppendLine("```csharp\n📋 Rank | Username");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
-                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].User_ID.ToString()));
+                var duser = ctx.Client.GetUserAsync(Convert.ToUInt64(user[i].User_ID));
                 sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}");
                 if (i == user.Count - 1)
                 {
@@ -166,7 +166,7 @@ namespace LiveBot
             sb.AppendLine("```csharp\n📋 Rank | Username");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
-                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].ID_User.ToString()));
+                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].ID_User));
                 list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}\n";
                 sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}");
                 if (i == user.Count - 1)
@@ -230,8 +230,8 @@ namespace LiveBot
         {
             DB.DBLists.LoadServerRanks();
             DB.DBLists.LoadServerSettings();
-            DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id.ToString().Equals(f.Server_ID) && user.Id.ToString().Equals(f.User_ID));
-            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id.ToString().Equals(f.ID_Server));
+            DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id==f.Server_ID && user.Id==f.User_ID);
+            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id==f.ID_Server);
             DiscordMember member = null;
             try
             {
