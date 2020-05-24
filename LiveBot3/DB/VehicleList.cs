@@ -37,5 +37,13 @@ namespace LiveBot.DB
         [Required]
         [Column("selected")]
         public bool IsSelected { get; set; }
+
+        [Required]
+        [Column("cc_only")]
+        public bool IsCCOnly { get; set; }
+
+        [Required]
+        [Column("tier")]
+        public char VehicleTier { get; set; }
     }
 }

@@ -95,7 +95,7 @@ namespace LiveBot.Automation
             string weathertext = sb.ToString();
             if (OldWeather != weathertext)
             {
-                var messages = await WeatherChannel.GetMessagesAsync(50);
+                var messages = await WeatherChannel.GetMessagesAsync(10);
                 if (messages.Count() == 0 || !messages[0].Author.Equals(Program.Client.CurrentUser))
                 {
                     await WeatherChannel.DeleteMessagesAsync(messages);

@@ -33,8 +33,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Cookie, Daily and Warning command was still using old DB value types.\n" +
-                "";
+            string changelog = "[Change] Random vehicle command now sends an embed instead of plain text.\n" +
+                "[NEW] Random vehicle command now shows weather it is CC only or Summit exclusive.\n" +
+                "[?] Tonight, we will be partaking of a liquid repast, as we wend our way up the Golden Mile, commencing with an inaugural tankard in The First Post, then on to The Old Familiar, The Famous Cock, The Cross Hands, The Good Companions, The Trusty Servant, The Two-Headed Dog, The Mermaid, The Beehive, The King's Head, and The Hole in the Wall for a measure of the same. All before the last bittersweet pint in that most fateful terminus - The World's End. Leave a light on, good lady, for though we may return with a twinkle in our eyes, we will, in truth, be blind - drunk.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -525,8 +526,45 @@ namespace LiveBot.Commands
 
             DB.DBLists.UpdateVehicleList(SelectedVehicles.Where(w => w.ID_Vehicle.Equals(SelectedVehicles[row].ID_Vehicle)).Select(s => { s.IsSelected = true; return s; }).ToList());
 
-            await ctx.RespondAsync($"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})\n" +
-                $"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*");
+            DiscordColor embedColour = new DiscordColor();
+
+            switch (SelectedVehicles[row].VehicleTier)
+            {
+                case 'S':
+                    embedColour = new DiscordColor(0x00ffff);
+                    break;
+                case 'A':
+                    embedColour = new DiscordColor(0x00ff00);
+                    break;
+                case 'B':
+                    embedColour = new DiscordColor(0xffff00);
+                    break;
+                case 'C':
+                    embedColour = new DiscordColor(0xff9900);
+                    break;
+                case 'D':
+                    embedColour = new DiscordColor(0xda5b5b);
+                    break;
+                case 'E':
+                    embedColour = new DiscordColor(0x9f4ad8);
+                    break;
+            }
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                Color = embedColour,
+                Title = $"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})"
+                
+            };
+            embed.AddField("Brand", $"{SelectedVehicles[row].Brand}", true);
+            embed.AddField("Model", $"{SelectedVehicles[row].Model}", true);
+            embed.AddField("Year", $"{SelectedVehicles[row].Year}", true);
+            embed.AddField("Type", $"{SelectedVehicles[row].Type}", false);
+            embed.AddField("Vehicle Tier", $"{SelectedVehicles[row].VehicleTier}", true);
+            embed.AddField("Crew Credits only?", $"{SelectedVehicles[row].IsCCOnly}", true);
+            embed.AddField("Summit exclusive?", $"{SelectedVehicles[row].IsSummitVehicle}", true);
+
+            await ctx.RespondAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", false, embed);
         }
 
         [Command("rank")]
