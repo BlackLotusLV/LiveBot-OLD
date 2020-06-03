@@ -33,9 +33,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Change] Random vehicle command now sends an embed instead of plain text.\n" +
-                "[NEW] Random vehicle command now shows weather it is CC only or Summit exclusive.\n" +
-                "[?] Tonight, we will be partaking of a liquid repast, as we wend our way up the Golden Mile, commencing with an inaugural tankard in The First Post, then on to The Old Familiar, The Famous Cock, The Cross Hands, The Good Companions, The Trusty Servant, The Two-Headed Dog, The Mermaid, The Beehive, The King's Head, and The Hole in the Wall for a measure of the same. All before the last bittersweet pint in that most fateful terminus - The World's End. Leave a light on, good lady, for though we may return with a twinkle in our eyes, we will, in truth, be blind - drunk.";
+            string changelog = "[FIX] Warning command fixes.\n" +
+                "[FIX] Optimised some code for kick and ban logging.\n" +
+                "[?] Never send a human to do a machine's job";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -334,7 +334,10 @@ namespace LiveBot.Commands
                 $"**Join date**\n" +
                 $"{joinedstring}\n",
                 Title = "User info",
-                ThumbnailUrl = user.AvatarUrl
+                Thumbnail=new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = user.AvatarUrl
+                }
             };
             await ctx.RespondAsync(embed: embed);
         }

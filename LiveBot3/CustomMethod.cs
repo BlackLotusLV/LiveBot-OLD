@@ -79,6 +79,10 @@ namespace LiveBot
 
         public static void AddUserToServerRanks(DiscordUser user, DiscordGuild guild)
         {
+            if (DB.DBLists.Leaderboard.FirstOrDefault(f=>f.ID_User==user.Id) == null)
+            {
+                AddUserToLeaderboard(user);
+            }
             List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
             var local = (from lb in Leaderboard
                          where lb.User_ID == user.Id
@@ -232,6 +236,12 @@ namespace LiveBot
             DB.DBLists.LoadServerSettings();
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id==f.Server_ID && user.Id==f.User_ID);
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id==f.ID_Server);
+
+            if (WarnedUserStats == null)
+            {
+                AddUserToServerRanks(user, server);
+            }
+
             DiscordMember member = null;
             try
             {
@@ -241,7 +251,7 @@ namespace LiveBot
             {
                 await channel.SendMessageAsync($"{user.Username} is no longer in the server.");
             }
-
+            
             string modinfo = "";
             StringBuilder SB = new StringBuilder();
             decimal uid = user.Id, aid = admin.Id;

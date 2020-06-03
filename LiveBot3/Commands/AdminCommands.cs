@@ -214,7 +214,10 @@ namespace LiveBot.Commands
                 },
                 Description = $"",
                 Title = "User kick Count",
-                ThumbnailUrl = username.AvatarUrl
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = username.AvatarUrl
+                }
             };
             embed.AddField("Warning level: ", $"{wlevel}", true);
             embed.AddField("Times warned: ", $"{wcount}", true);

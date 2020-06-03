@@ -110,7 +110,10 @@ namespace LiveBot.Automation
                                 $"**Game:**\n{gameTitle}\n\n" +
                                 $"**Stream title:**\n{streamTitle}\n\n" +
                                 $"**Stream Link:**\n{streamURL}",
-                                        ThumbnailUrl = e.User.AvatarUrl,
+                                        Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                                        {
+                                            Url = e.User.AvatarUrl
+                                        },
                                         Title = $"Check out {e.User.Username} is now Streaming!"
                                     };
                                     await channel.SendMessageAsync(embed: embed);

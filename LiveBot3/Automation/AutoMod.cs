@@ -251,23 +251,13 @@ namespace LiveBot.Automation
                     var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id==f.User_ID);
                     if (UserSettings is null)
                     {
-                        DB.ServerRanks newEntry = new DB.ServerRanks
-                        {
-                            Server_ID = e.Guild.Id,
-                            Ban_Count = 0,
-                            Kick_Count = 1,
-                            Warning_Level = 0,
-                            Followers = 0,
-                            User_ID = uid
-                        };
-                        DB.DBLists.InsertServerRanks(newEntry);
+                        DiscordUser user = await Program.Client.GetUserAsync(e.Member.Id);
+                        CustomMethod.AddUserToServerRanks(user, e.Guild);
+                        UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
                     }
-                    else
-                    {
-                        UserSettings.Kick_Count++;
-                        UserSettings.Followers /= 2;
-                        DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
-                    }
+                    UserSettings.Kick_Count++;
+                    UserSettings.Followers /= 2;
+                    DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
                 }
             }
         }
@@ -296,24 +286,16 @@ namespace LiveBot.Automation
                 };
                 await wkbLog.SendMessageAsync(embed: embed);
             }
-            var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id==f.User_ID);
-            bool UserCheck = false;
-            UserCheck = true;
+            var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id==f.User_ID && e.Guild.Id==f.Server_ID);
+            if (UserSettings == null)
+            {
+                DiscordUser user = await Program.Client.GetUserAsync(e.Member.Id);
+                CustomMethod.AddUserToServerRanks(user, e.Guild);
+                UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
+            }
             UserSettings.Ban_Count += 1;
             UserSettings.Followers = 0;
             DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
-            if (!UserCheck)
-            {
-                DB.ServerRanks newEntry = new DB.ServerRanks
-                {
-                    Server_ID = e.Guild.Id,
-                    Ban_Count = 1,
-                    Kick_Count = 0,
-                    Warning_Level = 0,
-                    User_ID = e.Member.Id
-                };
-                DB.DBLists.InsertServerRanks(newEntry);
-            }
             await Task.Delay(0);
         }
 
