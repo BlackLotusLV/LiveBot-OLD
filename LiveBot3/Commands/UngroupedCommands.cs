@@ -33,9 +33,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Warning command fixes.\n" +
-                "[FIX] Optimised some code for kick and ban logging.\n" +
-                "[?] Never send a human to do a machine's job";
+            string changelog = "[Change] Reduced the cooldown for `/mysummit` command.\n" +
+                "[NEW] Reaching warning level 5 will automatically ban the user.\n" +
+                "[Change] Warning command cooldown reduced to 5 seconds from 30\n" +
+                "[?] It meas buckle your seatbelt dorothy 'cause kansas is going bye-bye";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -334,7 +335,7 @@ namespace LiveBot.Commands
                 $"**Join date**\n" +
                 $"{joinedstring}\n",
                 Title = "User info",
-                Thumbnail=new DiscordEmbedBuilder.EmbedThumbnail
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
                 {
                     Url = user.AvatarUrl
                 }
@@ -391,7 +392,7 @@ namespace LiveBot.Commands
         [Description("Converts M to KM and KM to M")]
         public async Task Convert(CommandContext ctx,
             [Description("value of the speed you want to convert")] double value,
-            [Description("Mesurment of speed from what you convert")]string mesurement)
+            [Description("Mesurment of speed from what you convert")] string mesurement)
         {
             double result;
             mesurement = mesurement.ToLower();
@@ -516,10 +517,9 @@ namespace LiveBot.Commands
                                     select vl).ToList();
             }
 
-            if (SelectedVehicles.Count(c=>c.IsSelected is true) == SelectedVehicles.Count())
+            if (SelectedVehicles.Count(c => c.IsSelected is true) == SelectedVehicles.Count())
             {
                 DB.DBLists.UpdateVehicleList(SelectedVehicles.Select(s => { s.IsSelected = false; return s; }).ToList());
-
             }
 
             SelectedVehicles = (from sv in SelectedVehicles
@@ -536,18 +536,23 @@ namespace LiveBot.Commands
                 case 'S':
                     embedColour = new DiscordColor(0x00ffff);
                     break;
+
                 case 'A':
                     embedColour = new DiscordColor(0x00ff00);
                     break;
+
                 case 'B':
                     embedColour = new DiscordColor(0xffff00);
                     break;
+
                 case 'C':
                     embedColour = new DiscordColor(0xff9900);
                     break;
+
                 case 'D':
                     embedColour = new DiscordColor(0xda5b5b);
                     break;
+
                 case 'E':
                     embedColour = new DiscordColor(0x9f4ad8);
                     break;
@@ -557,7 +562,6 @@ namespace LiveBot.Commands
             {
                 Color = embedColour,
                 Title = $"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})"
-                
             };
             embed.AddField("Brand", $"{SelectedVehicles[row].Brand}", true);
             embed.AddField("Model", $"{SelectedVehicles[row].Model}", true);
@@ -621,7 +625,7 @@ namespace LiveBot.Commands
         [Description("Shows users live bot profile.")]
         [Priority(10)]
         public async Task Profile(CommandContext ctx,
-            [Description("Specify which user to show, if left empty, will take command caster")]DiscordMember user = null)
+            [Description("Specify which user to show, if left empty, will take command caster")] DiscordMember user = null)
         {
             await ctx.TriggerTypingAsync();
             bool tcelink = false;
@@ -1042,7 +1046,7 @@ namespace LiveBot.Commands
         [Description("Command to buy profile customisation.")]
         public async Task Buy(CommandContext ctx,
             [Description("What you want to buy")] string what,
-            [Description("ID of what you want to buy")]int id)
+            [Description("ID of what you want to buy")] int id)
         {
             string output = string.Empty;
             if (what == "background" || what == "bg")
@@ -1194,7 +1198,7 @@ namespace LiveBot.Commands
 
         [Command("mysummit")]
         [Description("Shows your summit scores.")]
-        [Cooldown(1, 300, CooldownBucketType.User)]
+        [Cooldown(1, 30, CooldownBucketType.User)]
         [Aliases("sinfo", "summitinfo")]
         public async Task MySummit(CommandContext ctx, string platform = null)
         {
@@ -1861,8 +1865,8 @@ namespace LiveBot.Commands
             {
                 member = ctx.Member;
             }
-            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==ctx.Member.Id);
-            var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==member.Id);
+            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == ctx.Member.Id);
+            var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == member.Id);
             DateTime? dailyused = null;
             if (user.Daily_Used != null)
             {
@@ -1908,8 +1912,8 @@ namespace LiveBot.Commands
             }
             else
             {
-                var giver = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==ctx.Member.Id);
-                var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==member.Id);
+                var giver = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == ctx.Member.Id);
+                var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == member.Id);
                 DateTime? dailyused = null;
                 if (giver.Cookies_Used != null)
                 {
@@ -1939,7 +1943,7 @@ namespace LiveBot.Commands
         [Description("See your cookie stats")]
         public async Task Cookie(CommandContext ctx)
         {
-            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User==ctx.Member.Id);
+            var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == ctx.Member.Id);
             bool cookiecheck = false;
             DateTime? dailyused = null;
             if (user.Cookies_Used != null)

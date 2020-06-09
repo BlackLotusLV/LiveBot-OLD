@@ -29,7 +29,7 @@ namespace LiveBot.Commands
 
         [Command("say")]
         [Description("Bot repeats whatever you tell it to repeat")]
-        public async Task Say(CommandContext ctx, DiscordChannel channel, [Description("bot will repeat this")] [RemainingText] string word = "")
+        public async Task Say(CommandContext ctx, DiscordChannel channel, [Description("bot will repeat this")][RemainingText] string word = "")
         {
             await ctx.Message.DeleteAsync();
             await channel.SendMessageAsync(word);
@@ -42,7 +42,7 @@ namespace LiveBot.Commands
         {
             await ctx.TriggerTypingAsync();
             DB.DBLists.LoadServerSettings();
-            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id==f.ID_Server);
+            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id == f.ID_Server);
 
             if (ServerSettings.WKB_Log != 0)
             {
@@ -87,7 +87,7 @@ namespace LiveBot.Commands
 
         [Command("warn")]
         [Description("Warns a user")]
-        [Cooldown(1, 30, CooldownBucketType.Guild)]
+        [Cooldown(1, 5, CooldownBucketType.Guild)]
         public async Task Warning(CommandContext ctx, DiscordUser username, [RemainingText] string reason = "Reason not specified")
         {
             await ctx.Message.DeleteAsync();
@@ -101,9 +101,9 @@ namespace LiveBot.Commands
         {
             await ctx.TriggerTypingAsync();
             await ctx.Message.DeleteAsync();
-            var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id==f.Server_ID && username.Id==f.User_ID);
-            var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id==f.ID_Server);
-            var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id==f.Server_ID && username.Id==f.User_ID).ToList();
+            var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id == f.Server_ID && username.Id == f.User_ID);
+            var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id == f.ID_Server);
+            var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id == f.Server_ID && username.Id == f.User_ID).ToList();
             string MSGOut, modmsg = "";
             bool check = true;
             DiscordMember member = null;
@@ -187,7 +187,7 @@ namespace LiveBot.Commands
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
             string reason = "";
-            var UserStats = ServerRanks.FirstOrDefault(f => uid==f.User_ID && ctx.Guild.Id==f.Server_ID);
+            var UserStats = ServerRanks.FirstOrDefault(f => uid == f.User_ID && ctx.Guild.Id == f.Server_ID);
             if (UserStats != null)
             {
                 UserCheck = true;
@@ -236,7 +236,7 @@ namespace LiveBot.Commands
 
         [Command("vote")]
         [Description("starts a vote")]
-        public async Task Vote(CommandContext ctx, [Description("What to vote about?")] [RemainingText] string topic)
+        public async Task Vote(CommandContext ctx, [Description("What to vote about?")][RemainingText] string topic)
         {
             await ctx.Message.DeleteAsync();
             DiscordMessage msg = await ctx.Message.RespondAsync(topic);
@@ -249,7 +249,7 @@ namespace LiveBot.Commands
 
         [Command("poll")]
         [Description("creates a poll up to 10 choices. Delimiter \".\"")]
-        public async Task Poll(CommandContext ctx, [Description("Options")] [RemainingText] string input)
+        public async Task Poll(CommandContext ctx, [Description("Options")][RemainingText] string input)
         {
             await ctx.Message.DeleteAsync();
             char delimiter = '.';
@@ -377,7 +377,7 @@ namespace LiveBot.Commands
         [Description("Adds a word to banned word list")]
         public async Task BanWord(CommandContext ctx,
             [Description("The word that is banned")] string BannedWord,
-            [Description("What the user will be warned with when using such word")] [RemainingText] string warning)
+            [Description("What the user will be warned with when using such word")][RemainingText] string warning)
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
