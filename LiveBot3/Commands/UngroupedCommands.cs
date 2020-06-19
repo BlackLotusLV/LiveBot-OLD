@@ -33,10 +33,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Change] Reduced the cooldown for `/mysummit` command.\n" +
-                "[NEW] Reaching warning level 5 will automatically ban the user.\n" +
-                "[Change] Warning command cooldown reduced to 5 seconds from 30\n" +
-                "[?] It meas buckle your seatbelt dorothy 'cause kansas is going bye-bye";
+            string changelog = "[NEW] `/mysummit` now asks which platform you want to see the stats for if you don't specify and have multiple accounts linked.\n" +
+                "[?] Roger, there's only room in this band for one hysterical queen.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1253,9 +1251,65 @@ namespace LiveBot.Commands
             }
             else if (JTCE.Subs.Length > 1)
             {
+                if (platform == null)
+                {
+                    DiscordMessage platformMSG = await ctx.RespondAsync($"{ctx.User.Mention}, you have multiple platforms stored on TCE, please select platform you want to see the scores for.");
+                    DiscordEmoji X1Emoji = await ctx.Guild.GetEmojiAsync(445234294915334146);
+                    DiscordEmoji PCEmoji = await ctx.Guild.GetEmojiAsync(445234293019770900);
+                    DiscordEmoji PSEmoji = await ctx.Guild.GetEmojiAsync(445234294676258816);
+                    DiscordEmoji STADIAEmoji = await ctx.Guild.GetEmojiAsync(697798396584656896);
+
+                    foreach (var sub in JTCE.Subs)
+                    {
+                        if (sub.Platform.Contains("ps4"))
+                        {
+                            await platformMSG.CreateReactionAsync(PSEmoji);
+                        }
+                        if (sub.Platform.Contains("stadia"))
+                        {
+                            await platformMSG.CreateReactionAsync(STADIAEmoji);
+                        }
+                        if (sub.Platform.Contains("x1"))
+                        {
+                            await platformMSG.CreateReactionAsync(X1Emoji);
+                        }
+                        if (sub.Platform.Contains("pc"))
+                        {
+                            await platformMSG.CreateReactionAsync(PCEmoji);
+                        }
+                    }
+
+                    var Result = await platformMSG.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+
+                    if (Result.TimedOut==true)
+                    {
+                        await platformMSG.ModifyAsync("Nothing selected, defaulting to PC");
+                        platform = "pc";
+                    }
+                    else if (Result.Result.Emoji == PCEmoji)
+                    {
+                        await platformMSG.ModifyAsync("PC Platform selected.");
+                        platform = "pc";
+                    }
+                    else if (Result.Result.Emoji == PSEmoji)
+                    {
+                        await platformMSG.ModifyAsync("Playstation Platform selected.");
+                        platform = "ps";
+                    }
+                    else if (Result.Result.Emoji == X1Emoji)
+                    {
+                        await platformMSG.ModifyAsync("Xbox Platform selected.");
+                        platform = "x1";
+                    }
+                    else if (Result.Result.Emoji == STADIAEmoji)
+                    {
+                        await platformMSG.ModifyAsync("Stadia Platform selected.");
+                        platform = "stadia";
+                    }
+                    await platformMSG.DeleteAllReactionsAsync();
+                }
                 switch (platform.ToLower())
                 {
-                    case null:
                     case "pc":
                     case "computer":
                         search = "pc";

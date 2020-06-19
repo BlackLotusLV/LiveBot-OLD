@@ -8,7 +8,7 @@ namespace LiveBot.DB
     {
         [Key]
         [Column("command_id")]
-        public long Command_ID { get; set; }
+        public int Command_ID { get; set; }
 
         [Required]
         [Column("command")]
