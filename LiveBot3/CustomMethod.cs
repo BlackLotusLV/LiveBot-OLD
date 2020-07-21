@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -102,7 +103,7 @@ namespace LiveBot
 
         public static string ScoreToTime(int Time)
         {
-            string[] sTime = new string[2];
+            string[] sTime = new string[3];
             for (int i = 0; i < Time.ToString().Length; i++)
             {
                 if (i < Time.ToString().Length - 3)
@@ -115,15 +116,12 @@ namespace LiveBot
                 }
             }
             TimeSpan seconds = TimeSpan.FromSeconds(double.Parse(sTime[0]));
-            TimeSpan ms = TimeSpan.FromMilliseconds(double.Parse(sTime[1]));
-            TimeSpan Total = seconds + ms;
-
-            if (Total.Hours == 0)
+            if (seconds.Hours == 0)
             {
-                return $"{Total.Minutes}:{Total.Seconds}.{Total.Milliseconds}";
+                return $"{seconds.Minutes}:{seconds.Seconds}.{sTime[1]}";
             }
 
-            return $"{Total.Hours}:{Total.Minutes}:{Total.Seconds}.{Total.Milliseconds}";
+            return $"{seconds.Hours}:{seconds.Minutes}:{seconds.Seconds}.{sTime[1]}";
         }
 
         public static string GetServerTop(CommandContext ctx, int page)
@@ -315,7 +313,7 @@ namespace LiveBot
                     SB.AppendLine($"You have been banned from **{server.Name}** by {admin.Mention} for exceeding the warning level threshold(4).");
                     ban = true;
                 }
-                else if (WarnedUserStats.Warning_Level > 2)
+                else if (WarnedUserStats.Warning_Level > 2 && WarnedUserStats.Warning_Level < 5)
                 {
                     SB.AppendLine($"You have been kicked from **{server.Name}** by {admin.Mention} for exceeding the warning level threshold(2).");
                     kick = true;
@@ -327,7 +325,7 @@ namespace LiveBot
                 }
                 else
                 {
-                    SB.Append("*(This is an automated message, contact the moderator personally if you have any questions.)*");
+                    SB.Append("*(This is an automated message, use the `/modmail` feature if you want to report a mistake.)*");
                 }
 
                 try
@@ -336,7 +334,7 @@ namespace LiveBot
                 }
                 catch
                 {
-                    await modlog.SendMessageAsync($":exclamation::exclamation:{user.Mention} could not be contacted via DM. Reason not sent");
+                    modinfo = $":exclamation:{user.Mention} could not be contacted via DM. Reason not sent";
                 }
 
                 await modlog.SendMessageAsync(modinfo, embed: embed);
@@ -347,7 +345,7 @@ namespace LiveBot
                 }
                 if (ban == true && member != null)
                 {
-                    await member.BanAsync(0, "Exceeded warning limit!");
+                    await server.BanMemberAsync(user.Id, 0, "Exceeded warning limit!");
                 }
 
                 DiscordMessage info = await channel.SendMessageAsync($"{user.Username}, Has been warned!");
@@ -366,7 +364,8 @@ namespace LiveBot
                 if (role.CheckPermission(Permissions.ManageMessages) == PermissionLevel.Allowed
                     || role.CheckPermission(Permissions.KickMembers) == PermissionLevel.Allowed
                     || role.CheckPermission(Permissions.BanMembers) == PermissionLevel.Allowed
-                    || role.CheckPermission(Permissions.Administrator) == PermissionLevel.Allowed)
+                    || role.CheckPermission(Permissions.Administrator) == PermissionLevel.Allowed
+                    || role.Id == 152156646402031627)
                 {
                     return true;
                 }
@@ -389,6 +388,7 @@ namespace LiveBot
                     (410835311602565121) => "se",
                     (363977914196295681) => "ru",
                     (423845614686699521) => "lv",
+                    (585529567708446731) => "es",
                     _ => "gb"
                 };
             }

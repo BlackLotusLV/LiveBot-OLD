@@ -52,7 +52,7 @@ namespace LiveBot
             }
         }
 
-        public static void UpdateHubInfo()
+        public static void UpdateHubInfo(bool forced = false)
         {
             List<TCHubJson.Summit> JSummit;
             DateTime endtime;
@@ -70,8 +70,14 @@ namespace LiveBot
             if (Connected)
             {
                 JSummit = JsonConvert.DeserializeObject<List<TCHubJson.Summit>>(JSummitString);
-                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
-
+                if (forced)
+                {
+                    endtime = TCHubLastUpdated;
+                }
+                else
+                {
+                    endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
+                }
                 if (endtime != TCHubLastUpdated)
                 {
                     TCHubLastUpdated = endtime;

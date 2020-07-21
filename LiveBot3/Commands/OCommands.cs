@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -67,9 +68,9 @@ namespace LiveBot.Commands
         [Command("updatehub")]
         public async Task UpdateHub(CommandContext ctx)
         {
-            TimerMethod.UpdateHubInfo();
+            TimerMethod.UpdateHubInfo(true);
             DiscordMessage msg = await ctx.RespondAsync("TCHub info has been force updated.");
-            await Task.Delay(1000).ContinueWith(f => msg.DeleteAsync());
+            await Task.Delay(10000).ContinueWith(f => msg.DeleteAsync());
         }
 
         [Command("stopbot")]
@@ -95,6 +96,25 @@ namespace LiveBot.Commands
         {
             await guild.LeaveAsync();
             await ctx.RespondAsync($"The bot has left {guild.Name} guild!");
+        }
+
+        [Command("uploadbg")]
+        public async Task UploadBackGround(CommandContext ctx, int price, [RemainingText] string name)
+        {
+            if (ctx.Message.Attachments != null)
+            {
+                byte[] bg;
+                using (WebClient client = new WebClient())
+                {
+                    bg = client.DownloadData(ctx.Message.Attachments[0].Url);
+                }
+                DB.DBLists.InsertBackgroundImage(new DB.BackgroundImage { Name = name, Price = price, Image = bg });
+                await ctx.RespondAsync("Image succesfully uploaded!");
+            }
+            else
+            {
+                await ctx.RespondAsync("Something went wrong");
+            }
         }
     }
 }

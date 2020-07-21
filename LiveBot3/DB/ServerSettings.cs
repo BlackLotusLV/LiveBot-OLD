@@ -29,5 +29,9 @@ namespace LiveBot.DB
         [Required]
         [Column("spam_exception")]
         public decimal[] Spam_Exception_Channels { get; set; }
+
+        [Required]
+        [Column("mod_mail")]
+        public decimal ModMailID { get; set; }
     }
 }

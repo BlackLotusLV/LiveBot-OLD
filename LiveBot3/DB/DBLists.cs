@@ -22,8 +22,8 @@ namespace LiveBot.DB
         public static List<CommandsUsedCount> CommandsUsedCount;
         public static List<BotOutputList> BotOutputList;
         public static List<WeatherSchedule> WeatherSchedule;
-
         public static List<AMBannedWords> AMBannedWords;
+        public static List<ModMail> ModMail;
 
         public static void LoadAllLists()
         {
@@ -43,7 +43,10 @@ namespace LiveBot.DB
             new Thread(LoadCUC).Start();
             new Thread(LoadBannedWords).Start();
             new Thread(LoadBotOutputList).Start();
+            new Thread(LoadModMail).Start();
         }
+
+        #region Load Functions
 
         public static void LoadVehicleList()
         {
@@ -172,6 +175,18 @@ namespace LiveBot.DB
             Console.WriteLine("[POSTGRESQL] WeatherSchedule Loaded");
         }
 
+        public static void LoadModMail()
+        {
+            using var ctx = new ModMailContext();
+            ModMail = (from c in ctx.ModMail
+                       select c).ToList();
+            Console.WriteLine("[POSTGRESQL] ModMail Loaded");
+        }
+
+        #endregion Load Functions
+
+        #region Update Functions
+
         public static void UpdateLeaderboard(List<Leaderboard> o)
         {
             using var ctx = new LeaderboardContext();
@@ -255,6 +270,17 @@ namespace LiveBot.DB
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+
+        public static void UpdateModMail(List<ModMail> o)
+        {
+            using var ctx = new ModMailContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+
+        #endregion Update Functions
+
+        #region Insert Functions
 
         public static void InsertUserImages(UserImages o)
         {
@@ -343,5 +369,23 @@ namespace LiveBot.DB
             ctx.SaveChanges();
             LoadRankRoles();
         }
+
+        public static void InsertBackgroundImage(BackgroundImage o)
+        {
+            using var ctx = new BackgroundImageContext();
+            ctx.BackgroundImage.Add(o);
+            ctx.SaveChanges();
+            LoadBackgroundImage();
+        }
+
+        public static void InsertModMail(ModMail o)
+        {
+            using var ctx = new ModMailContext();
+            ctx.ModMail.Add(o);
+            ctx.SaveChanges();
+            LoadModMail();
+        }
+
+        #endregion Insert Functions
     }
 }

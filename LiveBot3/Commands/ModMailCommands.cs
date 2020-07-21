@@ -1,0 +1,271 @@
+﻿using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
+using DSharpPlus;
+using LiveBot.DB;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LiveBot.Commands
+{
+    [Group("modmail")]
+    [Aliases("mm")]
+    [Description("Modmail commands.")]
+    internal class ModMailCommands : BaseCommandModule
+    {
+        [GroupCommand]
+        [RequireDirectMessage]
+        [Description("Opens a Mod Mail chat with a specific server in the bot's DMs.")]
+        public async Task ModMail(CommandContext ctx,[Description("The name of the server that you want to open the Mod Mail with. *Spaces are replaced with `-`*")] string serverName = null)
+        {
+            if (serverName == null)
+            {
+                serverName = "no server!";
+            }
+            var ModMailServers = DB.DBLists.ServerSettings.Where(w => w.ModMailID != 0);
+            Dictionary<DiscordGuild, string> GuildNameDict = new Dictionary<DiscordGuild, string>();
+            StringBuilder GuildNameString = new StringBuilder();
+            GuildNameString.AppendLine("The mod-mail is only available on certain servers, here are the server names you can use:");
+            foreach (var item in ModMailServers)
+            {
+                DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)item.ID_Server);
+                GuildNameDict.Add(Guild, Guild.Name.Replace(' ', '-').ToLower());
+                GuildNameString.AppendLine(Guild.Name.Replace(' ', '-').ToLower());
+            }
+            GuildNameString.AppendLine("To start a modmail write `/modmail server-name-here`");
+            if (!GuildNameDict.Values.Contains(serverName.Replace(' ', '-').ToLower()))
+            {
+                await ctx.RespondAsync(GuildNameString.ToString());
+            }
+            else
+            {
+                DiscordGuild Guild = GuildNameDict.Where(w => w.Value.ToLower() == serverName.ToLower()).FirstOrDefault().Key;
+                bool serverCheck = true;
+                try
+                {
+                    await Guild.GetMemberAsync(ctx.User.Id);
+                }
+                catch
+                {
+                    await ctx.RespondAsync("You are not in this server. If you think this is an error, please make sure you are set as online and are in fact in the server.");
+                    serverCheck = false;
+                }
+                if (serverCheck && DB.DBLists.ModMail.Where(w => w.User_ID == ctx.User.Id && w.IsActive).FirstOrDefault() == null)
+                {
+                    Random r = new Random();
+                    string colorID = string.Format("#{0:X6}", r.Next(0x1000000));
+                    DB.ModMail newEntry = new DB.ModMail
+                    {
+                        Server_ID = Guild.Id,
+                        User_ID = ctx.User.Id,
+                        LastMSGTime = DateTime.Now,
+                        ColorHex = colorID,
+                        IsActive = true,
+                        HasChatted = false
+                    };
+
+                    DBLists.InsertModMail(newEntry);
+                    await ctx.RespondAsync($"Modmail entry open with `{serverName.ToLower()}`. Continue to write as you would normaly ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
+                    DiscordChannel MMChannel = Guild.GetChannel((ulong)ModMailServers.Where(w => w.ID_Server == Guild.Id).FirstOrDefault().ModMailID);
+                    DiscordEmbedBuilder ModeratorEmbed = new DiscordEmbedBuilder
+                    {
+                        Author = new DiscordEmbedBuilder.EmbedAuthor
+                        {
+                            Name = $"{ctx.User.Username} ({ctx.User.Id})",
+                            IconUrl = ctx.User.AvatarUrl
+                        },
+                        Title = $"[NEW] Mod Mail created by {ctx.User.Username}.",
+                        Color = new DiscordColor(colorID)
+                    };
+                    await MMChannel.SendMessageAsync(embed: ModeratorEmbed);
+                }
+                else
+                {
+                    await ctx.RespondAsync("Seems like you already have an active session ongoing, please close the previous one to start a new one.");
+                }
+            }
+        }
+
+        [Command("reply")]
+        [RequireUserPermissions(Permissions.KickMembers)]
+        [RequireGuild]
+        [Description("Responds to the specified Mod Mail chat.")]
+        public async Task Reply(CommandContext ctx,[Description("Mod Mail entry ID")] long ModMailID, [Description("Text that is being sent to the user via DM")][RemainingText] string reply)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            DB.ModMail MMEntry = DBLists.ModMail.Where(w => w.ID == ModMailID && w.Server_ID == (ulong)ctx.Guild.Id).FirstOrDefault();
+            if (MMEntry == null)
+            {
+                await ctx.RespondAsync($"{ctx.User.Mention} Could not find the mod mail entry.");
+            }
+            else
+            {
+                if (MMEntry.IsActive)
+                {
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    {
+                        Author = new DiscordEmbedBuilder.EmbedAuthor
+                        {
+                            IconUrl = ctx.User.AvatarUrl,
+                            Name = ctx.User.Username
+                        },
+                        Title = $"[REPLY] #{MMEntry.ID} Mod Mail Response",
+                        Description = $"{ctx.Member.Username} - {reply}",
+                        Color = new DiscordColor(MMEntry.ColorHex)
+                    };
+                    try
+                    {
+                        DiscordMember member = await ctx.Guild.GetMemberAsync((ulong)MMEntry.User_ID);
+                        await member.SendMessageAsync($"{ctx.Member.Username} - {reply}");
+                    }
+                    catch
+                    {
+                        embed.Description = $"User has left the server, blocked the bot or closed their DMs. Could not send a response!\nHere is what you said `{reply}`";
+                        embed.Title = $"[ERROR] {embed.Title}";
+                    }
+                    MMEntry.LastMSGTime = DateTime.Now;
+                    DBLists.UpdateModMail(new List<DB.ModMail> { MMEntry });
+
+                    DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)DBLists.ServerSettings.Where(w => w.ID_Server == ctx.Guild.Id).FirstOrDefault().ModMailID);
+                    await MMChannel.SendMessageAsync(embed: embed);
+                }
+                else
+                {
+                    await ctx.RespondAsync($"{ctx.User.Mention}, Mod Mail has timed out, message not sent to user.\n" +
+                        $"Here is what you said `{reply}`");
+                }
+            }
+        }
+
+        [Command("close")]
+        [RequireDirectMessage]
+        [Description("Closes the opened Mod Mail chat.")]
+        public async Task Close(CommandContext ctx)
+        {
+            var modMail = DB.DBLists.ModMail.Where(w => w.User_ID == ctx.User.Id && w.IsActive).FirstOrDefault();
+            if (modMail == null)
+            {
+                await ctx.RespondAsync("You don't have active Mod Mail open.");
+            }
+            else
+            {
+                modMail.IsActive = false;
+                DBLists.UpdateModMail(new List<DB.ModMail> { modMail });
+                DBLists.LoadModMail();
+                await ctx.RespondAsync("**Mod Mail closed!\n----------------------------------------------------**");
+
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                {
+                    Color = new DiscordColor(modMail.ColorHex),
+                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                    {
+                        Name = $"{ctx.User.Username} ({ctx.User.Id})",
+                        IconUrl = ctx.User.AvatarUrl
+                    },
+                    Title = $"[CLOSED] #{modMail.ID} Mod Mail closed by user"
+                };
+                DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)modMail.Server_ID);
+                DiscordChannel MMChannel = Guild.GetChannel((ulong)DBLists.ServerSettings.Where(w => w.ID_Server == modMail.Server_ID).FirstOrDefault().ModMailID);
+                await MMChannel.SendMessageAsync(embed: embed);
+            }
+        }
+
+        [Command("end")]
+        [RequireGuild]
+        [RequireUserPermissions(Permissions.KickMembers)]
+        [Description("Ends the specified Mod Mail chat.")]
+        public async Task End(CommandContext ctx, [Description("Mod Mail entry ID")] long ModMailID)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            var modMail = DBLists.ModMail.Where(w => w.IsActive && w.Server_ID == ctx.Guild.Id && w.ID == ModMailID).FirstOrDefault();
+            if (modMail == null)
+            {
+                await ctx.RespondAsync($"Could not find this Mod Mail entry, please check if everything is correct, it might be already closed.");
+            }
+            else
+            {
+                modMail.IsActive = false;
+                DBLists.UpdateModMail(new List<DB.ModMail> { modMail });
+                DBLists.LoadModMail();
+                string ErrorString = string.Empty;
+
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                {
+                    Color = new DiscordColor(modMail.ColorHex),
+                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                    {
+                        Name = $"{ctx.User.Username} ({ctx.User.Id})",
+                        IconUrl = ctx.User.AvatarUrl
+                    },
+                    Title = $"[CLOSED] #{modMail.ID} Mod Mail closed by {ctx.User.Username}"
+                };
+                try
+                {
+                    DiscordMember member = await ctx.Guild.GetMemberAsync((ulong)modMail.User_ID);
+                    await member.SendMessageAsync($"**Mod Mail closed by {ctx.User.Username}!\n----------------------------------------------------**");
+                }
+                catch
+                {
+                    ErrorString = "User could not be contacted.(Closed DM, Left the server)";
+                }
+                DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)DBLists.ServerSettings.Where(w => w.ID_Server == modMail.Server_ID).FirstOrDefault().ModMailID);
+
+                await MMChannel.SendMessageAsync(ErrorString, embed: embed);
+            }
+        }
+
+        [Command("dirrectmessage")]
+        [Aliases("dm","pm")]
+        [RequireGuild]
+        [RequirePermissions(Permissions.KickMembers)]
+        [Description("Bot sends a DM to the specified user with the text you want it to say. It tells where and who it is from as well as logs it in mod mail channel.")]
+        public async Task DirrectMessage(CommandContext ctx, DiscordMember member, [RemainingText] string text)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            ServerSettings SSettings = DBLists.ServerSettings.Where(w => w.ID_Server == ctx.Guild.Id).FirstOrDefault();
+            if (SSettings.ModMailID!=0)
+            {
+                string DMMessage = $"You are recieveing a Moderator DM from {ctx.Guild.Name} Discord\n{ctx.User.Username} - {text}";
+                bool ErrorCheck = false;
+                try
+                {
+                    await member.SendMessageAsync(DMMessage);
+                }
+                catch
+                {
+                    ErrorCheck = true;
+                }
+                if (!ErrorCheck)
+                {
+                    DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)SSettings.ModMailID);
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    {
+                        Author= new DiscordEmbedBuilder.EmbedAuthor
+                        {
+                            IconUrl=member.AvatarUrl,
+                            Name=member.Username
+                        },
+                        Title = $"[MOD DM] Moderator DM to {member.Username}",
+                        Description = DMMessage
+                    };
+                    await MMChannel.SendMessageAsync(embed:embed);
+                }
+                else
+                {
+                    await ctx.RespondAsync($"{ctx.User.Mention}, The user could not be contacted. Either their DMs are closed, they have blocked the bot or they have left the server.\n" +
+                        $"Here is what you said `{text}`");
+                }
+            }
+            else
+            {
+                await ctx.RespondAsync("This server has not set up mod mail channel.");
+            }
+        }
+    }
+}

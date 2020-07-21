@@ -6,6 +6,7 @@ using DSharpPlus.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -35,58 +36,9 @@ namespace LiveBot.Commands
             await channel.SendMessageAsync(word);
         }
 
-        [Command("dm")]
-        [Aliases("pm")]
-        [Description("Bot sends a DM to the user")]
-        public async Task DirrectMessage(CommandContext ctx, DiscordMember username, [RemainingText] string message)
-        {
-            await ctx.TriggerTypingAsync();
-            DB.DBLists.LoadServerSettings();
-            DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id == f.ID_Server);
-
-            if (ServerSettings.WKB_Log != 0)
-            {
-                if (username.Guild == ctx.Guild && message != "")
-                {
-                    DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-                    {
-                        Color = new DiscordColor(0xf90707),
-                        Author = new DiscordEmbedBuilder.EmbedAuthor
-                        {
-                            IconUrl = username.AvatarUrl,
-                            Name = username.Username
-                        },
-                        Description = $"{username.Mention} was dirrect messaged via the bot by **{ctx.User.Username}**"
-                    };
-                    embed.AddField("Message", message);
-                    try
-                    {
-                        await username.SendMessageAsync($"**Official message from a moderator**\n{message}\n*(This is an automated message, contact a moderator if you have any questions.)*");
-                        await modlog.SendMessageAsync(embed: embed);
-                    }
-                    catch (Exception)
-                    {
-                        DiscordMessage msg = await ctx.RespondAsync("This user has dissabled DMs or has blocked the bot.");
-                        await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
-                    }
-                }
-                else
-                {
-                    DiscordMessage msg = await ctx.RespondAsync($"{ctx.User.Mention} You didn't write a message.");
-                    await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
-                }
-            }
-            else
-            {
-                DiscordMessage msg = await ctx.RespondAsync("This server has not set up this feature!");
-                await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
-            }
-            await ctx.Message.DeleteAsync();
-        }
-
         [Command("warn")]
         [Description("Warns a user")]
+        [RequireGuild]
         [Cooldown(1, 5, CooldownBucketType.Guild)]
         public async Task Warning(CommandContext ctx, DiscordUser username, [RemainingText] string reason = "Reason not specified")
         {
@@ -97,6 +49,7 @@ namespace LiveBot.Commands
 
         [Command("unwarn")]
         [Description("Removes a warning from a user")]
+        [RequireGuild]
         public async Task Unwarning(CommandContext ctx, DiscordUser username)
         {
             await ctx.TriggerTypingAsync();
@@ -175,6 +128,7 @@ namespace LiveBot.Commands
 
         [Command("getkicks")]
         [Description("Shows user warning, kick and ban history")]
+        [RequireGuild]
         public async Task GetKicks(CommandContext ctx, DiscordUser username)
         {
             await ctx.Message.DeleteAsync();
@@ -236,6 +190,7 @@ namespace LiveBot.Commands
 
         [Command("vote")]
         [Description("starts a vote")]
+        [RequireGuild]
         public async Task Vote(CommandContext ctx, [Description("What to vote about?")][RemainingText] string topic)
         {
             await ctx.Message.DeleteAsync();
@@ -249,6 +204,7 @@ namespace LiveBot.Commands
 
         [Command("poll")]
         [Description("creates a poll up to 10 choices. Delimiter \".\"")]
+        [RequireGuild]
         public async Task Poll(CommandContext ctx, [Description("Options")][RemainingText] string input)
         {
             await ctx.Message.DeleteAsync();
@@ -284,6 +240,7 @@ namespace LiveBot.Commands
         [Command("rinfo")]
         [Aliases("roleinfo")]
         [Description("give the ID of the role that was mentioned with the command")]
+        [RequireGuild]
         public async Task RInfo(CommandContext ctx, DiscordRole role)
         {
             await ctx.RespondAsync($"**Role ID:**{role.Id}");
@@ -293,7 +250,11 @@ namespace LiveBot.Commands
         [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
         [Description("Edits the existing FAQ message")]
         [Priority(10)]
-        public async Task FAQ(CommandContext ctx, DiscordMessage faqMsg, string type, [RemainingText] string str1)
+        [RequireGuild]
+        public async Task FAQ(CommandContext ctx,
+            [Description("FAQ message ID that you want to update")] DiscordMessage faqMsg,
+            [Description("What do you want to change? `q` for question, `a` for answer.")] string type,
+            [Description("Updated text")][RemainingText] string str1)
         {
             string og = faqMsg.Content;
             og = og.Replace("*", string.Empty);
@@ -315,6 +276,7 @@ namespace LiveBot.Commands
         [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
         [Description("Creates an FAQ post. Delimiter is `|`")]
         [Priority(9)]
+        [RequireGuild]
         public async Task FAQ(CommandContext ctx, [RemainingText] string str1)
         {
             string[] str2 = str1.Split('|');
@@ -324,12 +286,13 @@ namespace LiveBot.Commands
 
         [Command("warncount")]
         [Description("Shows the count of warnings issues by each admin")]
+        [RequireGuild]
         public async Task WarnCount(CommandContext ctx)
         {
             StringBuilder sb = new StringBuilder();
             int i = 0;
             sb.AppendLine("```csharp\n\t\tUsername");
-            foreach (var item in DB.DBLists.Warnings.GroupBy(w => w.Admin_ID)
+            foreach (var item in DB.DBLists.Warnings.Where(w => w.Server_ID == ctx.Guild.Id).GroupBy(w => w.Admin_ID)
                 .Select(s => new
                 {
                     Admin_ID = s.Key,
@@ -348,6 +311,7 @@ namespace LiveBot.Commands
         [Command("prune")]
         [Description("Deletes chat history, up to 100 messages per use")]
         [Cooldown(1, 180, CooldownBucketType.Channel)]
+        [RequireGuild]
         public async Task Prune(CommandContext ctx, int MessageCount = 1)
         {
             if (MessageCount > 100)
@@ -362,6 +326,7 @@ namespace LiveBot.Commands
 
         [Command("activity")]
         [Description("Used to check the users stream title and game, test command")]
+        [RequireGuild]
         public async Task Activity(CommandContext ctx, DiscordUser user)
         {
             StringBuilder sb = new StringBuilder();
@@ -375,6 +340,7 @@ namespace LiveBot.Commands
 
         [Command("banword")]
         [Description("Adds a word to banned word list")]
+        [RequireGuild]
         public async Task BanWord(CommandContext ctx,
             [Description("The word that is banned")] string BannedWord,
             [Description("What the user will be warned with when using such word")][RemainingText] string warning)
@@ -408,6 +374,7 @@ namespace LiveBot.Commands
 
         [Command("unbanword")]
         [Description("Removes a word from the banned word list")]
+        [RequireGuild]
         public async Task UnbanWord(CommandContext ctx,
             [Description("The word you want to be removed from the list.")] string word)
         {
@@ -523,6 +490,17 @@ namespace LiveBot.Commands
             {
                 msg = await ctx.RespondAsync($"{ctx.Member.Mention}, input incorrect, entry not added to the list.");
             }
+            await Task.Delay(10000).ContinueWith(t => msg.DeleteAsync());
+        }
+
+        [Command("ban")]
+        [RequirePermissions(Permissions.BanMembers)]
+        public async Task Ban(CommandContext ctx, DiscordUser User, [RemainingText] string reason)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            await ctx.Guild.BanMemberAsync(User.Id, 0, reason);
+            DiscordMessage msg = await ctx.RespondAsync("User has been banned.");
             await Task.Delay(10000).ContinueWith(t => msg.DeleteAsync());
         }
     }

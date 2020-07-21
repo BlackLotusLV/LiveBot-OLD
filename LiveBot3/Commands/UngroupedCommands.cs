@@ -33,8 +33,12 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] `/mysummit` now asks which platform you want to see the stats for if you don't specify and have multiple accounts linked.\n" +
-                "[?] Roger, there's only room in this band for one hysterical queen.";
+            string changelog = "[NEW] Moderator Mail feature added(Open beta :) )\n" +
+                "[NEW] Contact the moderator team via the bot DM's. Open mod chat with `/modmail [server-name-here]` command alias is `/mm` and close it with `/modmail close`\n" +
+                "[NEW] Mod mail channel for moderators for everyone to see and respond to mod mail.\n" +
+                "[NEW] Part of the Mod Mail is the DM command, moderators can DM the user through the bot.\n" +
+                "[NEW] `/ban` command so moderators on mobile can pre-emptive ban users.\n" +
+                "[?] Look out that window. You had your time. Your future is our world, Morpheus, your future is our time.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -574,6 +578,7 @@ namespace LiveBot.Commands
 
         [Command("rank")]
         [Description("Displays user server rank.")]
+        [RequireGuild]
         public async Task Rank(CommandContext ctx, DiscordMember user = null)
         {
             if (user == null)
@@ -598,6 +603,7 @@ namespace LiveBot.Commands
         [Command("globalrank")]
         [Aliases("grank")]
         [Description("Displays users global rank")]
+        [RequireGuild]
         public async Task GlobalRank(CommandContext ctx, DiscordMember user = null)
         {
             if (user == null)
@@ -622,6 +628,7 @@ namespace LiveBot.Commands
         [Command("profile")]
         [Description("Shows users live bot profile.")]
         [Priority(10)]
+        [RequireGuild]
         public async Task Profile(CommandContext ctx,
             [Description("Specify which user to show, if left empty, will take command caster")] DiscordMember user = null)
         {
@@ -1211,7 +1218,7 @@ namespace LiveBot.Commands
             DateTime endtime;
 
             string search = string.Empty;
-            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.Member.Id}";
+            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
             TCHubJson.TCESummit JTCE;
             using (WebClient wc = new WebClient())
@@ -1236,11 +1243,11 @@ namespace LiveBot.Commands
             {
                 if (JTCE.Error == "Unregistered user")
                 {
-                    OutMessage = $"{ctx.Member.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
+                    OutMessage = $"{ctx.User.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
                 }
                 else if (JTCE.Error == "Invalid API key !" || JTCE.Error == "No Connection.")
                 {
-                    OutMessage = $"{ctx.Member.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
+                    OutMessage = $"{ctx.User.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
                         $"<@85017957343694848> Rip API";
                 }
             }
@@ -1254,10 +1261,10 @@ namespace LiveBot.Commands
                 if (platform == null)
                 {
                     DiscordMessage platformMSG = await ctx.RespondAsync($"{ctx.User.Mention}, you have multiple platforms stored on TCE, please select platform you want to see the scores for.");
-                    DiscordEmoji X1Emoji = await ctx.Guild.GetEmojiAsync(445234294915334146);
-                    DiscordEmoji PCEmoji = await ctx.Guild.GetEmojiAsync(445234293019770900);
-                    DiscordEmoji PSEmoji = await ctx.Guild.GetEmojiAsync(445234294676258816);
-                    DiscordEmoji STADIAEmoji = await ctx.Guild.GetEmojiAsync(697798396584656896);
+                    DiscordEmoji X1Emoji = await Program.TCGuild.GetEmojiAsync(445234294915334146);
+                    DiscordEmoji PCEmoji = await Program.TCGuild.GetEmojiAsync(445234293019770900);
+                    DiscordEmoji PSEmoji = await Program.TCGuild.GetEmojiAsync(445234294676258816);
+                    DiscordEmoji STADIAEmoji = await Program.TCGuild.GetEmojiAsync(697798396584656896);
 
                     foreach (var sub in JTCE.Subs)
                     {
@@ -1281,7 +1288,7 @@ namespace LiveBot.Commands
 
                     var Result = await platformMSG.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
 
-                    if (Result.TimedOut==true)
+                    if (Result.TimedOut == true)
                     {
                         await platformMSG.ModifyAsync("Nothing selected, defaulting to PC");
                         platform = "pc";
@@ -1510,12 +1517,12 @@ namespace LiveBot.Commands
 
                     TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
                     BaseImage.Save(imageLoc);
-                    OutMessage = $"{ctx.Member.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : search == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+                    OutMessage = $"{ctx.User.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : search == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
                     SendImage = true;
                 }
                 else
                 {
-                    OutMessage = $"{ctx.Member.Mention}, You have not completed any summit event!";
+                    OutMessage = $"{ctx.User.Mention}, You have not completed any summit event!";
                 }
             }
 
@@ -1532,7 +1539,7 @@ namespace LiveBot.Commands
 
         [Command("topsummit")]
         [Description("Shows the summit board with all the world record scores.")]
-        [Cooldown(1, 300, CooldownBucketType.User)]
+        [Cooldown(1, 30, CooldownBucketType.User)]
         public async Task TopSummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
@@ -1712,7 +1719,7 @@ namespace LiveBot.Commands
 
             TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             BaseImage.Save(imageLoc);
-            OutMessage = $"{ctx.Member.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : platform == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+            OutMessage = $"{ctx.User.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : platform == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
             SendImage = true;
 
             if (SendImage)
@@ -1805,7 +1812,7 @@ namespace LiveBot.Commands
                 RewardsImage.Save(imageLoc);
             }
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-            await ctx.RespondWithFileAsync(upFile, $"{ctx.Member.Mention}, here are this weeks summit rewards:");
+            await ctx.RespondWithFileAsync(upFile, $"{ctx.User.Mention}, here are this weeks summit rewards:");
         }
 
         [Command("myfame")]
@@ -1821,7 +1828,7 @@ namespace LiveBot.Commands
 
             string search = string.Empty;
 
-            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.Member.Id}";
+            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
             TCHubJson.TCESummit JTCE;
             using WebClient wc = new WebClient();
@@ -1844,11 +1851,11 @@ namespace LiveBot.Commands
             {
                 if (JTCE.Error == "Unregistered user")
                 {
-                    OutMessage = $"{ctx.Member.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
+                    OutMessage = $"{ctx.User.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
                 }
                 else if (JTCE.Error == "Invalid API key !" || JTCE.Error == "No Connection.")
                 {
-                    OutMessage = $"{ctx.Member.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
+                    OutMessage = $"{ctx.User.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
                         $"<@85017957343694848> Rip API";
                 }
             }
@@ -1912,6 +1919,7 @@ namespace LiveBot.Commands
         [Aliases("dailies")]
         [Cooldown(1, 60, CooldownBucketType.User)]
         [Description("Gives 200 bucks to yourself, or 200-400 if you give someone else.")]
+        [RequireGuild]
         public async Task Daily(CommandContext ctx, DiscordMember member = null)
         {
             int money = 200;
@@ -1957,6 +1965,7 @@ namespace LiveBot.Commands
         [Command("cookie")]
         [Priority(10)]
         [Description("Gives a cookie to someone.")]
+        [RequireGuild]
         public async Task Cookie(CommandContext ctx, DiscordMember member)
         {
             string output = string.Empty;

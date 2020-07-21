@@ -26,7 +26,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200619_A";
+        public static string BotVersion = $"20200721_A";
         public static bool TestBuild;
 
         // TC Hub
@@ -79,7 +79,7 @@ namespace LiveBot
 
             // TC Hub
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
-            Thread HubThread = new Thread(TimerMethod.UpdateHubInfo);
+            Thread HubThread = new Thread(() => TimerMethod.UpdateHubInfo());
             HubThread.Start();
             //
 
@@ -127,6 +127,7 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.UngroupedCommands>();
             this.Commands.RegisterCommands<Commands.AdminCommands>();
             this.Commands.RegisterCommands<Commands.OCommands>();
+            this.Commands.RegisterCommands<Commands.ModMailCommands>();
 
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
@@ -143,6 +144,7 @@ namespace LiveBot
             Timer RoleTimer = new Timer(e => TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             Timer UpdateTCHubInfo = new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
             Timer ClearSpamMessageCache = new Timer(e => AutoMod.ClearMSGCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
+            Timer CloseOldMM = new Timer(e => ModMail.ModMailCloser(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 
             if (!TestBuild) //Only enables these when using live version
             {
@@ -166,8 +168,15 @@ namespace LiveBot
 
                 Client.GuildMemberAdded += MemberFlow.Welcome_Member;
                 Client.GuildMemberRemoved += MemberFlow.Say_Goodbye;
+
+                Client.MessageCreated += ModMail.ModMailDM;
             }
-            await Client.ConnectAsync();
+            Client.MessageCreated += ModMail.ModMailDM;
+
+            DiscordActivity BotActivity = new DiscordActivity("DM /modmail to open chat with mods", ActivityType.Playing);
+
+
+            await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
         }
 
@@ -251,19 +260,18 @@ namespace LiveBot
 #pragma warning restore IDE0059 // Value assigned to symbol is never used
             {
                 var no_entry = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-                var clock = DiscordEmoji.FromName(e.Context.Client, ":clock:");
                 string msgContent;
                 if (ex.FailedChecks[0].GetType() == typeof(CooldownAttribute))
                 {
-                    msgContent = $"{clock} You, {e.Context.Member.Mention}, tried to execute the command too fast, wait and try again later.";
+                    msgContent = $"{DiscordEmoji.FromName(e.Context.Client, ":clock:")} You, {e.Context.Member.Mention}, tried to execute the command too fast, wait and try again later.";
                 }
                 else if (ex.FailedChecks[0].GetType() == typeof(RequireRolesAttribute))
                 {
-                    msgContent = $"{no_entry} You, {e.Context.Member.Mention}, don't have the required role for this command";
+                    msgContent = $"{no_entry} You, {e.Context.User.Mention}, don't have the required role for this command";
                 }
                 else
                 {
-                    msgContent = $"{no_entry} You, {e.Context.Member.Mention}, do not have the permissions required to execute this command.";
+                    msgContent = $"{no_entry} You, {e.Context.User.Mention}, do not have the permissions required to execute this command.";
                 }
                 var embed = new DiscordEmbedBuilder
                 {
