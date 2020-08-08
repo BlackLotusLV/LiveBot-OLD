@@ -1,6 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -230,8 +231,6 @@ namespace LiveBot
 
         public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
         {
-            DB.DBLists.LoadServerRanks();
-            DB.DBLists.LoadServerSettings();
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id == f.Server_ID && user.Id == f.User_ID);
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id == f.ID_Server);
 
@@ -304,7 +303,7 @@ namespace LiveBot
                     Author = new DiscordEmbedBuilder.EmbedAuthor
                     {
                         IconUrl = user.AvatarUrl,
-                        Name = user.Username
+                        Name = $"{user.Username} ({user.Id})"
                     },
                     Description = $"**Warned user:**\t{user.Mention}\n**Warning level:**\t {WarnedUserStats.Warning_Level}\t**Warning count:**\t {warning_count}\n**Warned by**\t{admin.Username}\n**Reason:** {reason}"
                 };
@@ -337,16 +336,16 @@ namespace LiveBot
                     modinfo = $":exclamation:{user.Mention} could not be contacted via DM. Reason not sent";
                 }
 
-                await modlog.SendMessageAsync(modinfo, embed: embed);
-
                 if (kick == true && member != null)
                 {
                     await member.RemoveAsync("Exceeded warning limit!");
                 }
-                if (ban == true && member != null)
+                if (ban == true && user != null)
                 {
                     await server.BanMemberAsync(user.Id, 0, "Exceeded warning limit!");
                 }
+
+                await modlog.SendMessageAsync(modinfo, embed: embed);
 
                 DiscordMessage info = await channel.SendMessageAsync($"{user.Username}, Has been warned!");
                 await Task.Delay(10000).ContinueWith(t => info.DeleteAsync());
@@ -407,6 +406,103 @@ namespace LiveBot
                 }
             }
             return $"{member.Mention}, {OutputEntry.Command_Text}";
+        }
+
+        public static DiscordEmbed GetUserWarnings(DiscordGuild Guild, DiscordUser User)
+        {
+            DB.DBLists.LoadServerRanks();
+            DB.DBLists.LoadWarnings();
+            List<DB.ServerRanks> ServerRanks = DB.DBLists.ServerRanks;
+            List<DB.Warnings> warnings = DB.DBLists.Warnings;
+            bool UserCheck = false;
+            int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
+            StringBuilder Reason = new StringBuilder();
+            var UserStats = ServerRanks.FirstOrDefault(f => User.Id == f.User_ID && Guild.Id == f.Server_ID);
+            if (UserStats != null)
+            {
+                UserCheck = true;
+                kcount = UserStats.Kick_Count;
+                bcount = UserStats.Ban_Count;
+                wlevel = UserStats.Warning_Level;
+                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).ToList();
+                foreach (var item in WarningsList)
+                {
+                    if ((bool)item.Active == true)
+                    {
+                        Reason.Append("[✓] ");
+                    }
+                    else
+                    {
+                        Reason.Append("[X] ");
+                    }
+                    Reason.AppendLine($"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n");
+                    wcount++;
+                }
+                if (WarningsList.Count == 0)
+                {
+                    Reason.AppendLine("User has no warnings.");
+                }
+            }
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                Color = new DiscordColor(0xFF6600),
+                Author = new DiscordEmbedBuilder.EmbedAuthor
+                {
+                    Name = User.Username,
+                    IconUrl = User.AvatarUrl
+                },
+                Description = $"",
+                Title = "User kick Count",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = User.AvatarUrl
+                }
+            };
+            embed.AddField("Warning level: ", $"{wlevel}", true);
+            embed.AddField("Times warned: ", $"{wcount}", true);
+            embed.AddField("Times kicked: ", $"{kcount}", true);
+            embed.AddField("Times banned: ", $"{bcount}", true);
+            embed.AddField("Warnings: ", $"{Reason}", false);
+            if (!UserCheck)
+            {
+                return new DiscordEmbedBuilder
+                {
+                    Color = new DiscordColor(0xFF6600),
+                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                    {
+                        Name = User.Username,
+                        IconUrl = User.AvatarUrl
+                    },
+                    Description = "This user has no warning, kick and/or ban history in this server."
+                };
+            }
+            else
+            {
+                return embed;
+            }
+        }
+
+        public static void DBProgress(int LoadedTableCount)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("[");
+            for (int i = 1; i <= DB.DBLists.TableCount; i++)
+            {
+                if (i <= LoadedTableCount)
+                {
+                    sb.Append("#");
+                }
+                else
+                {
+                    sb.Append(" ");
+                }
+            }
+            sb.Append(((float)LoadedTableCount / (float)DB.DBLists.TableCount).ToString("] - [0.00%]"));
+            Console.WriteLine(sb.ToString());
+            if (LoadedTableCount == DB.DBLists.TableCount)
+            {
+                DB.DBLists.LoadedTableCount = 0;
+            }
         }
     }
 }

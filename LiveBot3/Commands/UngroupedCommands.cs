@@ -33,12 +33,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Moderator Mail feature added(Open beta :) )\n" +
-                "[NEW] Contact the moderator team via the bot DM's. Open mod chat with `/modmail [server-name-here]` command alias is `/mm` and close it with `/modmail close`\n" +
-                "[NEW] Mod mail channel for moderators for everyone to see and respond to mod mail.\n" +
-                "[NEW] Part of the Mod Mail is the DM command, moderators can DM the user through the bot.\n" +
-                "[NEW] `/ban` command so moderators on mobile can pre-emptive ban users.\n" +
-                "[?] Look out that window. You had your time. Your future is our world, Morpheus, your future is our time.";
+            string changelog = "[UPDATE] Improved clarity for `/@ getkicks` command\n" +
+                "[UPDATE] ModMail timeout changed from 15 minutes, to 2 hours.\n" +
+                "[NEW] `/mywarnings` command added so users can view their own warnings. (DMs must be enabled.)\n" +
+                "[INTERNAL] Console showing progress bar when loading database info.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -659,9 +657,9 @@ namespace LiveBot.Commands
                                 join bi in DB.DBLists.BackgroundImage on ui.BG_ID equals bi.ID_BG
                                 where us.User_ID == ui.User_ID
                                 where us.User_ID == user.Id
-                                select new { us, ui, bi }).ToList();
+                                select new { us, ui, bi }).FirstOrDefault();
 
-            byte[] baseBG = (byte[])UserSettings[0].bi.Image;
+            byte[] baseBG = (byte[])UserSettings.bi.Image;
             var webclinet = new WebClient();
             byte[] profilepic = webclinet.DownloadData(user.AvatarUrl);
             string username;
@@ -691,15 +689,15 @@ namespace LiveBot.Commands
             string level = global[0].Level.ToString();
             string followers = $"{global[0].Followers}/{(int)global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)}";
             string bucks = global[0].Bucks.ToString();
-            string bio = UserSettings[0].us.User_Info.ToString();
+            string bio = UserSettings.us.User_Info.ToString();
 
             double FollowersBetweenLevels = ((global[0].Level + 1) * (300 * (global[0].Level + 2) * 0.5)) - (global[0].Level * (300 * (global[0].Level + 1) * 0.5));
             double FollowersToNextLevel = (global[0].Level * (300 * (global[0].Level + 1) * 0.5)) - global[0].Followers;
             double FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel;
 
-            Rgba32 bordercolour = CustomMethod.GetColour(UserSettings[0].us.Border_Colour.ToString());
-            Rgba32 textcolour = CustomMethod.GetColour(UserSettings[0].us.Text_Colour.ToString());
-            Rgba32 backfieldcolour = CustomMethod.GetColour(UserSettings[0].us.Background_Colour.ToString());
+            Rgba32 bordercolour = CustomMethod.GetColour(UserSettings.us.Border_Colour.ToString());
+            Rgba32 textcolour = CustomMethod.GetColour(UserSettings.us.Text_Colour.ToString());
+            Rgba32 backfieldcolour = CustomMethod.GetColour(UserSettings.us.Background_Colour.ToString());
 
             using Image<Rgba32> pfp = Image.Load<Rgba32>(profilepic);
             using Image<Rgba32> picture = new Image<Rgba32>(600, 600);
@@ -2038,6 +2036,23 @@ namespace LiveBot.Commands
             else
             {
                 await ctx.RespondAsync("The Crew 2 Server is Offline");
+            }
+        }
+        
+        [Command("mywarnings")]
+        [RequireGuild]
+        [Description("Shows your warning, kick and ban history.")]
+        public async Task MyWarnings(CommandContext ctx)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            try
+            {
+                await ctx.Member.SendMessageAsync(embed: CustomMethod.GetUserWarnings(ctx.Guild, ctx.User));
+            }
+            catch
+            {
+                await ctx.RespondAsync($"{ctx.Member.Mention}, Could not contact you through DMs.");
             }
         }
     }

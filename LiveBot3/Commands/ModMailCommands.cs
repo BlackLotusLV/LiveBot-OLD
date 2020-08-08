@@ -33,7 +33,7 @@ namespace LiveBot.Commands
             {
                 DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)item.ID_Server);
                 GuildNameDict.Add(Guild, Guild.Name.Replace(' ', '-').ToLower());
-                GuildNameString.AppendLine(Guild.Name.Replace(' ', '-').ToLower());
+                GuildNameString.AppendLine($"`{Guild.Name.Replace(' ', '-').ToLower()}`");
             }
             GuildNameString.AppendLine("To start a modmail write `/modmail server-name-here`");
             if (!GuildNameDict.Values.Contains(serverName.Replace(' ', '-').ToLower()))
@@ -219,7 +219,7 @@ namespace LiveBot.Commands
             }
         }
 
-        [Command("dirrectmessage")]
+        [Command("directmessage")]
         [Aliases("dm","pm")]
         [RequireGuild]
         [RequirePermissions(Permissions.KickMembers)]

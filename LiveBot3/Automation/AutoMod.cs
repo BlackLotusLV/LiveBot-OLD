@@ -33,7 +33,10 @@ namespace LiveBot.Automation
                         if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b"))
                         {
                             await e.Message.DeleteAsync();
-                            await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
+                            if (DB.DBLists.ServerRanks.Where(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).FirstOrDefault().Warning_Level < 5)
+                            {
+                                await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
+                            }
                         }
                     }
                 }
@@ -64,67 +67,70 @@ namespace LiveBot.Automation
 
         public static async Task Delete_Log(MessageDeleteEventArgs e)
         {
-            DiscordMessage msg = e.Message;
-            DiscordUser author = msg.Author;
-            var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id
-                                 select ss).ToList();
-            string Description = string.Empty;
-
-            if (GuildSettings[0].Delete_Log != 0)
+            if (e.Guild != null)
             {
-                DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
-                DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
-                if (author != null)
-                {
-                    if (!author.IsBot)
-                    {
-                        string converteddeletedmsg = msg.Content;
-                        if (converteddeletedmsg.StartsWith("/"))
-                        {
-                            Description = $"Command initialization was deleted in {e.Channel.Mention}\n" +
-                                $"**Author:** {author.Username}\t ID:{author.Id}\n" +
-                                $"**Content:** {converteddeletedmsg}\n" +
-                                $"**Time Posted:** {msg.CreationTimestamp}";
-                        }
-                        else
-                        {
-                            if (converteddeletedmsg == "")
-                            {
-                                converteddeletedmsg = "*message didn't contain any text, probably file*";
-                            }
+                DiscordMessage msg = e.Message;
+                DiscordUser author = msg.Author;
+                var GuildSettings = (from ss in DB.DBLists.ServerSettings
+                                     where ss.ID_Server == e.Guild.Id
+                                     select ss).FirstOrDefault();
+                string Description = string.Empty;
 
-                            Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
-                                $"**Contents:** {converteddeletedmsg}\n" +
-                                $"Time posted: {msg.CreationTimestamp}";
-                        }
-                        if (Description.Length <= 2000)
+                if (GuildSettings.Delete_Log != 0)
+                {
+                    DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings.ID_Server));
+                    DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Delete_Log));
+                    if (author != null)
+                    {
+                        if (!author.IsBot)
                         {
-                            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                            string converteddeletedmsg = msg.Content;
+                            if (converteddeletedmsg.StartsWith("/"))
                             {
-                                Color = new DiscordColor(0xFF6600),
-                                Author = new DiscordEmbedBuilder.EmbedAuthor
+                                Description = $"Command initialization was deleted in {e.Channel.Mention}\n" +
+                                    $"**Author:** {author.Username}\t ID:{author.Id}\n" +
+                                    $"**Content:** {converteddeletedmsg}\n" +
+                                    $"**Time Posted:** {msg.CreationTimestamp}";
+                            }
+                            else
+                            {
+                                if (converteddeletedmsg == "")
                                 {
-                                    IconUrl = author.AvatarUrl,
-                                    Name = author.Username
-                                },
-                                Description = Description
-                            };
-                            await DeleteLog.SendMessageAsync(embed: embed);
-                        }
-                        else
-                        {
-                            File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", Description);
-                            using var upFile = new FileStream($"{Program.tmpLoc}{e.Message.Id}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                            await DeleteLog.SendFileAsync(upFile, $"Deleted message and info too long, uploading fail instead.");
+                                    converteddeletedmsg = "*message didn't contain any text, probably file*";
+                                }
+
+                                Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
+                                    $"**Contents:** {converteddeletedmsg}\n" +
+                                    $"Time posted: {msg.CreationTimestamp}";
+                            }
+                            if (Description.Length <= 2000)
+                            {
+                                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                                {
+                                    Color = new DiscordColor(0xFF6600),
+                                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                                    {
+                                        IconUrl = author.AvatarUrl,
+                                        Name = author.Username
+                                    },
+                                    Description = Description
+                                };
+                                await DeleteLog.SendMessageAsync(embed: embed);
+                            }
+                            else
+                            {
+                                File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", Description);
+                                using var upFile = new FileStream($"{Program.tmpLoc}{e.Message.Id}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+                                await DeleteLog.SendFileAsync(upFile, $"Deleted message and info too long, uploading fail instead.");
+                            }
                         }
                     }
                 }
-            }
-            var DeletedMSG = MessageList.Where(w => w.Timestamp.Equals(e.Message.Timestamp) && w.Content.Equals(e.Message.Content)).FirstOrDefault();
-            if (DeletedMSG != null)
-            {
-                MessageList.Remove(DeletedMSG);
+                var DeletedMSG = MessageList.Where(w => w.Timestamp.Equals(e.Message.Timestamp) && w.Content.Equals(e.Message.Content)).FirstOrDefault();
+                if (DeletedMSG != null)
+                {
+                    MessageList.Remove(DeletedMSG);
+                }
             }
         }
 
@@ -352,7 +358,10 @@ namespace LiveBot.Automation
                                 {
                                     await channel.DeleteMessagesAsync(duplicatemessages.GetRange(i - 5, 5));
                                 }
-                                await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
+                                if (DB.DBLists.ServerRanks.Where(w=>w.Server_ID==e.Guild.Id && w.User_ID==e.Author.Id).FirstOrDefault().Warning_Level < 5)
+                                {
+                                    await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
+                                }
                             }
                         }
                     }

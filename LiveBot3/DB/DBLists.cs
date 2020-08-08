@@ -7,6 +7,9 @@ namespace LiveBot.DB
 {
     internal class DBLists
     {
+        public static int TableCount = 17;
+        public static int LoadedTableCount = 0;
+
         public static List<VehicleList> VehicleList;
         public static List<DisciplineList> DisciplineList;
         public static List<ReactionRoles> ReactionRoles;
@@ -27,160 +30,248 @@ namespace LiveBot.DB
 
         public static void LoadAllLists()
         {
-            LoadServerSettings();
-            LoadWeatherSchedule();
-            new Thread(LoadVehicleList).Start();
-            new Thread(LoadDisciplineList).Start();
-            new Thread(LoadReactionRoles).Start();
-            new Thread(LoadStreamNotifications).Start();
-            new Thread(LoadBackgroundImage).Start();
-            new Thread(LoadLeaderboard).Start();
-            new Thread(LoadServerRanks).Start();
-            new Thread(LoadUserImages).Start();
-            new Thread(LoadUserSettings).Start();
-            new Thread(LoadWarnings).Start();
-            new Thread(LoadRankRoles).Start();
-            new Thread(LoadCUC).Start();
-            new Thread(LoadBannedWords).Start();
-            new Thread(LoadBotOutputList).Start();
-            new Thread(LoadModMail).Start();
+            Console.WriteLine("[POSTGRESQL] Loading Database");
+            CustomMethod.DBProgress(LoadedTableCount);
+            LoadServerSettings(true);
+            LoadWeatherSchedule(true);
+            new Thread(() => LoadVehicleList(true)).Start();
+            new Thread(() => LoadDisciplineList(true)).Start();
+            new Thread(() => LoadReactionRoles(true)).Start();
+            new Thread(() => LoadStreamNotifications(true)).Start();
+            new Thread(() => LoadBackgroundImage(true)).Start();
+            new Thread(() => LoadLeaderboard(true)).Start();
+            new Thread(() => LoadServerRanks(true)).Start();
+            new Thread(() => LoadUserImages(true)).Start();
+            new Thread(() => LoadUserSettings(true)).Start();
+            new Thread(() => LoadWarnings(true)).Start();
+            new Thread(() => LoadRankRoles(true)).Start();
+            new Thread(() => LoadCUC(true)).Start();
+            new Thread(() => LoadBannedWords(true)).Start();
+            new Thread(() => LoadBotOutputList(true)).Start();
+            new Thread(() => LoadModMail(true)).Start();
         }
 
         #region Load Functions
 
-        public static void LoadVehicleList()
+        public static void LoadVehicleList(bool progress = false)
         {
             using var ctx = new VehicleListContext();
             VehicleList = (from c in ctx.VehicleList
                            select c).ToList();
             Console.WriteLine("[POSTGRESQL] Vehicle List Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadDisciplineList()
+        public static void LoadDisciplineList(bool progress = false)
         {
             using var ctx = new DisciplineListContext();
             DisciplineList = (from c in ctx.DisciplineList
                               select c).ToList();
             Console.WriteLine("[POSTGRESQL] Discipline List Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadReactionRoles()
+        public static void LoadReactionRoles(bool progress = false)
         {
             using var ctx = new ReactionRolesContext();
             ReactionRoles = (from c in ctx.ReactionRoles
                              select c).ToList();
             Console.WriteLine("[POSTGRESQL] Reaction Roles Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadStreamNotifications()
+        public static void LoadStreamNotifications(bool progress = false)
         {
             using var ctx = new StreamNotificationsContext();
             StreamNotifications = (from c in ctx.StreamNotifications
                                    select c).ToList();
             Console.WriteLine("[POSTGRESQL] Stream Notifications Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadBackgroundImage()
+        public static void LoadBackgroundImage(bool progress = false)
         {
             using var ctx = new BackgroundImageContext();
             BackgroundImage = (from c in ctx.BackgroundImage
                                select c).ToList();
             Console.WriteLine("[POSTGRESQL] Background Images Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadLeaderboard()
+        public static void LoadLeaderboard(bool progress = false)
         {
             using var ctx = new LeaderboardContext();
             Leaderboard = (from c in ctx.Leaderboard
                            select c).ToList();
             Console.WriteLine("[POSTGRESQL] Leaderboard Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadServerRanks()
+        public static void LoadServerRanks(bool progress = false)
         {
             using var ctx = new ServerRanksContext();
             ServerRanks = (from c in ctx.ServerRanks
                            select c).ToList();
             Console.WriteLine("[POSTGRESQL] Server Ranks Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadUserSettings()
+        public static void LoadUserSettings(bool progress = false)
         {
             using var ctx = new UserSettingsContext();
             UserSettings = (from c in ctx.UserSettings
                             select c).ToList();
             Console.WriteLine("[POSTGRESQL] User Settings Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadUserImages()
+        public static void LoadUserImages(bool progress = false)
         {
             using var ctx = new UserImagesContext();
             UserImages = (from c in ctx.UserImages
                           select c).ToList();
             Console.WriteLine("[POSTGRESQL] User Images Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadWarnings()
+        public static void LoadWarnings(bool progress = false)
         {
             using var ctx = new WarningsContext();
             Warnings = (from c in ctx.Warnings
                         select c).ToList();
             Console.WriteLine("[POSTGRESQL] Warnings Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadServerSettings()
+        public static void LoadServerSettings(bool progress = false)
         {
             using var ctx = new ServerSettingsContext();
             ServerSettings = (from c in ctx.ServerSettings
                               select c).ToList();
             Console.WriteLine("[POSTGRESQL] Server Settings Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadRankRoles()
+        public static void LoadRankRoles(bool progress = false)
         {
             using var ctx = new RankRolesContext();
             RankRoles = (from c in ctx.RankRoles
                          select c).ToList();
             Console.WriteLine("[POSTGRESQL] Rank Roles Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadCUC()
+        public static void LoadCUC(bool progress = false)
         {
             using var ctx = new CommandsUsedCountContext();
             CommandsUsedCount = (from c in ctx.CommandsUsedCount
                                  select c).ToList();
+            Console.WriteLine("[POSTGRESQL] Commands Used Count Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadBannedWords()
+        public static void LoadBannedWords(bool progress = false)
         {
             using var ctx = new AMBannedWordsContext();
             AMBannedWords = (from c in ctx.AMBannedWords
                              select c).ToList();
             Console.WriteLine("[POSTGRESQL] Banned Words Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadBotOutputList()
+        public static void LoadBotOutputList(bool progress = false)
         {
             using var ctx = new BotOutputListContext();
             BotOutputList = (from c in ctx.BotOutputList
                              select c).ToList();
             Console.WriteLine("[POSTGRESQL] BotOutputList Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadWeatherSchedule()
+        public static void LoadWeatherSchedule(bool progress = false)
         {
             using var ctx = new WeatherScheduleContext();
             WeatherSchedule = (from c in ctx.WeatherSchedule
                                select c).ToList();
             Console.WriteLine("[POSTGRESQL] WeatherSchedule Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
-        public static void LoadModMail()
+        public static void LoadModMail(bool progress = false)
         {
             using var ctx = new ModMailContext();
             ModMail = (from c in ctx.ModMail
                        select c).ToList();
             Console.WriteLine("[POSTGRESQL] ModMail Loaded");
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount);
+            }
         }
 
         #endregion Load Functions

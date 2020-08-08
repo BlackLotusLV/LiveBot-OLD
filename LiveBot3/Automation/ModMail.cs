@@ -9,7 +9,7 @@ namespace LiveBot.Automation
 {
     internal class ModMail
     {
-        public static int TimeoutMinutes = 15;
+        public static int TimeoutMinutes = 120;
 
         public static async Task ModMailDM(MessageCreateEventArgs e)
         {

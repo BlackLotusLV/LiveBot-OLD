@@ -6,7 +6,6 @@ using DSharpPlus.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -99,7 +98,7 @@ namespace LiveBot.Commands
                             Author = new DiscordEmbedBuilder.EmbedAuthor
                             {
                                 IconUrl = username.AvatarUrl,
-                                Name = username.Username
+                                Name = $"{username.Username} ({username.Id})"
                             },
                             Description = $"{username.Mention} has been unwarned by {ctx.User.Mention}. Warning level now {WarnedUserStats.Warning_Level}"
                         };
@@ -129,63 +128,11 @@ namespace LiveBot.Commands
         [Command("getkicks")]
         [Description("Shows user warning, kick and ban history")]
         [RequireGuild]
-        public async Task GetKicks(CommandContext ctx, DiscordUser username)
+        public async Task GetKicks(CommandContext ctx, DiscordUser User)
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            DB.DBLists.LoadServerRanks();
-            DB.DBLists.LoadWarnings();
-            List<DB.ServerRanks> ServerRanks = DB.DBLists.ServerRanks;
-            List<DB.Warnings> warnings = DB.DBLists.Warnings;
-            decimal uid = username.Id;
-            bool UserCheck = false;
-            int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
-            string reason = "";
-            var UserStats = ServerRanks.FirstOrDefault(f => uid == f.User_ID && ctx.Guild.Id == f.Server_ID);
-            if (UserStats != null)
-            {
-                UserCheck = true;
-                kcount = UserStats.Kick_Count;
-                bcount = UserStats.Ban_Count;
-                wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == uid && w.Server_ID == ctx.Guild.Id).ToList();
-                foreach (var item in WarningsList)
-                {
-                    if ((bool)item.Active == true)
-                    {
-                        reason += $"By: <@{item.Admin_ID}>\t Reason: {item.Reason}\n";
-                    }
-                    wcount++;
-                }
-            }
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xFF6600),
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    Name = username.Username,
-                    IconUrl = username.AvatarUrl
-                },
-                Description = $"",
-                Title = "User kick Count",
-                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
-                {
-                    Url = username.AvatarUrl
-                }
-            };
-            embed.AddField("Warning level: ", $"{wlevel}", true);
-            embed.AddField("Times warned: ", $"{wcount}", true);
-            embed.AddField("Times banned: ", $"{bcount}", true);
-            embed.AddField("Times kicked: ", $"{kcount}", true);
-            embed.AddField("Warning reasons: ", $"-{reason}-", true);
-            if (!UserCheck)
-            {
-                await ctx.RespondAsync($"{ctx.User.Mention}, This user has no warning, kick and/or ban history in this server.");
-            }
-            else
-            {
-                await ctx.RespondAsync($"{ctx.User.Mention}", embed: embed);
-            }
+            await ctx.RespondAsync($"{ctx.User.Mention}", embed: CustomMethod.GetUserWarnings(ctx.Guild, User));
         }
 
         [Command("vote")]
@@ -247,7 +194,7 @@ namespace LiveBot.Commands
         }
 
         [Command("faq")]
-        [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
+        [RequirePermissions(Permissions.BanMembers)]
         [Description("Edits the existing FAQ message")]
         [Priority(10)]
         [RequireGuild]
@@ -273,7 +220,7 @@ namespace LiveBot.Commands
         }
 
         [Command("faq")]
-        [RequirePermissions(DSharpPlus.Permissions.BanMembers)]
+        [RequirePermissions(Permissions.BanMembers)]
         [Description("Creates an FAQ post. Delimiter is `|`")]
         [Priority(9)]
         [RequireGuild]

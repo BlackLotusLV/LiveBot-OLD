@@ -16,8 +16,6 @@ namespace LiveBot.Automation
         {
             if (!e.Author.IsBot && e.Guild != null)
             {
-                DB.DBLists.LoadServerRanks();
-                DB.DBLists.LoadLeaderboard();
                 bool checkglobal = false, checklocal = false;
                 Random r = new Random();
                 int MinInterval = 10, MaxInterval = 30;
