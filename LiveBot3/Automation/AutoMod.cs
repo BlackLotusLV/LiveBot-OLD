@@ -85,24 +85,13 @@ namespace LiveBot.Automation
                         if (!author.IsBot)
                         {
                             string converteddeletedmsg = msg.Content;
-                            if (converteddeletedmsg.StartsWith("/"))
+                            if (converteddeletedmsg == "")
                             {
-                                Description = $"Command initialization was deleted in {e.Channel.Mention}\n" +
-                                    $"**Author:** {author.Username}\t ID:{author.Id}\n" +
-                                    $"**Content:** {converteddeletedmsg}\n" +
-                                    $"**Time Posted:** {msg.CreationTimestamp}";
+                                converteddeletedmsg = "*message didn't contain any text, probably file*";
                             }
-                            else
-                            {
-                                if (converteddeletedmsg == "")
-                                {
-                                    converteddeletedmsg = "*message didn't contain any text, probably file*";
-                                }
 
-                                Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
-                                    $"**Contents:** {converteddeletedmsg}\n" +
-                                    $"Time posted: {msg.CreationTimestamp}";
-                            }
+                            Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
+                                $"**Contents:** {converteddeletedmsg}";
                             if (Description.Length <= 2000)
                             {
                                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -111,9 +100,13 @@ namespace LiveBot.Automation
                                     Author = new DiscordEmbedBuilder.EmbedAuthor
                                     {
                                         IconUrl = author.AvatarUrl,
-                                        Name = author.Username
+                                        Name = $"{author.Username}'s message deleted"
                                     },
-                                    Description = Description
+                                    Description = Description,
+                                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                                    {
+                                        Text = $"Time posted: {msg.CreationTimestamp}"
+                                    }
                                 };
                                 await DeleteLog.SendMessageAsync(embed: embed);
                             }

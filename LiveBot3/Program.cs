@@ -22,13 +22,12 @@ namespace LiveBot
 {
     internal class Program
     {
-        public static DiscordClient Client { get; set; }
-        public InteractivityExtension Interactivity { get; set; }
-        public CommandsNextExtension Commands { get; set; }
+        public static DiscordClient Client { get; private set; }
+        public InteractivityExtension Interactivity { get; private set; }
+        public CommandsNextExtension Commands { get; private set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200808_A";
+        public static string BotVersion = $"20200822_A";
         public static bool TestBuild;
-
         // TC Hub
 
         public static ConfigJson.TCHubAPI TCHubJson;
@@ -62,8 +61,6 @@ namespace LiveBot
 
         public async Task RunBotAsync(string[] args)
         {
-            // fills all database lists
-            DB.DBLists.LoadAllLists();
             fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
             fonts.Install("Assets/Fonts/Inconsolata-Bold.ttf");
             fonts.Install("Assets/Fonts/Inconsolata-Regular.ttf");
@@ -103,6 +100,7 @@ namespace LiveBot
             };
 
             Client = new DiscordClient(cfg);
+            DB.DBLists.LoadAllLists(); // loads data from database
             Client.Ready += this.Client_Ready;
             Client.GuildAvailable += this.Client_GuildAvailable;
             Client.ClientErrored += this.Client_ClientError;

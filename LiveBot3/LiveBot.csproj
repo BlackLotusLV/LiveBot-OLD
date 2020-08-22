@@ -9,15 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00711" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00711" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00711" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00712" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00712" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00712" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Npgsql" Version="4.1.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.0-preview7" />
     <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0008" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.1" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0010" />
     <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
   </ItemGroup>

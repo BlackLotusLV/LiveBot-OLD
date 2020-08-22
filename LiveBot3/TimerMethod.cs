@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using LiveBot.Automation;
 using LiveBot.Json;
 using Newtonsoft.Json;
@@ -63,9 +64,10 @@ namespace LiveBot
             {
                 JSummitString = wc.DownloadString(Program.TCHubJson.Summit);
             }
-            catch (WebException)
+            catch (WebException e)
             {
                 Connected = false;
+                Program.Client.DebugLogger.LogMessage(LogLevel.Error, "TCHub", "Connection error. Either wrong API link, or the Hub is down.", DateTime.Now, e);
             }
             if (Connected)
             {
@@ -93,12 +95,8 @@ namespace LiveBot
                     {
                         RewardsImageBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Rewards[i].Img_Path}");
                     }
-                    Console.WriteLine($"[TCHub] Info downloaded for {JSummit[0].Summit_ID} summit.");
+                    Program.Client.DebugLogger.LogMessage(LogLevel.Info, "TCHub", $"[TCHub] Info downloaded for {JSummit[0].Summit_ID} summit.", DateTime.Now);
                 }
-            }
-            else
-            {
-                Console.WriteLine("[TCHub] Connection error. Either wrong API link, or the Hub is down.");
             }
         }
     }

@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LiveBot
@@ -231,6 +232,7 @@ namespace LiveBot
 
         public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
         {
+
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id == f.Server_ID && user.Id == f.User_ID);
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id == f.ID_Server);
 
@@ -482,7 +484,7 @@ namespace LiveBot
             }
         }
 
-        public static void DBProgress(int LoadedTableCount)
+        public static void DBProgress(int LoadedTableCount, TimeSpan time, string DataTableName=null)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("[");
@@ -497,8 +499,9 @@ namespace LiveBot
                     sb.Append(" ");
                 }
             }
-            sb.Append(((float)LoadedTableCount / (float)DB.DBLists.TableCount).ToString("] - [0.00%]"));
-            Console.WriteLine(sb.ToString());
+            sb.Append(((float)LoadedTableCount / (float)DB.DBLists.TableCount).ToString($"] - [0.00%] [{time.Seconds}:{time.Milliseconds}]"));
+            Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", DataTableName is null?"Starting to load Data Base":$"{DataTableName} List Loaded", DateTime.Now);
+            Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", sb.ToString(), DateTime.Now);
             if (LoadedTableCount == DB.DBLists.TableCount)
             {
                 DB.DBLists.LoadedTableCount = 0;

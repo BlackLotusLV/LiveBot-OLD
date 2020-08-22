@@ -1,5 +1,7 @@
-﻿using System;
+﻿using DSharpPlus;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -30,8 +32,7 @@ namespace LiveBot.DB
 
         public static void LoadAllLists()
         {
-            Console.WriteLine("[POSTGRESQL] Loading Database");
-            CustomMethod.DBProgress(LoadedTableCount);
+            CustomMethod.DBProgress(LoadedTableCount, TimeSpan.Zero);
             LoadServerSettings(true);
             LoadWeatherSchedule(true);
             new Thread(() => LoadVehicleList(true)).Start();
@@ -55,222 +56,324 @@ namespace LiveBot.DB
 
         public static void LoadVehicleList(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new VehicleListContext();
             VehicleList = (from c in ctx.VehicleList
                            select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Vehicle List Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed,"Vehicle");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Vehicle List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadDisciplineList(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new DisciplineListContext();
             DisciplineList = (from c in ctx.DisciplineList
                               select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Discipline List Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Discipline");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Discipline List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadReactionRoles(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new ReactionRolesContext();
             ReactionRoles = (from c in ctx.ReactionRoles
                              select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Reaction Roles Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Reaction Roles");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Reaction Roles List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadStreamNotifications(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new StreamNotificationsContext();
             StreamNotifications = (from c in ctx.StreamNotifications
                                    select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Stream Notifications Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Stream Notifications");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Stream Notifications List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadBackgroundImage(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new BackgroundImageContext();
             BackgroundImage = (from c in ctx.BackgroundImage
                                select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Background Images Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Background Images");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Background Images List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadLeaderboard(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new LeaderboardContext();
             Leaderboard = (from c in ctx.Leaderboard
                            select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Leaderboard Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Leaderboard");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Leaderboard List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadServerRanks(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new ServerRanksContext();
             ServerRanks = (from c in ctx.ServerRanks
                            select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Server Ranks Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Server Ranks");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Server Ranks List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadUserSettings(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new UserSettingsContext();
             UserSettings = (from c in ctx.UserSettings
                             select c).ToList();
-            Console.WriteLine("[POSTGRESQL] User Settings Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "User Settings");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "User Settings List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadUserImages(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new UserImagesContext();
             UserImages = (from c in ctx.UserImages
                           select c).ToList();
-            Console.WriteLine("[POSTGRESQL] User Images Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "User Images");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "User Images List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadWarnings(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new WarningsContext();
             Warnings = (from c in ctx.Warnings
                         select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Warnings Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Warnings");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Warnings List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadServerSettings(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new ServerSettingsContext();
             ServerSettings = (from c in ctx.ServerSettings
                               select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Server Settings Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Server Settings");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Server Settings List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadRankRoles(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new RankRolesContext();
             RankRoles = (from c in ctx.RankRoles
                          select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Rank Roles Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Rank Roles");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Rank Roles List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadCUC(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new CommandsUsedCountContext();
             CommandsUsedCount = (from c in ctx.CommandsUsedCount
                                  select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Commands Used Count Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Commands Used Count");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Commands Used Count List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadBannedWords(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new AMBannedWordsContext();
             AMBannedWords = (from c in ctx.AMBannedWords
                              select c).ToList();
-            Console.WriteLine("[POSTGRESQL] Banned Words Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Banned Words");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Banned Words List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadBotOutputList(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new BotOutputListContext();
             BotOutputList = (from c in ctx.BotOutputList
                              select c).ToList();
-            Console.WriteLine("[POSTGRESQL] BotOutputList Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "BotOutputList");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "BotOutputList List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadWeatherSchedule(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new WeatherScheduleContext();
             WeatherSchedule = (from c in ctx.WeatherSchedule
                                select c).ToList();
-            Console.WriteLine("[POSTGRESQL] WeatherSchedule Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "WeatherSchedule");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "WeatherSchedule List Loaded", DateTime.Now);
             }
         }
 
         public static void LoadModMail(bool progress = false)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             using var ctx = new ModMailContext();
             ModMail = (from c in ctx.ModMail
                        select c).ToList();
-            Console.WriteLine("[POSTGRESQL] ModMail Loaded");
+            timer.Stop();
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount);
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "ModMail");
+            }
+            else
+            {
+                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "ModMail List Loaded", DateTime.Now);
             }
         }
 

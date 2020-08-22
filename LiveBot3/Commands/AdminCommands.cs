@@ -38,7 +38,7 @@ namespace LiveBot.Commands
         [Command("warn")]
         [Description("Warns a user")]
         [RequireGuild]
-        [Cooldown(1, 5, CooldownBucketType.Guild)]
+        //[Cooldown(1, 5, CooldownBucketType.Guild)]
         public async Task Warning(CommandContext ctx, DiscordUser username, [RemainingText] string reason = "Reason not specified")
         {
             await ctx.Message.DeleteAsync();
@@ -449,6 +449,30 @@ namespace LiveBot.Commands
             await ctx.Guild.BanMemberAsync(User.Id, 0, reason);
             DiscordMessage msg = await ctx.RespondAsync("User has been banned.");
             await Task.Delay(10000).ContinueWith(t => msg.DeleteAsync());
+        }
+        [Command("lookup")]
+        [Description("Looks up a user by ID")]
+        public async Task Lookup(CommandContext ctx, ulong ID)
+        {
+            await ctx.TriggerTypingAsync();
+
+            DiscordUser user;
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+            {
+
+            };
+            try
+            {
+                user = await ctx.Client.GetUserAsync(ID);
+                embed.Title = "User found";
+                embed.Description = $"User {user.Username} found by ID({user.Id})";
+                embed.ImageUrl = user.AvatarUrl;
+                await ctx.RespondAsync(embed: embed);
+            }
+            catch
+            {
+                await ctx.RespondAsync("Could not find a user by this ID");
+            }
         }
     }
 }

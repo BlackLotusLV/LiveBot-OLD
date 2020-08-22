@@ -33,10 +33,12 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[UPDATE] Improved clarity for `/@ getkicks` command\n" +
-                "[UPDATE] ModMail timeout changed from 15 minutes, to 2 hours.\n" +
-                "[NEW] `/mywarnings` command added so users can view their own warnings. (DMs must be enabled.)\n" +
-                "[INTERNAL] Console showing progress bar when loading database info.";
+            string changelog = "[INTERNAL] Improvements to the database load logs\n" +
+                "[NEW] `/@ lookup [id]` Moderator command to look up if ID is a user ID\n" +
+                "[FIX] `/profile` Image not loading if username contained unsupported characters\n" +
+                "[UPDATE] `/profile` command now uses server nickname if there is one, else uses username\n" +
+                "[UPDATE] Delete log format slightly updated\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -663,9 +665,14 @@ namespace LiveBot.Commands
             var webclinet = new WebClient();
             byte[] profilepic = webclinet.DownloadData(user.AvatarUrl);
             string username;
+            string rawname = user.Username;
+            if (user.Nickname!=null)
+            {
+                rawname = user.Nickname;
+            }
             StringBuilder sb = new StringBuilder();
             int usernameSize = 30;
-            for (int i = 0; i < user.Username.Length; i++)
+            for (int i = 0; i < rawname.Length; i++)
             {
                 if (i == 20)
                 {
@@ -676,13 +683,13 @@ namespace LiveBot.Commands
                 {
                     break;
                 }
-                if ((int)user.Username[i] > short.MaxValue)
+                if ((int)rawname[i] > 128)
                 {
                     sb.Append("?");
                 }
                 else
                 {
-                    sb.Append(user.Username[i]);
+                    sb.Append(rawname[i]);
                 }
             }
             username = sb.ToString();
