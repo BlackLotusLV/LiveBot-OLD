@@ -256,7 +256,7 @@ namespace LiveBot.Automation
                     }
                     UserSettings.Kick_Count++;
                     UserSettings.Followers /= 2;
-                    DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
+                    DB.DBLists.UpdateServerRanks(UserSettings);
                 }
             }
         }
@@ -294,7 +294,7 @@ namespace LiveBot.Automation
             }
             UserSettings.Ban_Count += 1;
             UserSettings.Followers = 0;
-            DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { UserSettings });
+            DB.DBLists.UpdateServerRanks(UserSettings);
             await Task.Delay(0);
         }
 

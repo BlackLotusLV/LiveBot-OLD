@@ -1,4 +1,5 @@
 ﻿using DSharpPlus;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,7 +70,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Vehicle List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Vehicle List Loaded");
             }
         }
 
@@ -88,7 +89,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Discipline List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Discipline List Loaded");
             }
         }
 
@@ -107,7 +108,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Reaction Roles List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Reaction Roles List Loaded");
             }
         }
 
@@ -126,7 +127,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Stream Notifications List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Stream Notifications List Loaded");
             }
         }
 
@@ -145,7 +146,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Background Images List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Background Images List Loaded");
             }
         }
 
@@ -164,7 +165,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Leaderboard List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Leaderboard List Loaded");
             }
         }
 
@@ -183,7 +184,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Server Ranks List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Ranks List Loaded");
             }
         }
 
@@ -202,7 +203,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "User Settings List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Settings List Loaded");
             }
         }
 
@@ -221,7 +222,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "User Images List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Images List Loaded");
             }
         }
 
@@ -240,7 +241,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Warnings List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Warnings List Loaded");
             }
         }
 
@@ -259,7 +260,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Server Settings List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Settings List Loaded");
             }
         }
 
@@ -278,7 +279,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Rank Roles List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Rank Roles List Loaded");
             }
         }
 
@@ -297,7 +298,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Commands Used Count List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Commands Used Count List Loaded");
             }
         }
 
@@ -316,7 +317,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "Banned Words List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Banned Words List Loaded");
             }
         }
 
@@ -335,7 +336,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "BotOutputList List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "BotOutputList List Loaded");
             }
         }
 
@@ -354,7 +355,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "WeatherSchedule List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "WeatherSchedule List Loaded");
             }
         }
 
@@ -373,7 +374,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", "ModMail List Loaded", DateTime.Now);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ModMail List Loaded");
             }
         }
 
@@ -381,91 +382,91 @@ namespace LiveBot.DB
 
         #region Update Functions
 
-        public static void UpdateLeaderboard(List<Leaderboard> o)
+        public static void UpdateLeaderboard(params Leaderboard[] o)
         {
             using var ctx = new LeaderboardContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateServerRanks(List<ServerRanks> o)
+        public static void UpdateServerRanks(params ServerRanks[] o)
         {
             using var ctx = new ServerRanksContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateUserSettings(List<UserSettings> o)
+        public static void UpdateUserSettings(params UserSettings[] o)
         {
             using var ctx = new UserSettingsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateUserImages(List<UserImages> o)
+        public static void UpdateUserImages(params UserImages[] o)
         {
             using var ctx = new UserImagesContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateWarnings(List<Warnings> o)
+        public static void UpdateWarnings(params Warnings[] o)
         {
             using var ctx = new WarningsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateVehicleList(List<VehicleList> o)
+        public static void UpdateVehicleList(params VehicleList[] o)
         {
             using var ctx = new VehicleListContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateServerSettings(List<ServerSettings> o)
+        public static void UpdateServerSettings(params ServerSettings[] o)
         {
             using var ctx = new ServerSettingsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateRankRoles(List<RankRoles> o)
+        public static void UpdateRankRoles(params RankRoles[] o)
         {
             using var ctx = new RankRolesContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateCUC(List<CommandsUsedCount> o)
+        public static void UpdateCUC(params CommandsUsedCount[] o)
         {
             using var ctx = new CommandsUsedCountContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateBannedWords(List<AMBannedWords> o)
+        public static void UpdateBannedWords(params AMBannedWords[] o)
         {
             using var ctx = new AMBannedWordsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateBotOutputList(List<BotOutputList> o)
+        public static void UpdateBotOutputList(params BotOutputList[] o)
         {
             using var ctx = new BotOutputListContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateWeatherSchedule(List<WeatherSchedule> o)
+        public static void UpdateWeatherSchedule(params WeatherSchedule[] o)
         {
             using var ctx = new WeatherScheduleContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
 
-        public static void UpdateModMail(List<ModMail> o)
+        public static void UpdateModMail(params ModMail[] o)
         {
             using var ctx = new ModMailContext();
             ctx.UpdateRange(o);

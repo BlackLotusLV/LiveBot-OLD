@@ -42,12 +42,12 @@ namespace LiveBot.Automation
                             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
                             var global = (from lb in Leaderboard
                                           where lb.ID_User == e.Author.Id
-                                          select lb).ToList();
-                            global[0].Followers = (long)global[0].Followers + points_added;
-                            global[0].Bucks = (long)global[0].Bucks + money_added;
-                            if ((int)global[0].Level < (long)global[0].Followers / (300 * ((int)global[0].Level + 1) * 0.5))
+                                          select lb).FirstOrDefault();
+                            global.Followers = (long)global.Followers + points_added;
+                            global.Bucks = (long)global.Bucks + money_added;
+                            if ((int)global.Level < (long)global.Followers / (300 * ((int)global.Level + 1) * 0.5))
                             {
-                                global[0].Level = (int)global[0].Level + 1;
+                                global.Level = (int)global.Level + 1;
                             }
                             Guser.Time = DateTime.Now;
                             DB.DBLists.UpdateLeaderboard(global);
@@ -67,8 +67,8 @@ namespace LiveBot.Automation
                                 var local = (from lb in Leaderboard
                                              where lb.User_ID == e.Author.Id
                                              where lb.Server_ID == e.Channel.Guild.Id
-                                             select lb).ToList();
-                                local[0].Followers = (long)local[0].Followers + points_added;
+                                             select lb).FirstOrDefault();
+                                local.Followers = (long)local.Followers + points_added;
                                 Suser.Time = DateTime.Now; DB.DBLists.UpdateServerRanks(local);
                             }
                         }
@@ -79,22 +79,22 @@ namespace LiveBot.Automation
                     List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
                     var global = (from lb in Leaderboard
                                   where lb.ID_User == e.Author.Id
-                                  select lb).ToList();
-                    if (global.Count == 0)
+                                  select lb).FirstOrDefault();
+                    if (global is null)
                     {
                         CustomMethod.AddUserToLeaderboard(e.Author);
                     }
                     global = (from lb in Leaderboard
                               where lb.ID_User == e.Author.Id
-                              select lb).ToList();
+                              select lb).FirstOrDefault();
                     points_added = r.Next(MinInterval, MaxInterval);
-                    if (global.Count == 1)
+                    if (global != null)
                     {
-                        global[0].Followers = (long)global[0].Followers + points_added;
-                        global[0].Bucks = (long)global[0].Bucks + money_added;
-                        if ((int)global[0].Level < (long)global[0].Followers / (300 * ((int)global[0].Level + 1) * 0.5))
+                        global.Followers = (long)global.Followers + points_added;
+                        global.Bucks = (long)global.Bucks + money_added;
+                        if ((int)global.Level < (long)global.Followers / (300 * ((int)global.Level + 1) * 0.5))
                         {
-                            global[0].Level = (int)global[0].Level + 1;
+                            global.Level = (int)global.Level + 1;
                         }
                     }
                     LevelTimer NewToList = new LevelTimer
@@ -112,10 +112,10 @@ namespace LiveBot.Automation
                     var local = (from lb in Leaderboard
                                  where lb.User_ID == e.Author.Id
                                  where lb.Server_ID == e.Channel.Guild.Id
-                                 select lb).ToList();
-                    if (local.Count > 0)
+                                 select lb).FirstOrDefault();
+                    if (local != null)
                     {
-                        local[0].Followers = (long)local[0].Followers + points_added;
+                        local.Followers = (long)local.Followers + points_added;
                     }
                     ServerLevelTimer NewToList = new ServerLevelTimer
                     {

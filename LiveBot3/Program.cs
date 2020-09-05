@@ -7,6 +7,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using LiveBot.Automation;
 using LiveBot.Json;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using System;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +28,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200822_A";
+        public static string BotVersion = $"20200831_A";
         public static bool TestBuild;
         // TC Hub
 
@@ -81,6 +83,7 @@ namespace LiveBot
             Thread HubThread = new Thread(() => TimerMethod.UpdateHubInfo());
             HubThread.Start();
             //
+            LogLevel logLevel = LogLevel.Debug;
 
             if (args.Length == 1)
             {
@@ -88,7 +91,9 @@ namespace LiveBot
                 {
                     cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).LiveBot;
                     Console.WriteLine($"Running live version: {BotVersion}");
+
                     TestBuild = false;
+                    logLevel = LogLevel.Information;
                 }
             }
             var cfg = new DiscordConfiguration
@@ -97,8 +102,7 @@ namespace LiveBot
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 ReconnectIndefinitely = false,
-                LogLevel = LogLevel.Debug,
-                UseInternalLogHandler = true
+                MinimumLogLevel = logLevel
             };
 
             Client = new DiscordClient(cfg);
@@ -171,9 +175,7 @@ namespace LiveBot
 
                 Client.MessageCreated += ModMail.ModMailDM;
             }
-
             DiscordActivity BotActivity = new DiscordActivity("DM /modmail to open chat with mods", ActivityType.Playing);
-
 
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
@@ -181,7 +183,7 @@ namespace LiveBot
 
         private Task Client_Ready(ReadyEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, "LiveBot", "Client is ready to process events.", DateTime.Now);
+            e.Client.Logger.LogInformation(CustomLogEvents.LiveBot, "[LiveBot] Client is ready to process events.");
             return Task.CompletedTask;
         }
 
@@ -205,13 +207,13 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, "LiveBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
+            e.Client.Logger.LogInformation(CustomLogEvents.LiveBot, $"Guild available: {e.Guild.Name}");
             return Task.CompletedTask;
         }
 
         private async Task<Task> Client_ClientError(ClientErrorEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"Exception occurred: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            e.Client.Logger.LogError(CustomLogEvents.ClientError, e.Exception, "Exception occurred");
             string errormsg = $"{DateTime.Now} {LogLevel.Error} LiveBot Exception Occured: {e.Exception.GetType()}: {e.Exception.Message}\n" +
                 $"{e.Exception.InnerException}\n" +
                 $"{e.Exception.StackTrace}";
@@ -230,8 +232,7 @@ namespace LiveBot
 
         private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, "LiveBot", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
-
+            e.Context.Client.Logger.LogInformation(CustomLogEvents.CommandExecuted, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}' command");
             DB.DBLists.LoadCUC();
             string CommandName = e.Command.Name;
             var DBEntry = DB.DBLists.CommandsUsedCount.Where(w => w.Name == CommandName).FirstOrDefault();
@@ -247,14 +248,14 @@ namespace LiveBot
             else if (DBEntry != null)
             {
                 DBEntry.Used_Count++;
-                DB.DBLists.UpdateCUC(new List<DB.CommandsUsedCount> { DBEntry });
+                DB.DBLists.UpdateCUC(DBEntry);
             }
             return Task.CompletedTask;
         }
 
         private async Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "LiveBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}\n{e.Exception.InnerException}\n{e.Exception.StackTrace}", DateTime.Now);
+            e.Context.Client.Logger.LogError(CustomLogEvents.CommandError, e.Exception, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored");
 #pragma warning disable IDE0059 // Value assigned to symbol is never used
             if (e.Exception is ChecksFailedException ex)
 #pragma warning restore IDE0059 // Value assigned to symbol is never used

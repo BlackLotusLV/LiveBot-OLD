@@ -4,12 +4,18 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using LiveBot.Json;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Newtonsoft.Json;
+using Npgsql;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,6 +28,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Point = SixLabors.ImageSharp.Point;
 using PointF = SixLabors.ImageSharp.PointF;
+using SixLabors.ImageSharp.Processing.Processors;
 
 namespace LiveBot.Commands
 {
@@ -33,11 +40,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[INTERNAL] Improvements to the database load logs\n" +
-                "[NEW] `/@ lookup [id]` Moderator command to look up if ID is a user ID\n" +
-                "[FIX] `/profile` Image not loading if username contained unsupported characters\n" +
-                "[UPDATE] `/profile` command now uses server nickname if there is one, else uses username\n" +
-                "[UPDATE] Delete log format slightly updated\n" +
+            string changelog = "[NEW] If user account has been deleted, it's score will be reset.\n" +
+                "[INTERNAL] Code cleanup - Deleted old code, unifying format, boring stuff\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -521,7 +525,7 @@ namespace LiveBot.Commands
 
             if (SelectedVehicles.Count(c => c.IsSelected is true) == SelectedVehicles.Count())
             {
-                DB.DBLists.UpdateVehicleList(SelectedVehicles.Select(s => { s.IsSelected = false; return s; }).ToList());
+                DB.DBLists.UpdateVehicleList(SelectedVehicles.Select(s => { s.IsSelected = false; return s; }).ToArray());
             }
 
             SelectedVehicles = (from sv in SelectedVehicles
@@ -529,7 +533,7 @@ namespace LiveBot.Commands
                                 select sv).ToList();
             row = r.Next(SelectedVehicles.Count);
 
-            DB.DBLists.UpdateVehicleList(SelectedVehicles.Where(w => w.ID_Vehicle.Equals(SelectedVehicles[row].ID_Vehicle)).Select(s => { s.IsSelected = true; return s; }).ToList());
+            DB.DBLists.UpdateVehicleList(SelectedVehicles.Where(w => w.ID_Vehicle.Equals(SelectedVehicles[row].ID_Vehicle)).Select(s => { s.IsSelected = true; return s; }).ToArray());
 
             DiscordColor embedColour = new DiscordColor();
 
@@ -767,10 +771,9 @@ namespace LiveBot.Commands
             string output = string.Empty;
             if (input[0] == "update" && input.Length > 1)
             {
-                List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
-                var UserSettings = (from us in USettings
+                var UserSettings = (from us in DB.DBLists.UserSettings
                                     where us.User_ID == ctx.User.Id
-                                    select us).ToList();
+                                    select us).FirstOrDefault();
                 if (input.Length > 2 && (input[1] == "bg" || input[1] == "background"))
                 {
                     List<DB.UserImages> UImages = DB.DBLists.UserImages;
@@ -784,8 +787,8 @@ namespace LiveBot.Commands
                     }
                     else if (UserImages.Count == 1)
                     {
-                        UserSettings[0].Image_ID = UserImages[0].ID_User_Images;
-                        DB.DBLists.UpdateUserSettings(USettings);
+                        UserSettings.Image_ID = UserImages[0].ID_User_Images;
+                        DB.DBLists.UpdateUserSettings(UserSettings);
                         output = $"You have changed your profile background";
                     }
                 }
@@ -796,9 +799,9 @@ namespace LiveBot.Commands
                     {
                         sb.Append(input[i] + " ");
                     }
-                    UserSettings[0].User_Info = sb.ToString();
+                    UserSettings.User_Info = sb.ToString();
 
-                    DB.DBLists.UpdateUserSettings(USettings);
+                    DB.DBLists.UpdateUserSettings(UserSettings);
                     output = "You have changed your user info.";
                 }
                 else
@@ -992,16 +995,16 @@ namespace LiveBot.Commands
                 List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
                 var user = (from lb in Leaderboard
                             where lb.ID_User == ctx.User.Id
-                            select lb).ToList();
+                            select lb).FirstOrDefault();
 
                 if (background.Count == 1)
                 {
                     if (backgroundrow.Count == 0)
                     {
-                        if ((long)background[0].Price <= (long)user[0].Bucks)
+                        if ((long)background[0].Price <= (long)user.Bucks)
                         {
                             var idui = UserImg.Max(m => m.ID_User_Images);
-                            user[0].Bucks -= (long)background[0].Price;
+                            user.Bucks -= (long)background[0].Price;
                             DB.UserImages newEntry = new DB.UserImages
                             {
                                 User_ID = ctx.User.Id,
@@ -1864,7 +1867,7 @@ namespace LiveBot.Commands
                 {
                     user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
                     user.Bucks += money;
-                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { user });
+                    DB.DBLists.UpdateLeaderboard(user);
                     await ctx.RespondAsync($"{ctx.Member.Mention}, You have received {money} bucks");
                 }
                 else
@@ -1873,8 +1876,8 @@ namespace LiveBot.Commands
                     money += r.Next(200);
                     user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
                     reciever.Bucks += money;
-                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { user });
-                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { reciever });
+                    DB.DBLists.UpdateLeaderboard(user);
+                    DB.DBLists.UpdateLeaderboard(reciever);
                     await ctx.RespondAsync($"{member.Mention}, You were given {money} bucks by {ctx.Member.Username}");
                 }
             }
@@ -1912,8 +1915,8 @@ namespace LiveBot.Commands
                     giver.Cookies_Given += 1;
                     reciever.Cookies_Taken += 1;
                     output = $"{member.Mention}, {ctx.Member.Username} has given you a :cookie:";
-                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { giver });
-                    DB.DBLists.UpdateLeaderboard(new List<DB.Leaderboard> { reciever });
+                    DB.DBLists.UpdateLeaderboard(giver);
+                    DB.DBLists.UpdateLeaderboard(reciever);
                 }
                 else
                 {

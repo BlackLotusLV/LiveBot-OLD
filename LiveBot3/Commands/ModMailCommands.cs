@@ -128,7 +128,7 @@ namespace LiveBot.Commands
                         embed.Title = $"[ERROR] {embed.Title}";
                     }
                     MMEntry.LastMSGTime = DateTime.Now;
-                    DBLists.UpdateModMail(new List<DB.ModMail> { MMEntry });
+                    DBLists.UpdateModMail(MMEntry);
 
                     DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)DBLists.ServerSettings.Where(w => w.ID_Server == ctx.Guild.Id).FirstOrDefault().ModMailID);
                     await MMChannel.SendMessageAsync(embed: embed);
@@ -154,7 +154,7 @@ namespace LiveBot.Commands
             else
             {
                 modMail.IsActive = false;
-                DBLists.UpdateModMail(new List<DB.ModMail> { modMail });
+                DBLists.UpdateModMail(modMail);
                 DBLists.LoadModMail();
                 await ctx.RespondAsync("**Mod Mail closed!\n----------------------------------------------------**");
 
@@ -190,7 +190,7 @@ namespace LiveBot.Commands
             else
             {
                 modMail.IsActive = false;
-                DBLists.UpdateModMail(new List<DB.ModMail> { modMail });
+                DBLists.UpdateModMail(modMail);
                 DBLists.LoadModMail();
                 string ErrorString = string.Empty;
 

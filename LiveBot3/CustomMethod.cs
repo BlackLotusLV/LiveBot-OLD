@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
@@ -116,16 +118,27 @@ namespace LiveBot
             StringBuilder sb = new StringBuilder();
             string personalscore = "";
             List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
-            var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
-            user = user.Where(w => w.Server_ID == ctx.Guild.Id).ToList();
+            var users = leaderboard.OrderByDescending(x => x.Followers).ToList();
+            users = users.Where(w => w.Server_ID == ctx.Guild.Id).ToList();
             sb.AppendLine("```csharp\n📋 Rank | Username");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
-                var duser = ctx.Client.GetUserAsync(Convert.ToUInt64(user[i].User_ID));
-                sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}");
-                if (i == user.Count - 1)
+                var duser = ctx.Client.GetUserAsync(Convert.ToUInt64(users[i].User_ID));
+                if (duser.Result.Username.StartsWith("Deleted User "))
                 {
-                    i = (int)page * 10;
+                    var UserSR = DB.DBLists.ServerRanks.Where(w => w.User_ID == duser.Result.Id).ToArray();
+                    UserSR.Select(s => { s.Followers = 0; return s; });
+                    users[i].Followers = 0;
+                    DB.DBLists.UpdateServerRanks(users[i]);
+                    sb.AppendLine($"[{i + 1}]\tUser account deleted");
+                }
+                else
+                {
+                    sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{users[i].Followers}");
+                    if (i == users.Count - 1)
+                    {
+                        i = (int)page * 10;
+                    }
                 }
             }
             int rank = 0;
@@ -149,18 +162,29 @@ namespace LiveBot
         public static string GetGlobalTop(CommandContext ctx, int page)
         {
             StringBuilder sb = new StringBuilder();
-            string list = "", personalscore = "";
+            string personalscore = "";
             List<DB.Leaderboard> leaderboard = DB.DBLists.Leaderboard;
-            var user = leaderboard.OrderByDescending(x => x.Followers).ToList();
+            var users = leaderboard.OrderByDescending(x => x.Followers).ToList();
             sb.AppendLine("```csharp\n📋 Rank | Username");
             for (int i = (int)(page * 10) - 10; i < page * 10; i++)
             {
-                var duser = ctx.Client.GetUserAsync(System.Convert.ToUInt64(user[i].ID_User));
-                list += $"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}\n";
-                sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{user[i].Followers}\tLevel:{user[i].Level}");
-                if (i == user.Count - 1)
+                var duser = ctx.Client.GetUserAsync(Convert.ToUInt64(users[i].ID_User));
+                if (duser.Result.Username.StartsWith("Deleted User "))
                 {
-                    i = (int)page * 10;
+                    var UserSR = DB.DBLists.ServerRanks.Where(w => w.User_ID == duser.Result.Id).ToArray();
+                    UserSR.Select(s => { s.Followers = 0; return s; });
+                    users[i].Followers = 0;
+                    users[i].Bucks = 0;
+                    DB.DBLists.UpdateLeaderboard(users[i]);
+                    sb.AppendLine($"[{i + 1}]\tUser account deleted");
+                }
+                else
+                {
+                    sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{users[i].Followers}\tLevel:{users[i].Level}");
+                    if (i == users.Count - 1)
+                    {
+                        i = (int)page * 10;
+                    }
                 }
             }
             int rank = 0;
@@ -267,7 +291,7 @@ namespace LiveBot
                     {
                         WarnedUserStats.Followers -= (1000 * WarnedUserStats.Warning_Level);
                     }
-                    DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { WarnedUserStats });
+                    DB.DBLists.UpdateServerRanks(WarnedUserStats);
                 }
 
                 DB.Warnings newWarning = new DB.Warnings
@@ -485,8 +509,8 @@ namespace LiveBot
                 }
             }
             sb.Append(((float)LoadedTableCount / (float)DB.DBLists.TableCount).ToString($"] - [0.00%] [{time.Seconds}:{time.Milliseconds}]"));
-            Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", DataTableName is null?"Starting to load Data Base":$"{DataTableName} List Loaded", DateTime.Now);
-            Program.Client.DebugLogger.LogMessage(LogLevel.Info, "POSTGRESQL", sb.ToString(), DateTime.Now);
+            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, DataTableName is null ? "Starting to load Data Base" : $"{DataTableName} List Loaded");
+            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, sb.ToString());
             if (LoadedTableCount == DB.DBLists.TableCount)
             {
                 DB.DBLists.LoadedTableCount = 0;

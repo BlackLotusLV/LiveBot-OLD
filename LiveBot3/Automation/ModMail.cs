@@ -42,7 +42,7 @@ namespace LiveBot.Automation
 
                 MMEntry.HasChatted = true;
                 MMEntry.LastMSGTime = DateTime.Now;
-                DB.DBLists.UpdateModMail(new List<DB.ModMail> { MMEntry });
+                DB.DBLists.UpdateModMail(MMEntry);
             }
         }
 
@@ -69,7 +69,7 @@ namespace LiveBot.Automation
                 {
                     DMNotif = "User could not be contacted anymore, either blocked the bot, left the server or turned off DMs";
                 }
-                DB.DBLists.UpdateModMail(new List<DB.ModMail> { TimedOutEntry });
+                DB.DBLists.UpdateModMail(TimedOutEntry);
                 await ModMailChannel.SendMessageAsync(DMNotif, embed: embed);
             }
         }

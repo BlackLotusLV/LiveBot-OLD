@@ -87,8 +87,8 @@ namespace LiveBot.Commands
                         MSGOut = $"Warning level lowered for {username.Username}";
                         var entry = Warnings.Where(f => f.Active is true).OrderBy(f => f.ID_Warning).FirstOrDefault();
                         entry.Active = false;
-                        DB.DBLists.UpdateWarnings(new List<DB.Warnings> { entry });
-                        DB.DBLists.UpdateServerRanks(new List<DB.ServerRanks> { WarnedUserStats });
+                        DB.DBLists.UpdateWarnings(entry);
+                        DB.DBLists.UpdateServerRanks(WarnedUserStats);
                     }
                     if (check)
                     {
@@ -366,7 +366,7 @@ namespace LiveBot.Commands
             {
                 string completion_response = $"The response for `/{command}` was changed\n**From:** `{BotOutputEntry.Command_Text}`\n**To:** `{BotResponse}`";
                 BotOutputEntry.Command_Text = BotResponse;
-                DB.DBLists.UpdateBotOutputList(new List<DB.BotOutputList> { BotOutputEntry });
+                DB.DBLists.UpdateBotOutputList(BotOutputEntry);
                 DB.DBLists.LoadBotOutputList();
                 DiscordMessage OutMSG = await ctx.RespondAsync(completion_response);
                 await Task.Delay(10000).ContinueWith(t => OutMSG.DeleteAsync());
@@ -423,7 +423,7 @@ namespace LiveBot.Commands
                     else if (Result.Result.Emoji == Yes)
                     {
                         existingEntry.Weather = weather.ToLower();
-                        DB.DBLists.UpdateWeatherSchedule(new List<DB.WeatherSchedule> { existingEntry });
+                        DB.DBLists.UpdateWeatherSchedule(existingEntry);
                         await msg.ModifyAsync($"Weather entry updated");
                     }
                     else if (Result.Result.Emoji == No)
