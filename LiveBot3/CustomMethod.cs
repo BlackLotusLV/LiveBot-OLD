@@ -18,18 +18,6 @@ namespace LiveBot
 {
     internal class CustomMethod
     {
-        public static Rgba32 GetColour(string incolour)
-        {
-            return (incolour) switch
-            {
-                "black" => Color.Black,
-                "white" => Color.WhiteSmoke,
-                "red" => Color.Red,
-                "green" => Color.Green,
-                _ => Color.Transparent
-            };
-        }
-
         public static string GetConnString()
         {
             string json;
@@ -70,9 +58,6 @@ namespace LiveBot
             DB.UserSettings newUSettings = new DB.UserSettings
             {
                 User_ID = user.Id,
-                Background_Colour = "white",
-                Text_Colour = "black",
-                Border_Colour = "black",
                 User_Info = "Just a flesh wound",
                 Image_ID = newUImage.ID_User_Images,
                 ID_User_Settings = us + 1

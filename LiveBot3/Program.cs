@@ -62,8 +62,10 @@ namespace LiveBot
         public async Task RunBotAsync(string[] args)
         {
             fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
-            fonts.Install("Assets/Fonts/Inconsolata-Bold.ttf");
-            fonts.Install("Assets/Fonts/Inconsolata-Regular.ttf");
+            fonts.Install("Assets/Fonts/RobotoMono-BoldItalic.ttf");
+            fonts.Install("Assets/Fonts/RobotoMono-Bold.ttf");
+            fonts.Install("Assets/Fonts/RobotoMono-Italic.ttf");
+            fonts.Install("Assets/Fonts/RobotoMono-Regular.ttf");
 
             TestBuild = true;
 

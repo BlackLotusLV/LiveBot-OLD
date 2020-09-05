@@ -5,7 +5,7 @@
 -- Dumped from database version 12.1 (Debian 12.1-1.pgdg100+1)
 -- Dumped by pg_dump version 12.2
 
--- Started on 2020-07-21 14:21:57
+-- Started on 2020-09-05 20:25:26
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -470,9 +470,6 @@ CREATE TABLE livebot."User_Settings" (
     id_user_settings integer NOT NULL,
     user_id numeric(20,0) NOT NULL,
     image_id integer NOT NULL,
-    background_colour text NOT NULL,
-    text_colour text NOT NULL,
-    border_colour text NOT NULL,
     user_info text NOT NULL
 );
 
@@ -1170,7 +1167,7 @@ ALTER TABLE ONLY livebot."Vehicle_List"
     ADD CONSTRAINT vehicle_list_discipline_fkey FOREIGN KEY (discipline) REFERENCES livebot."Discipline_List"(id_discipline);
 
 
--- Completed on 2020-07-21 14:22:11
+-- Completed on 2020-09-05 20:25:42
 
 --
 -- PostgreSQL database dump complete

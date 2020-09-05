@@ -629,213 +629,132 @@ namespace LiveBot.Commands
         [Description("Shows users live bot profile.")]
         [Priority(10)]
         [RequireGuild]
-        public async Task Profile(CommandContext ctx,
-            [Description("Specify which user to show, if left empty, will take command caster")] DiscordMember user = null)
+        public async Task Profile(CommandContext ctx, DiscordMember Member = null)
         {
             await ctx.TriggerTypingAsync();
-            bool tcelink = false;
-            if (user == null)
+
+            if (Member == null)
             {
-                user = ctx.Member;
+                Member = ctx.Member;
             }
-            string link = $"{Program.TCEJson.Link}api/bot/isAccountLinked/{Program.TCEJson.Key}/{user.Id}";
-            try
-            {
-                using WebClient wc = new WebClient();
-                if (wc.DownloadString(link).ToLower().Contains("true"))
-                {
-                    tcelink = true;
-                }
-            }
-            catch { }
-            DB.DBLists.LoadUserSettings(); // Updates
+
+            DB.DBLists.LoadUserSettings();
             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
             List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
-            var global = (from gl in Leaderboard
-                          where gl.ID_User == user.Id
-                          select gl).ToList();
+            var UserStats = (from gl in Leaderboard
+                          where gl.ID_User == Member.Id
+                          select gl).FirstOrDefault();
             var UserSettings = (from us in USettings
                                 join ui in DB.DBLists.UserImages on us.Image_ID equals ui.ID_User_Images
                                 join bi in DB.DBLists.BackgroundImage on ui.BG_ID equals bi.ID_BG
                                 where us.User_ID == ui.User_ID
-                                where us.User_ID == user.Id
+                                where us.User_ID == Member.Id
                                 select new { us, ui, bi }).FirstOrDefault();
 
-            byte[] baseBG = (byte[])UserSettings.bi.Image;
+            string UsersName = Member.Username;
+            if (Member.Nickname!=null)
+            {
+                UsersName = Member.Nickname;
+            }
+
+            int usernameSize = 28;
+            if (UsersName.Length>16)
+            {
+                UsersName = $"{UsersName.Substring(0, UsersName.Length / 2)}\n{UsersName.Substring(UsersName.Length / 2, UsersName.Length / 2 +(UsersName.Length % 2 != 0 ? 1 : 0)) }";
+                usernameSize = 19;
+            }
+            UsersName = Regex.Replace(UsersName, @"[^\u0000-\u007F]+", "�");
+
+            string
+                level = UserStats.Level.ToString(),
+                followers = $"{UserStats.Followers}/{(int)UserStats.Level * (300 * ((int)UserStats.Level + 1) * 0.5)}",
+                bucks = UserStats.Bucks.ToString(),
+                bio = UserSettings.us.User_Info.ToString();
+
+            double
+                FollowersBetweenLevels = ((UserStats.Level + 1) * (300 * (UserStats.Level + 2) * 0.5)) - (UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)),
+                FollowersToNextLevel = (UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)) - UserStats.Followers,
+                FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel;
+
             var webclinet = new WebClient();
-            byte[] profilepic = webclinet.DownloadData(user.AvatarUrl);
-            string username;
-            string rawname = user.Username;
-            if (user.Nickname!=null)
-            {
-                rawname = user.Nickname;
-            }
-            StringBuilder sb = new StringBuilder();
-            int usernameSize = 30;
-            for (int i = 0; i < rawname.Length; i++)
-            {
-                if (i == 20)
-                {
-                    sb.AppendLine();
-                    usernameSize = 20;
-                }
-                else if (i == 41)
-                {
-                    break;
-                }
-                if ((int)rawname[i] > 128)
-                {
-                    sb.Append("?");
-                }
-                else
-                {
-                    sb.Append(rawname[i]);
-                }
-            }
-            username = sb.ToString();
-            string level = global[0].Level.ToString();
-            string followers = $"{global[0].Followers}/{(int)global[0].Level * (300 * ((int)global[0].Level + 1) * 0.5)}";
-            string bucks = global[0].Bucks.ToString();
-            string bio = UserSettings.us.User_Info.ToString();
+            byte[] ProfilePicture = webclinet.DownloadData(Member.AvatarUrl);
+            using Image<Rgba32>
+                Base = new Image<Rgba32>(590, 590),
+                pfp = Image.Load<Rgba32>(ProfilePicture),
+                background = Image.Load<Rgba32>((byte[])UserSettings.bi.Image),
+                FollowersBar = new Image<Rgba32>(System.Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20);
 
-            double FollowersBetweenLevels = ((global[0].Level + 1) * (300 * (global[0].Level + 2) * 0.5)) - (global[0].Level * (300 * (global[0].Level + 1) * 0.5));
-            double FollowersToNextLevel = (global[0].Level * (300 * (global[0].Level + 1) * 0.5)) - global[0].Followers;
-            double FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel;
 
-            Rgba32 bordercolour = CustomMethod.GetColour(UserSettings.us.Border_Colour.ToString());
-            Rgba32 textcolour = CustomMethod.GetColour(UserSettings.us.Text_Colour.ToString());
-            Rgba32 backfieldcolour = CustomMethod.GetColour(UserSettings.us.Background_Colour.ToString());
+            Font 
+                UsernameFont = Program.fonts.CreateFont("Roboto Mono", usernameSize, FontStyle.BoldItalic),
+                BaseFont = Program.fonts.CreateFont("Roboto Mono", 18, FontStyle.Italic),
+                LevelTextFont = Program.fonts.CreateFont("Roboto Mono", 30, FontStyle.Regular),
+                LevelNumberFont = Program.fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic),
+                InfoTextFont = Program.fonts.CreateFont("Roboto Mono", 19, FontStyle.Regular);
 
-            using Image<Rgba32> pfp = Image.Load<Rgba32>(profilepic);
-            using Image<Rgba32> picture = new Image<Rgba32>(600, 600);
-            using Image<Rgba32> background = new Image<Rgba32>(560, 360);
-            using Image<Rgba32> bg = Image.Load<Rgba32>(baseBG);
-            using Image<Rgba32> FollowersBar = new Image<Rgba32>(System.Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20);
-            Font UsernameFont = Program.fonts.CreateFont("Inconsolata", usernameSize, FontStyle.Bold);
-            Font Basefont = Program.fonts.CreateFont("Inconsolata", 21, FontStyle.Bold);
-            Font LevelText = Program.fonts.CreateFont("Inconsolata", 30, FontStyle.Regular);
-            Font LevelNumber = Program.fonts.CreateFont("Inconsolata", 50, FontStyle.Regular);
-            Font InfoTextFont = Program.fonts.CreateFont("Inconsolata", 19, FontStyle.Regular);
-            var InfoWrap = new TextGraphicsOptions()
-            {
-                TextOptions =
-                {
-                    WrapTextWidth = 540f
-                }
-            };
-            var AllignCenter = new TextGraphicsOptions()
+            var AlignCenter = new TextGraphicsOptions()
             {
                 TextOptions =
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Top
+                    VerticalAlignment = VerticalAlignment.Center
                 }
             };
-            Point bglocation = new Point(10, 10);
-            Point pfplocation = new Point(440, 230);
-            Point bgcolourlocation = new Point(20, 220);
-            int BadgeX = 155, BadgeY = 260, BadgeCount = 0;
+            var AlignBottomLeft = new TextGraphicsOptions()
+            {
+                TextOptions =
+                {
+                    HorizontalAlignment=HorizontalAlignment.Left,
+                    VerticalAlignment=VerticalAlignment.Bottom
+                }
+            };
 
-            background.Mutate(ctx => ctx
-            .Fill(backfieldcolour)
+            int
+                BGX = 10,
+                BGY = 10,
+                MarginWidth = 20 + BGX,
+                MarginHeight = 20 + BGY,
+                FollowersY = 300,
+                SmallStatBoxHeight = 35,
+                BucksY = FollowersY + SmallStatBoxHeight + 5,
+                StatBoxWidth = 300,
+                StatBoxShift = 20,
+                LevelBoxSize = (SmallStatBoxHeight * 2) + 5,
+                LevelBoxX = background.Width - MarginWidth - LevelBoxSize,
+                LevelBoxY = FollowersY,
+                NameWidth = 290,
+                NameX = BGX+background.Width/2 - NameWidth/2,
+                NameY = 240,
+                NameYellowWidth=5,
+                NameHeight = 50;
+
+            Color
+                TC2Yellow = Color.ParseHex("FFDB15"),
+                TC2Grey = Color.ParseHex("202328");
+
+            pfp.Mutate(ctx => ctx
+            .Resize(140,140)
+            .DrawPolygon(new Pen(TC2Grey,5f), new PointF[] { new PointF(0,0), new PointF(140,0), new PointF(140,140), new PointF(0,140), new PointF(0,0)})
             );
-            string info = string.Empty;
-            int LetterCount = 0, MaxInLine = 50, MaxLines = 8, LineCount = 1;
-            foreach (var word in bio.Split(' '))
-            {
-                if (word.Length >= MaxInLine)
-                {
-                }
-                else if (word == "$n")
-                {
-                    info += "\n";
-                    LetterCount = 0;
-                    LineCount++;
-                }
-                else if (LetterCount + word.Length + 1 <= MaxInLine)
-                {
-                    info += word + " ";
-                    LetterCount += word.Length + 1;
-                }
-                else if (LetterCount + word.Length > MaxInLine && LineCount < MaxLines)
-                {
-                    info += "\n" + word + " ";
-                    LetterCount = 0;
-                    LineCount++;
-                }
-            }
 
-            float LeftMargin = 35f;
+            Base.Mutate(ctx => ctx
+            .DrawImage(background, new Point(BGX, BGY), 1f)
+            .FillPolygon(TC2Grey, new PointF[] { new PointF(BGX, BGY), new PointF(BGX + 250, BGY), new PointF(BGX, BGY + 170) })
+            .FillPolygon(TC2Grey, new PointF[] { new PointF(background.Width + BGX, background.Height + BGY), new PointF(background.Width + BGX - 300, background.Height + BGY), new PointF(background.Width + BGX, background.Height + BGY - 220) })
+            .DrawImage(pfp, new Point(35, 35), 1f)
+            .FillPolygon(TC2Yellow, new PointF[] { new PointF(StatBoxShift + NameX - NameYellowWidth, NameY), new PointF(StatBoxShift + NameX, NameY), new PointF(NameX, NameY + NameHeight), new PointF(NameX - NameYellowWidth, NameY + NameHeight) })
+            .FillPolygon(TC2Grey, new PointF[] { new PointF(StatBoxShift + NameX, NameY), new PointF(StatBoxShift + NameX + NameWidth, NameY), new PointF(NameX + NameWidth, NameY + NameHeight), new PointF(NameX, NameY + NameHeight) })
+            .FillPolygon(TC2Yellow, new PointF[] { new PointF(MarginWidth + StatBoxShift, FollowersY), new PointF(MarginWidth + StatBoxShift + StatBoxWidth, FollowersY), new PointF(MarginWidth + StatBoxWidth, FollowersY + SmallStatBoxHeight), new PointF(MarginWidth, FollowersY + SmallStatBoxHeight) })
+            .FillPolygon(TC2Yellow, new PointF[] { new PointF(MarginWidth + StatBoxShift, BucksY), new PointF(MarginWidth + StatBoxShift + StatBoxWidth, BucksY), new PointF(MarginWidth + StatBoxWidth, BucksY + SmallStatBoxHeight), new PointF(MarginWidth, BucksY + SmallStatBoxHeight) })
+            .FillPolygon(TC2Yellow, new PointF[] { new PointF(LevelBoxX + StatBoxShift, LevelBoxY), new PointF(LevelBoxX + StatBoxShift + LevelBoxSize, LevelBoxY), new PointF(LevelBoxX + LevelBoxSize, LevelBoxY + LevelBoxSize), new PointF(LevelBoxX, LevelBoxY + LevelBoxSize) })
+            .DrawText(AlignCenter, UsersName, UsernameFont, TC2Yellow, new PointF(BGX + StatBoxShift/2 + background.Width / 2, NameY + NameHeight / 2.3f))
+            .DrawText(AlignBottomLeft, $"Followers: {followers}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, FollowersY + SmallStatBoxHeight / 1.5f))
+            .DrawText(AlignBottomLeft, $"Bucks: {bucks}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, BucksY + SmallStatBoxHeight / 1.5f))
+            .DrawText(AlignCenter, level, LevelNumberFont, TC2Grey, new PointF((LevelBoxX + StatBoxShift + LevelBoxX + LevelBoxSize) / 2, (LevelBoxY * 2 + LevelBoxSize / 1.5f) / 2))
+            );
 
-            pfp.Mutate(ctx => ctx.Resize(128, 128));
-            FollowersBar.Mutate(ctx => ctx.BackgroundColor(Color.Gray));
-            picture.Mutate(ctx => ctx
-                .DrawPolygon(bordercolour, 3, new PointF(10, 10), new PointF(590, 10), new PointF(590, 590), new PointF(10, 590)) //outside border
-                .DrawImage(bg, bglocation, 1) //background image
-                .DrawImage(background, bgcolourlocation, 0.6f) // base background for info
-                .DrawPolygon(bordercolour, 3,
-                new PointF(bgcolourlocation.X, bgcolourlocation.Y),
-                new PointF(bgcolourlocation.X + background.Width, bgcolourlocation.Y),
-                new PointF(bgcolourlocation.X + background.Width, bgcolourlocation.Y + background.Height),
-                new PointF(bgcolourlocation.X, bgcolourlocation.Y + background.Height))
-                .DrawImage(pfp, pfplocation, 1) // profile picture
-                .DrawPolygon(bordercolour, 3,
-                new PointF(pfplocation.X, pfplocation.Y),
-                new PointF(pfplocation.X + pfp.Width, pfplocation.Y),
-                new PointF(pfplocation.X + pfp.Width, pfplocation.Y + pfp.Height),
-                new PointF(pfplocation.X, pfplocation.Y + pfp.Height)) //profile picture border
-                .DrawImage(FollowersBar, new Point(150, 320), 1)
-                .DrawPolygon(bordercolour, 1,
-                new PointF(150, 320),
-                new PointF(410, 320),
-                new PointF(410, 340),
-                new PointF(150, 340)) // follower bar border
-                .DrawText(AllignCenter, username, UsernameFont, textcolour, new PointF(270, 225)) // username
-                .DrawText($"LEVEL", LevelText, textcolour, new PointF(LeftMargin, 230)) // levels
-                .DrawText(level, LevelNumber, textcolour, new PointF(LeftMargin, 260))
-                .DrawText($"Followers:", Basefont, textcolour, new PointF(LeftMargin, 319f))
-                .DrawText(followers, InfoTextFont, textcolour, new PointF(150f, 319f))
-                .DrawText($"Bucks:", Basefont, textcolour, new PointF(LeftMargin, 340))
-                .DrawText(bucks, InfoTextFont, textcolour, new PointF(105f, 342))
-                .DrawLines(bordercolour, 1, new PointF(30, pfplocation.Y + pfp.Height + 10), new PointF(570, pfplocation.Y + pfp.Height + 10))
-                .DrawText($"User info:", Basefont, textcolour, new PointF(LeftMargin, 380))
-                .DrawText(InfoWrap, info, InfoTextFont, textcolour, new PointF(30, 400))
-                );
-            if (tcelink == true)
-            {
-                using Image<Rgba32> badge = Image.Load<Rgba32>("Assets/Badges/tce.png");
-                Point badgeloc = new Point(BadgeX + (BadgeCount * badge.Width) + 2, BadgeY);
-                picture.Mutate(ctx => ctx
-                .DrawImage(badge, badgeloc, 1)
-                );
-                BadgeCount++;
-            }
-            if (ctx.Guild.Id == 150283740172517376) // checks if the crew commmunity server
-            {
-                foreach (DiscordRole role in user.Roles)
-                {
-                    if (role.Id == 473247655913455617) // checks if the role is patreon role
-                    {
-                        using Image<Rgba32> badge = Image.Load<Rgba32>("Assets/Badges/Patreon.png");
-                        Point badgeloc = new Point(BadgeX + (BadgeCount * badge.Width) + 5, BadgeY);
-                        picture.Mutate(ctx => ctx
-                        .DrawImage(badge, badgeloc, 1)
-                        );
-                        BadgeCount++;
-                    }
-                    if (role.Id == 585537338491404290)
-                    {
-                        using Image<Rgba32> badge = Image.Load<Rgba32>("Assets/Badges/Booster.png");
-                        Point badgeloc = new Point(BadgeX + (BadgeCount * badge.Width) + 5, BadgeY);
-                        picture.Mutate(ctx => ctx
-                        .DrawImage(badge, badgeloc, 1)
-                        );
-                        BadgeCount++;
-                    }
-                }
-            }
-            string imageLoc = $"{Program.tmpLoc}{user.Id}-profile.png";
-            picture.Save(imageLoc);
+            string imageLoc = $"{Program.tmpLoc}{Member.Id}-profile.png";
+            Base.Save(imageLoc);
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             await ctx.RespondWithFileAsync(upFile);
         }
