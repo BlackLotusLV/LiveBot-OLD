@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace LiveBot.Automation
 {
-    internal class Weather
+    static class Weather
     {
         private static DiscordChannel WeatherChannel;
         private static int Interval = Timeout.Infinite;
@@ -24,7 +24,7 @@ namespace LiveBot.Automation
             }
         }
 
-        private static async void CheckWeather()
+        private async static void CheckWeather()
         {
             StringBuilder sb = new StringBuilder();
             TimeSpan now = DateTime.UtcNow.TimeOfDay;
@@ -33,7 +33,7 @@ namespace LiveBot.Automation
             string weathercondition = string.Empty;
 
             var Weather = DB.DBLists.WeatherSchedule.Where(w => w.Time >= CurrentTime && w.Day.Equals((int)DateTime.Today.DayOfWeek)).OrderBy(o => o.Time).ToList();
-            if (Weather.Count() < 60)
+            if (Weather.Count < 60)
             {
                 int day = (int)DateTime.Today.DayOfWeek + 1;
                 if (day is 7)
@@ -42,7 +42,7 @@ namespace LiveBot.Automation
                 }
                 try
                 {
-                    Weather.AddRange(DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day)).OrderBy(o => o.Time).ToList().GetRange(0, 61 - Weather.Count()));
+                    Weather.AddRange(DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day)).OrderBy(o => o.Time).ToList().GetRange(0, 61 - Weather.Count));
                 }
                 catch (Exception)
                 {
@@ -53,7 +53,7 @@ namespace LiveBot.Automation
             CurrentTime = CurrentTime.Add(TimeSpan.FromMinutes(59));
             for (int i = 0; i < 60; i++)
             {
-                var WeatherSpeciffic = Weather.Where(w => w.Time.Hours.Equals(CurrentTime.Hours) && w.Time.Minutes.Equals(CurrentTime.Minutes)).FirstOrDefault();
+                var WeatherSpeciffic = Weather.FirstOrDefault(w => w.Time.Hours.Equals(CurrentTime.Hours) && w.Time.Minutes.Equals(CurrentTime.Minutes));
                 if (WeatherSpeciffic is null)
                 {
                     sb.AppendLine($"{CurrentTime:hh\\:mm} - Weather is unknown");
@@ -96,7 +96,7 @@ namespace LiveBot.Automation
             if (OldWeather != weathertext)
             {
                 var messages = await WeatherChannel.GetMessagesAsync(10);
-                if (messages.Count() == 0 || !messages[0].Author.Equals(Program.Client.CurrentUser))
+                if (messages.Count == 0 || !messages[0].Author.Equals(Program.Client.CurrentUser))
                 {
                     await WeatherChannel.DeleteMessagesAsync(messages);
                     await WeatherChannel.SendMessageAsync(weathertext);

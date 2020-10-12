@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LiveBot.Commands
@@ -49,30 +48,31 @@ namespace LiveBot.Commands
         [Command("unwarn")]
         [Description("Removes a warning from a user")]
         [RequireGuild]
-        public async Task Unwarning(CommandContext ctx, DiscordUser username)
+        public async Task Unwarning(CommandContext ctx, DiscordUser username, int WarningID = -1)
         {
             await ctx.TriggerTypingAsync();
             await ctx.Message.DeleteAsync();
             var WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => ctx.Guild.Id == f.Server_ID && username.Id == f.User_ID);
             var ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => ctx.Guild.Id == f.ID_Server);
             var Warnings = DB.DBLists.Warnings.Where(f => ctx.Guild.Id == f.Server_ID && username.Id == f.User_ID).ToList();
-            string MSGOut, modmsg = "";
+            string MSGOut, modmsg = string.Empty;
             bool check = true;
             DiscordMember member = null;
-            try
-            {
-                member = await ctx.Guild.GetMemberAsync(username.Id);
-            }
-            catch (Exception)
-            {
-                await ctx.Channel.SendMessageAsync($"{username.Username} is no longer in the server.");
-            }
             if (ServerSettings.WKB_Log != 0)
             {
+                try
+                {
+                    member = await ctx.Guild.GetMemberAsync(username.Id);
+                }
+                catch (Exception)
+                {
+                    await ctx.Channel.SendMessageAsync($"{username.Username} is no longer in the server.");
+                }
+
                 DiscordChannel modlog = ctx.Guild.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
                 if (WarnedUserStats is null)
                 {
-                    MSGOut = $"This user, {username.Username}, has no warning history.";
+                    await ctx.RespondAsync($"This user, {username.Username}, has no warning history.");
                 }
                 else
                 {
@@ -85,7 +85,11 @@ namespace LiveBot.Commands
                     {
                         WarnedUserStats.Warning_Level -= 1;
                         MSGOut = $"Warning level lowered for {username.Username}";
-                        var entry = Warnings.Where(f => f.Active is true).OrderBy(f => f.ID_Warning).FirstOrDefault();
+                        DB.Warnings entry = Warnings.FirstOrDefault(f => f.Active is true && f.ID_Warning == WarningID);
+                        if (entry is null)
+                        {
+                            entry = Warnings.Where(f => f.Active is true).OrderBy(f => f.ID_Warning).FirstOrDefault();
+                        }
                         entry.Active = false;
                         DB.DBLists.UpdateWarnings(entry);
                         DB.DBLists.UpdateServerRanks(WarnedUserStats);
@@ -271,20 +275,6 @@ namespace LiveBot.Commands
             await Task.Delay(5000).ContinueWith(t => info.DeleteAsync());
         }
 
-        [Command("activity")]
-        [Description("Used to check the users stream title and game, test command")]
-        [RequireGuild]
-        public async Task Activity(CommandContext ctx, DiscordUser user)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine($"Game: {user.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.State}");
-            sb.AppendLine($"Title: {user.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.Details}");
-            //sb.AppendLine($"Game: {user.Presence.Activity.RichPresence.State}");
-            //sb.AppendLine($"Title: {user.Presence.Activity.RichPresence.Details}");
-            await ctx.RespondAsync(sb.ToString());
-        }
-
         [Command("banword")]
         [Description("Adds a word to banned word list")]
         [RequireGuild]
@@ -357,7 +347,7 @@ namespace LiveBot.Commands
         {
             await ctx.TriggerTypingAsync();
             await ctx.Message.DeleteAsync();
-            var BotOutputEntry = DB.DBLists.BotOutputList.Where(w => w.Command.Equals(command) && w.Language.Equals(language)).FirstOrDefault();
+            var BotOutputEntry = DB.DBLists.BotOutputList.FirstOrDefault(w => w.Command.Equals(command) && w.Language.Equals(language));
             if (BotOutputEntry is null)
             {
                 await ctx.RespondAsync($"{ctx.Member.Mention}, This combination of command and language tag does not exist in the databse.");
@@ -391,7 +381,7 @@ namespace LiveBot.Commands
             }
             if (day < 7 && day > 0 && weatheroptions.Contains(weather.ToLower()) && timecheck)
             {
-                var existingEntry = DB.DBLists.WeatherSchedule.Where(w => w.Day.Equals(day) && w.Time.Equals(time)).FirstOrDefault();
+                var existingEntry = DB.DBLists.WeatherSchedule.FirstOrDefault(w => w.Day.Equals(day) && w.Time.Equals(time));
                 if (existingEntry is null)
                 {
                     DB.WeatherSchedule newEntry = new DB.WeatherSchedule

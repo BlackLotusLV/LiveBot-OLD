@@ -8,9 +8,9 @@ using System.Threading;
 
 namespace LiveBot.DB
 {
-    internal class DBLists
+    static class DBLists
     {
-        public static int TableCount = 17;
+        public readonly static int TableCount = 17;
         public static int LoadedTableCount = 0;
 
         public static List<VehicleList> VehicleList;

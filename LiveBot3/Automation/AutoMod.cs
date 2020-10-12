@@ -1,5 +1,7 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,15 +12,15 @@ using System.Threading.Tasks;
 
 namespace LiveBot.Automation
 {
-    internal class AutoMod
+    static class AutoMod
     {
-        public static DiscordChannel TC1Photomode;
-        public static DiscordChannel TC2Photomode;
+        public readonly static DiscordChannel TC1Photomode = Program.TCGuild.GetChannel(191567033064751104);
+        public readonly static DiscordChannel TC2Photomode = Program.TCGuild.GetChannel(447134224349134848);
 #pragma warning disable IDE0044 // Add readonly modifier
         private static List<DiscordMessage> MessageList = new List<DiscordMessage>();
 #pragma warning restore IDE0044 // Add readonly modifier
 
-        public static async Task Auto_Moderator_Banned_Words(MessageCreateEventArgs e)
+        public static async Task Auto_Moderator_Banned_Words(DiscordClient Client, MessageCreateEventArgs e)
         {
             if (!e.Author.IsBot && e.Guild != null)
             {
@@ -33,9 +35,18 @@ namespace LiveBot.Automation
                         if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b"))
                         {
                             await e.Message.DeleteAsync();
-                            if (DB.DBLists.ServerRanks.Where(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).FirstOrDefault().Warning_Level < 5)
+                            if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
                             {
-                                await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
+                                if (word.Offense.Contains("ASCII"))
+                                {
+                                    await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense}", true);
+                                    Client.Logger.LogInformation(CustomLogEvents.AutoMod, $"User {e.Author.Username}({e.Author.Id}) Warned for ASCII spam");
+                                }
+                                else
+                                {
+                                    await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
+                                    Client.Logger.LogInformation(CustomLogEvents.AutoMod, $"User {e.Author.Username}({e.Author.Id}) Warned for using a trigger word.");
+                                }
                             }
                         }
                     }
@@ -43,29 +54,19 @@ namespace LiveBot.Automation
             }
         }
 
-        public static async Task Photomode_Cleanup(MessageCreateEventArgs e)
+        public static async Task Photomode_Cleanup(DiscordClient Client, MessageCreateEventArgs e)
         {
-            if ((e.Channel == TC1Photomode || e.Channel == TC2Photomode) && !e.Author.IsBot)
+            if ((e.Channel == TC1Photomode || e.Channel == TC2Photomode) && !e.Author.IsBot && e.Message.Attachments.Count == 0 && !Uri.TryCreate(e.Message.Content, UriKind.Absolute, out _))
             {
-                if (e.Message.Attachments.Count == 0)
-                {
-#pragma warning disable IDE0059 // Value assigned to symbol is never used
-                    if (Uri.TryCreate(e.Message.Content, UriKind.Absolute, out Uri uri))
-#pragma warning restore IDE0059 // Value assigned to symbol is never used
-                    {
-                    }
-                    else
-                    {
-                        await e.Message.DeleteAsync();
-                        DiscordMessage m = await e.Channel.SendMessageAsync("This channel is for sharing images only, please use the content comment channel for discussions. If this is a mistake please contact a moderator.");
-                        await Task.Delay(9000);
-                        await m.DeleteAsync();
-                    }
-                }
+                await e.Message.DeleteAsync();
+                DiscordMessage m = await e.Channel.SendMessageAsync("This channel is for sharing images only, please use the content comment channel for discussions. If this is a mistake please contact a moderator.");
+                await Task.Delay(9000);
+                await m.DeleteAsync();
+                Client.Logger.LogInformation(CustomLogEvents.PhotoCleanup, "User tried to send text in photomdoe channel. Message deleted");
             }
         }
 
-        public static async Task Delete_Log(MessageDeleteEventArgs e)
+        public static async Task Delete_Log(DiscordClient Client, MessageDeleteEventArgs e)
         {
             if (e.Guild != null)
             {
@@ -78,48 +79,45 @@ namespace LiveBot.Automation
 
                 if (GuildSettings.Delete_Log != 0)
                 {
-                    DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings.ID_Server));
+                    DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings.ID_Server));
                     DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Delete_Log));
-                    if (author != null)
+                    if (author != null && !author.IsBot)
                     {
-                        if (!author.IsBot)
+                        string converteddeletedmsg = msg.Content;
+                        if (converteddeletedmsg == "")
                         {
-                            string converteddeletedmsg = msg.Content;
-                            if (converteddeletedmsg == "")
-                            {
-                                converteddeletedmsg = "*message didn't contain any text, probably file*";
-                            }
+                            converteddeletedmsg = "*message didn't contain any text, probably file*";
+                        }
 
-                            Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
-                                $"**Contents:** {converteddeletedmsg}";
-                            if (Description.Length <= 2000)
+                        Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
+                            $"**Contents:** {converteddeletedmsg}";
+                        if (Description.Length <= 2000)
+                        {
+                            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                             {
-                                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                                Color = new DiscordColor(0xFF6600),
+                                Author = new DiscordEmbedBuilder.EmbedAuthor
                                 {
-                                    Color = new DiscordColor(0xFF6600),
-                                    Author = new DiscordEmbedBuilder.EmbedAuthor
-                                    {
-                                        IconUrl = author.AvatarUrl,
-                                        Name = $"{author.Username}'s message deleted"
-                                    },
-                                    Description = Description,
-                                    Footer = new DiscordEmbedBuilder.EmbedFooter
-                                    {
-                                        Text = $"Time posted: {msg.CreationTimestamp}"
-                                    }
-                                };
-                                await DeleteLog.SendMessageAsync(embed: embed);
-                            }
-                            else
-                            {
-                                File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", Description);
-                                using var upFile = new FileStream($"{Program.tmpLoc}{e.Message.Id}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                                await DeleteLog.SendFileAsync(upFile, $"Deleted message and info too long, uploading fail instead.");
-                            }
+                                    IconUrl = author.AvatarUrl,
+                                    Name = $"{author.Username}'s message deleted"
+                                },
+                                Description = Description,
+                                Footer = new DiscordEmbedBuilder.EmbedFooter
+                                {
+                                    Text = $"Time posted: {msg.CreationTimestamp}"
+                                }
+                            };
+                            await DeleteLog.SendMessageAsync(embed: embed);
+                        }
+                        else
+                        {
+                            File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", Description);
+                            using var upFile = new FileStream($"{Program.tmpLoc}{e.Message.Id}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+                            await DeleteLog.SendFileAsync(upFile, $"Deleted message and info too long, uploading fail instead.");
                         }
                     }
                 }
-                var DeletedMSG = MessageList.Where(w => w.Timestamp.Equals(e.Message.Timestamp) && w.Content.Equals(e.Message.Content)).FirstOrDefault();
+                var DeletedMSG = MessageList.FirstOrDefault(w => w.Timestamp.Equals(e.Message.Timestamp) && w.Content.Equals(e.Message.Content));
                 if (DeletedMSG != null)
                 {
                     MessageList.Remove(DeletedMSG);
@@ -127,14 +125,14 @@ namespace LiveBot.Automation
             }
         }
 
-        public static async Task Bulk_Delete_Log(MessageBulkDeleteEventArgs e)
+        public static async Task Bulk_Delete_Log(DiscordClient Client, MessageBulkDeleteEventArgs e)
         {
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                  where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
             if (GuildSettings[0].Delete_Log != 0)
             {
-                DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
+                DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
                 DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
                 StringBuilder sb = new StringBuilder();
                 foreach (var message in e.Messages)
@@ -167,40 +165,43 @@ namespace LiveBot.Automation
                 {
                     File.WriteAllText($"{Program.tmpLoc}{e.Messages.Count}-BulkDeleteLog.txt", sb.ToString());
                     using var upFile = new FileStream($"{Program.tmpLoc}{e.Messages.Count}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                    await DeleteLog.SendFileAsync(upFile, $"Bulk delete log(Over the message cap)");
+                    await DeleteLog.SendFileAsync(upFile, $"Bulk delete log(Over the message cap) ({e.Messages.Count}) [{e.Messages.First().Timestamp} - {e.Messages.Last().Timestamp}]");
                 }
             }
         }
 
-        public static async Task User_Join_Log(GuildMemberAddEventArgs e)
+        public static async Task User_Join_Log(DiscordClient Client, GuildMemberAddEventArgs e)
         {
-            var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                 where ss.ID_Server == e.Guild.Id
-                                 select ss).ToList();
-            DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
-            if (GuildSettings[0].User_Traffic != 0)
+            await Task.Run(async () =>
             {
-                DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                var GuildSettings = (from ss in DB.DBLists.ServerSettings
+                                     where ss.ID_Server == e.Guild.Id
+                                     select ss).ToList();
+                DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
+                if (GuildSettings[0].User_Traffic != 0)
                 {
-                    Title = $"📥{e.Member.Username}({e.Member.Id}) has joined the server",
-                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                     {
-                        IconUrl = e.Member.AvatarUrl,
-                        Text = $"User joined ({e.Guild.MemberCount})"
-                    },
-                    Color = new DiscordColor(0x00ff00),
-                };
-                await UserTraffic.SendMessageAsync(embed: embed);
-            }
+                        Title = $"📥{e.Member.Username}({e.Member.Id}) has joined the server",
+                        Footer = new DiscordEmbedBuilder.EmbedFooter
+                        {
+                            IconUrl = e.Member.AvatarUrl,
+                            Text = $"User joined ({e.Guild.MemberCount})"
+                        },
+                        Color = new DiscordColor(0x00ff00),
+                    };
+                    await UserTraffic.SendMessageAsync(embed: embed);
+                }
+            });
         }
 
-        public static async Task User_Leave_Log(GuildMemberRemoveEventArgs e)
+        public static async Task User_Leave_Log(DiscordClient Client, GuildMemberRemoveEventArgs e)
         {
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                  where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
-            DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
             if (GuildSettings[0].User_Traffic != 0)
             {
                 DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
@@ -218,16 +219,15 @@ namespace LiveBot.Automation
             }
         }
 
-        public static async Task User_Kicked_Log(GuildMemberRemoveEventArgs e)
+        public static async Task User_Kicked_Log(DiscordClient Client, GuildMemberRemoveEventArgs e)
         {
             DateTimeOffset time = DateTimeOffset.Now.UtcDateTime;
             DateTimeOffset beforetime = time.AddSeconds(-5);
             DateTimeOffset aftertime = time.AddSeconds(10);
-            decimal uid = e.Member.Id;
             var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                  where ss.ID_Server == e.Guild.Id
                                  select ss).ToList();
-            DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
             var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Kick);
             if (GuildSettings[0].WKB_Log != 0)
             {
@@ -261,12 +261,12 @@ namespace LiveBot.Automation
             }
         }
 
-        public static async Task User_Banned_Log(GuildBanAddEventArgs e)
+        public static async Task User_Banned_Log(DiscordClient Client, GuildBanAddEventArgs e)
         {
             var wkb_Settings = (from ss in DB.DBLists.ServerSettings
                                 where ss.ID_Server == e.Guild.Id
                                 select ss).ToList();
-            DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
             if (wkb_Settings[0].WKB_Log != 0)
             {
                 await Task.Delay(2000);
@@ -288,7 +288,7 @@ namespace LiveBot.Automation
             var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
             if (UserSettings == null)
             {
-                DiscordUser user = await Program.Client.GetUserAsync(e.Member.Id);
+                DiscordUser user = await Client.GetUserAsync(e.Member.Id);
                 CustomMethod.AddUserToServerRanks(user, e.Guild);
                 UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
             }
@@ -298,12 +298,12 @@ namespace LiveBot.Automation
             await Task.Delay(0);
         }
 
-        public static async Task User_Unbanned(GuildBanRemoveEventArgs e)
+        public static async Task User_Unbanned(DiscordClient Client, GuildBanRemoveEventArgs e)
         {
             var wkb_Settings = (from ss in DB.DBLists.ServerSettings
                                 where ss.ID_Server == e.Guild.Id
                                 select ss).ToList();
-            DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
+            DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
             if (wkb_Settings[0].WKB_Log != 0)
             {
                 await Task.Delay(1000);
@@ -324,14 +324,13 @@ namespace LiveBot.Automation
             }
         }
 
-        public static async Task Spam_Protection(MessageCreateEventArgs e)
+        public static async Task Spam_Protection(object o, MessageCreateEventArgs e)
         {
             if (!e.Author.IsBot && e.Guild != null)
             {
                 var Server_Settings = (from ss in DB.DBLists.ServerSettings
                                        where ss.ID_Server == e.Guild.Id
                                        select ss).FirstOrDefault();
-                DiscordGuild Guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(Server_Settings.ID_Server));
 
                 if (Server_Settings.WKB_Log != 0 && !Server_Settings.Spam_Exception_Channels.Any(id => id == e.Channel.Id))
                 {
@@ -340,8 +339,8 @@ namespace LiveBot.Automation
                     {
                         MessageList.Add(e.Message);
                         var duplicatemessages = MessageList.Where(w => w.Author == e.Author && w.Content == e.Message.Content && e.Guild == w.Channel.Guild).ToList();
-                        int i = duplicatemessages.Count();
-                        if (duplicatemessages.Count() >= 5)
+                        int i = duplicatemessages.Count;
+                        if (duplicatemessages.Count >= 5)
                         {
                             TimeSpan time = (duplicatemessages[i - 1].CreationTimestamp - duplicatemessages[i - 5].CreationTimestamp) / 5;
                             if (time < TimeSpan.FromSeconds(6))
@@ -351,7 +350,7 @@ namespace LiveBot.Automation
                                 {
                                     await channel.DeleteMessagesAsync(duplicatemessages.GetRange(i - 5, 5));
                                 }
-                                if (DB.DBLists.ServerRanks.Where(w=>w.Server_ID==e.Guild.Id && w.User_ID==e.Author.Id).FirstOrDefault().Warning_Level < 5)
+                                if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
                                 {
                                     await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
                                 }

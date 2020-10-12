@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using System;
 using System.Collections.Generic;
@@ -7,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace LiveBot.Automation
 {
-    internal class LiveStream
+    static class LiveStream
     {
         public static List<LiveStreamer> LiveStreamerList = new List<LiveStreamer>();
-        public static int StreamCheckDelay = 5;
+        public readonly static int StreamCheckDelay = 5;
 
-        public static async Task Stream_Notification(PresenceUpdateEventArgs e)
+        public static async Task Stream_Notification(DiscordClient Client, PresenceUpdateEventArgs e)
         {
             if (e.User != null)
             {
@@ -21,7 +22,7 @@ namespace LiveBot.Automation
                 {
                     if (Program.ServerIdList.Contains(Convert.ToUInt64(row.Server_ID)))
                     {
-                        DiscordGuild guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(row.Server_ID));
+                        DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(row.Server_ID));
                         DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(row.Channel_ID));
                         if (e.User.Presence.Guild.Id == guild.Id)
                         {
@@ -42,24 +43,24 @@ namespace LiveBot.Automation
                                 ItemIndex = -1;
                             }
                             if (ItemIndex >= 0
-                                && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() == null)
+                                && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch") == null)
                             {
                                 //removes user from list
                                 if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.Now
-                                    && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() == LiveStreamerList[ItemIndex].User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault())
+                                    && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch") == LiveStreamerList[ItemIndex].User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch"))
                                 {
                                     LiveStreamerList.RemoveAt(ItemIndex);
                                 }
                             }
                             else if (ItemIndex == -1
-                                && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault() != null
-                                && e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().ActivityType.Equals(ActivityType.Streaming))
+                                && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch") != null
+                                && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch").ActivityType.Equals(ActivityType.Streaming))
                             {
                                 DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
                                 bool role = false, game = false;
-                                string gameTitle = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.State;
-                                string streamTitle = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().RichPresence.Details;
-                                string streamURL = e.User.Presence.Activities.Where(w => w.Name.ToLower() == "twitch").FirstOrDefault().StreamUrl;
+                                string gameTitle = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch").RichPresence.State;
+                                string streamTitle = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch").RichPresence.Details;
+                                string streamURL = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch").StreamUrl;
                                 if (row.Roles_ID != null)
                                 {
                                     foreach (DiscordRole urole in StreamMember.Roles)
@@ -95,7 +96,7 @@ namespace LiveBot.Automation
                                 {
                                     game = true;
                                 }
-                                if (game == true && role == true)
+                                if (game && role)
                                 {
                                     DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                                     {

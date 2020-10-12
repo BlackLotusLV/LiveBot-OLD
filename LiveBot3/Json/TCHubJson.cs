@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace LiveBot.Json
@@ -24,6 +25,9 @@ namespace LiveBot.Json
 
             [JsonProperty("families")]
             public Family[] Families { get; private set; }
+
+            [JsonProperty("news")]
+            public News[] News { get; private set; }
         }
 
         public struct Summit
@@ -128,10 +132,10 @@ namespace LiveBot.Json
             public Activities[] Activities { get; private set; }
 
             [JsonProperty("tier_entries")]
-            public Tier_Entries[] Tier_entries { get; private set; }
+            public TierEntries[] Tier_entries { get; private set; }
         }
 
-        public struct Tier_Entries
+        public struct TierEntries
         {
             [JsonProperty("points")]
             public ulong Points { get; set; }
@@ -325,6 +329,71 @@ namespace LiveBot.Json
 
             [JsonProperty("rank")]
             public int Rank { get; private set; }
+        }
+
+        public struct News
+        {
+            [JsonProperty("newsId")]
+            public string ID { get; private set; }
+
+            [JsonProperty("type")]
+            public string Type { get; private set; }
+
+            [JsonProperty("placement")]
+            public string Placement { get; private set; }
+
+            [JsonProperty("priority")]
+            public int Priority { get; private set; }
+
+            [JsonProperty("displayTime")]
+            public int DisplayTime { get; private set; }
+
+            [JsonProperty("publicationDate")]
+            public DateTime? PublicationDate { get; private set; }
+
+            [JsonProperty("expirationDate")]
+            public DateTime? ExpirationDate { get; private set; }
+
+            [JsonProperty("title")]
+            public string Title { get; private set; }
+
+            [JsonProperty("body")]
+            public string Body { get; private set; }
+
+            [JsonProperty("mediaURL")]
+            public string MediaURL { get; private set; }
+
+            [JsonProperty("mediaType")]
+            public string MediaType { get; private set; }
+
+            [JsonProperty("profileId")]
+            public string ProfileID { get; private set; }
+
+            [JsonProperty("obj")]
+            public NewsObj Obj { get; private set; }
+
+            [JsonProperty("links")]
+            public NewsLinks[] NewsLinks { get; private set; }
+
+        }
+
+        public struct NewsObj
+        {
+            [JsonProperty("tag")]
+            public string Tag { get; private set; }
+        }
+
+        public struct NewsLinks
+        {
+            [JsonProperty("type")]
+            public string Type { get; private set; }
+
+            [JsonProperty("param")]
+            public string Param { get; private set; }
+
+            [JsonProperty("actionName")]
+            public string ActionName { get; private set; }
+
         }
     }
 }

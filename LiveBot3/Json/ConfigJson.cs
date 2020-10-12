@@ -68,6 +68,9 @@ namespace LiveBot
 
             [JsonProperty("dictionary")]
             public string Dictionary { get; private set; }
+
+            [JsonProperty("news")]
+            public string News { get; private set; }
         }
     }
 }

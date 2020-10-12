@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace LiveBot.Automation
 {
-    internal class Leveling
+    static class Leveling
     {
         public static List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
         public static List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
 
-        public static async Task Update_User_Levels(MessageCreateEventArgs e)
+        public static async Task Update_User_Levels(object o, MessageCreateEventArgs e)
         {
             if (!e.Author.IsBot && e.Guild != null)
             {
@@ -32,7 +32,7 @@ namespace LiveBot.Automation
                 int MinMoney = 2, MaxMoney = 5;
                 int points_added = r.Next(MinInterval, MaxInterval);
                 int money_added = r.Next(MinMoney, MaxMoney);
-                foreach (var Guser in UserLevelTimer)
+                Parallel.ForEach(UserLevelTimer, Guser =>
                 {
                     if (Guser.User.Id == e.Author.Id)
                     {
@@ -40,40 +40,37 @@ namespace LiveBot.Automation
                         if (Guser.Time.AddMinutes(2) <= DateTime.Now)
                         {
                             List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
-                            var global = (from lb in Leaderboard
+                            var global = (from lb in Leaderboard.AsParallel()
                                           where lb.ID_User == e.Author.Id
                                           select lb).FirstOrDefault();
-                            global.Followers = (long)global.Followers + points_added;
-                            global.Bucks = (long)global.Bucks + money_added;
-                            if ((int)global.Level < (long)global.Followers / (300 * ((int)global.Level + 1) * 0.5))
+                            global.Followers += points_added;
+                            global.Bucks += money_added;
+                            if (global.Level < global.Followers / (300 * (global.Level + 1) * 0.5))
                             {
-                                global.Level = (int)global.Level + 1;
+                                global.Level += 1;
                             }
                             Guser.Time = DateTime.Now;
                             DB.DBLists.UpdateLeaderboard(global);
                         }
                     }
-                }
-                foreach (var Suser in ServerUserLevelTimer)
+                });
+                Parallel.ForEach(ServerUserLevelTimer, Suser =>
                 {
-                    if (Suser.User.Id == e.Author.Id)
+                    if (Suser.User.Id == e.Author.Id && Suser.Guild.Id == e.Guild.Id)
                     {
-                        if (Suser.Guild.Id == e.Guild.Id)
+                        checklocal = true;
+                        if (Suser.Time.AddMinutes(2) <= DateTime.Now)
                         {
-                            checklocal = true;
-                            if (Suser.Time.AddMinutes(2) <= DateTime.Now)
-                            {
-                                List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
-                                var local = (from lb in Leaderboard
-                                             where lb.User_ID == e.Author.Id
-                                             where lb.Server_ID == e.Channel.Guild.Id
-                                             select lb).FirstOrDefault();
-                                local.Followers = (long)local.Followers + points_added;
-                                Suser.Time = DateTime.Now; DB.DBLists.UpdateServerRanks(local);
-                            }
+                            List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
+                            var local = (from lb in Leaderboard.AsParallel()
+                                         where lb.User_ID == e.Author.Id
+                                         where lb.Server_ID == e.Channel.Guild.Id
+                                         select lb).FirstOrDefault();
+                            local.Followers += points_added;
+                            Suser.Time = DateTime.Now; DB.DBLists.UpdateServerRanks(local);
                         }
                     }
-                }
+                });
                 if (!checkglobal)
                 {
                     List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
@@ -84,19 +81,18 @@ namespace LiveBot.Automation
                     {
                         CustomMethod.AddUserToLeaderboard(e.Author);
                     }
-                    global = (from lb in Leaderboard
+                    global = (from lb in Leaderboard.AsParallel()
                               where lb.ID_User == e.Author.Id
                               select lb).FirstOrDefault();
                     points_added = r.Next(MinInterval, MaxInterval);
-                    if (global != null)
+
+                    global.Followers += points_added;
+                    global.Bucks += money_added;
+                    if (global.Level < global.Followers / (300 * (global.Level + 1) * 0.5))
                     {
-                        global.Followers = (long)global.Followers + points_added;
-                        global.Bucks = (long)global.Bucks + money_added;
-                        if ((int)global.Level < (long)global.Followers / (300 * ((int)global.Level + 1) * 0.5))
-                        {
-                            global.Level = (int)global.Level + 1;
-                        }
+                        global.Level += 1;
                     }
+
                     LevelTimer NewToList = new LevelTimer
                     {
                         Time = DateTime.Now,
@@ -109,13 +105,13 @@ namespace LiveBot.Automation
                 {
                     List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
                     CustomMethod.AddUserToServerRanks(e.Author, e.Guild);
-                    var local = (from lb in Leaderboard
-                                 where lb.User_ID == e.Author.Id
+                    var local =(from lb in Leaderboard.AsParallel()
+                                where lb.User_ID == e.Author.Id
                                  where lb.Server_ID == e.Channel.Guild.Id
                                  select lb).FirstOrDefault();
                     if (local != null)
                     {
-                        local.Followers = (long)local.Followers + points_added;
+                        local.Followers += points_added;
                     }
                     ServerLevelTimer NewToList = new ServerLevelTimer
                     {
@@ -127,10 +123,10 @@ namespace LiveBot.Automation
                     DB.DBLists.UpdateServerRanks(local);
                 }
                 //*/
-                var userrank = (from sr in DB.DBLists.ServerRanks
+                var userrank = (from sr in DB.DBLists.ServerRanks.AsParallel()
                                 where sr.Server_ID == e.Guild.Id
                                 where sr.User_ID == e.Author.Id
-                                select sr).ToList()[0].Followers;
+                                select sr).FirstOrDefault().Followers;
                 var rankedroles = (from rr in DB.DBLists.RankRoles
                                    where rr.Server_Rank != 0
                                    where rr.Server_Rank <= userrank
@@ -159,24 +155,26 @@ namespace LiveBot.Automation
             }
         }
 
-        public static async Task Add_To_Leaderboards(GuildMemberAddEventArgs e)
+        public static async Task Add_To_Leaderboards(object O, GuildMemberAddEventArgs e)
         {
-            var global = (from lb in DB.DBLists.Leaderboard
-                          where lb.ID_User == e.Member.Id
-                          select lb).ToList();
-            if (global.Count == 0)
+            await Task.Run(() =>
             {
-                CustomMethod.AddUserToLeaderboard(e.Member);
-            }
-            var local = (from lb in DB.DBLists.ServerRanks
-                         where lb.User_ID == e.Member.Id
-                         where lb.Server_ID == e.Guild.Id
-                         select lb).ToList();
-            if (local.Count == 0)
-            {
-                CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
-            }
-            await Task.Delay(1);
+                var global = (from lb in DB.DBLists.Leaderboard.AsParallel()
+                              where lb.ID_User == e.Member.Id
+                              select lb).FirstOrDefault();
+                if (global is null)
+                {
+                    CustomMethod.AddUserToLeaderboard(e.Member);
+                }
+                var local = (from lb in DB.DBLists.ServerRanks.AsParallel()
+                             where lb.User_ID == e.Member.Id
+                             where lb.Server_ID == e.Guild.Id
+                             select lb).FirstOrDefault();
+                if (local is null)
+                {
+                    CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
+                }
+            });
         }
     }
 

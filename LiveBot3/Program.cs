@@ -27,8 +27,8 @@ namespace LiveBot
         public static DiscordClient Client { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
-        public static DateTime start = DateTime.Now;
-        public static string BotVersion = $"20200831_A";
+        public readonly static DateTime start = DateTime.Now;
+        public readonly static string BotVersion = $"20201012_A";
         public static bool TestBuild;
         // TC Hub
 
@@ -44,7 +44,7 @@ namespace LiveBot
 
         // string
 
-        public static string tmpLoc = Path.GetTempPath() + "/livebot-";
+        public static readonly string tmpLoc = Path.GetTempPath() + "/livebot-";
 
         //channels
         private DiscordChannel BotErrorLogChannel;
@@ -132,23 +132,22 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.AdminCommands>();
             this.Commands.RegisterCommands<Commands.OCommands>();
             this.Commands.RegisterCommands<Commands.ModMailCommands>();
+            this.Commands.RegisterCommands<Commands.ProfileCommands>();
 
             // Servers
             TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
             DiscordGuild testserver = await Client.GetGuildAsync(282478449539678210);
 
             // Channels
-            AutoMod.TC1Photomode = TCGuild.GetChannel(191567033064751104);
-            AutoMod.TC2Photomode = TCGuild.GetChannel(447134224349134848);
             BotErrorLogChannel = testserver.GetChannel(673105806778040320);
 
             //*/
             Weather.StartTimer();
-            Timer StreamTimer = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
-            Timer RoleTimer = new Timer(e => TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            Timer UpdateTCHubInfo = new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
-            Timer ClearSpamMessageCache = new Timer(e => AutoMod.ClearMSGCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
-            Timer CloseOldMM = new Timer(e => ModMail.ModMailCloser(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            _ = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            _ = new Timer(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            _ =new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+            _ = new Timer(e => AutoMod.ClearMSGCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
+            _ = new Timer(async e => await ModMail.ModMailCloser(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 
             if (!TestBuild) //Only enables these when using live version
             {
@@ -181,13 +180,13 @@ namespace LiveBot
             await Task.Delay(-1);
         }
 
-        private Task Client_Ready(ReadyEventArgs e)
+        private Task Client_Ready(DiscordClient Client, ReadyEventArgs e)
         {
-            e.Client.Logger.LogInformation(CustomLogEvents.LiveBot, "[LiveBot] Client is ready to process events.");
+            Client.Logger.LogInformation(CustomLogEvents.LiveBot, "[LiveBot] Client is ready to process events.");
             return Task.CompletedTask;
         }
 
-        private Task Client_GuildAvailable(GuildCreateEventArgs e)
+        private Task Client_GuildAvailable(DiscordClient Client, GuildCreateEventArgs e)
         {
             ServerIdList.Add(e.Guild.Id);
             var list = (from ss in DB.DBLists.ServerSettings
@@ -207,16 +206,16 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }
-            e.Client.Logger.LogInformation(CustomLogEvents.LiveBot, $"Guild available: {e.Guild.Name}");
+            Client.Logger.LogInformation(CustomLogEvents.LiveBot, $"Guild available: {e.Guild.Name}");
             return Task.CompletedTask;
         }
 
-        private async Task<Task> Client_ClientError(ClientErrorEventArgs e)
+        private async Task<Task> Client_ClientError(DiscordClient Client, ClientErrorEventArgs e)
         {
-            e.Client.Logger.LogError(CustomLogEvents.ClientError, e.Exception, "Exception occurred");
-            string errormsg = $"{DateTime.Now} {LogLevel.Error} LiveBot Exception Occured: {e.Exception.GetType()}: {e.Exception.Message}\n" +
+            Client.Logger.LogError(CustomLogEvents.ClientError, e.Exception, "Exception occurred");
+            string errormsg = $"```\n{DateTime.Now} {LogLevel.Error} LiveBot Exception Occured: {e.Exception.GetType()}: {e.Exception.Message}\n" +
                 $"{e.Exception.InnerException}\n" +
-                $"{e.Exception.StackTrace}";
+                $"{e.Exception.StackTrace}\n```";
             if (errormsg.Length <= 1900)
             {
                 await BotErrorLogChannel.SendMessageAsync(errormsg);
@@ -230,12 +229,12 @@ namespace LiveBot
             return Task.CompletedTask;
         }
 
-        private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
+        private Task Commands_CommandExecuted(CommandsNextExtension ext, CommandExecutionEventArgs e)
         {
-            e.Context.Client.Logger.LogInformation(CustomLogEvents.CommandExecuted, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}' command");
+            Client.Logger.LogInformation(CustomLogEvents.CommandExecuted, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}' command");
             DB.DBLists.LoadCUC();
             string CommandName = e.Command.Name;
-            var DBEntry = DB.DBLists.CommandsUsedCount.Where(w => w.Name == CommandName).FirstOrDefault();
+            var DBEntry = DB.DBLists.CommandsUsedCount.FirstOrDefault(w => w.Name == CommandName);
             if (DBEntry == null)
             {
                 DB.CommandsUsedCount NewEntry = new DB.CommandsUsedCount()
@@ -245,7 +244,7 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertCUC(NewEntry);
             }
-            else if (DBEntry != null)
+            else
             {
                 DBEntry.Used_Count++;
                 DB.DBLists.UpdateCUC(DBEntry);
@@ -253,22 +252,26 @@ namespace LiveBot
             return Task.CompletedTask;
         }
 
-        private async Task Commands_CommandErrored(CommandErrorEventArgs e)
+        private async Task Commands_CommandErrored(CommandsNextExtension ext, CommandErrorEventArgs e)
         {
-            e.Context.Client.Logger.LogError(CustomLogEvents.CommandError, e.Exception, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored");
+            Client.Logger.LogError(CustomLogEvents.CommandError, e.Exception, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored");
 #pragma warning disable IDE0059 // Value assigned to symbol is never used
             if (e.Exception is ChecksFailedException ex)
 #pragma warning restore IDE0059 // Value assigned to symbol is never used
             {
                 var no_entry = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
                 string msgContent;
-                if (ex.FailedChecks[0].GetType() == typeof(CooldownAttribute))
+                if (ex.FailedChecks[0] is CooldownAttribute)
                 {
                     msgContent = $"{DiscordEmoji.FromName(e.Context.Client, ":clock:")} You, {e.Context.Member.Mention}, tried to execute the command too fast, wait and try again later.";
                 }
-                else if (ex.FailedChecks[0].GetType() == typeof(RequireRolesAttribute))
+                else if (ex.FailedChecks[0] is RequireRolesAttribute)
                 {
                     msgContent = $"{no_entry} You, {e.Context.User.Mention}, don't have the required role for this command";
+                }
+                else if (ex.FailedChecks[0] is RequireDirectMessageAttribute)
+                {
+                    msgContent = $"{no_entry} You are trying to use a command that is only available in DMs";
                 }
                 else
                 {

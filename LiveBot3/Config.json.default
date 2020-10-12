@@ -21,6 +21,7 @@
   "TCHub": {
     "summit": "TCHub API link for Summit info",
     "gamedata": "TCHub API link for game data",
-    "dictionary": "TCHub API link for text ID dictionary"
+    "dictionary": "TCHub API link for text ID dictionary",
+    "news": "TCHub API link for News posts"
   }
 }

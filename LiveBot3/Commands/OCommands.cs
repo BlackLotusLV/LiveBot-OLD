@@ -3,7 +3,6 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LiveBot.Commands
@@ -50,8 +49,6 @@ namespace LiveBot.Commands
                     DB.DBLists.LoadBannedWords();
                     msgcontent = "Banned Words list updated";
                     break;
-
-                case null:
                 default:
                     msgcontent = "Couldn't find this table. Nothing was updated\n" +
                         "all - updates all tables\n" +

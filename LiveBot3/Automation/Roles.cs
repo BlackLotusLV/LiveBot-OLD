@@ -1,20 +1,19 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace LiveBot.Automation
 {
-    internal class Roles
+    static class Roles
     {
         public static List<ActivateRolesTimer> ActivateRolesTimer = new List<ActivateRolesTimer>();
 
-        public static async Task Reaction_Roles(MessageReactionAddEventArgs e)
+        public static async Task Reaction_Roles(DiscordClient Client, MessageReactionAddEventArgs e)
         {
             if (e.User != null)
             {
@@ -34,11 +33,11 @@ namespace LiveBot.Automation
                                         select rr).ToList();
                         if (RoleInfo.Count == 1)
                         {
-                            DiscordGuild guild = await Program.Client.GetGuildAsync(Convert.ToUInt64(RoleInfo[0].Server_ID));
+                            DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(RoleInfo[0].Server_ID));
                             if (RoleInfo[0].Type == "acquire")
                             {
                                 DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                                if (rolemember.Roles.Where(w => w.Id == Convert.ToUInt64(RoleInfo[0].Role_ID)).Count() > 0)
+                                if (rolemember.Roles.Any(w => w.Id == Convert.ToUInt64(RoleInfo[0].Role_ID)))
                                 {
                                     await rolemember.RevokeRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo[0].Role_ID)));
                                 }

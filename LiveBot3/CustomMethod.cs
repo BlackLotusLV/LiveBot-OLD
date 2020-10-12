@@ -1,24 +1,18 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace LiveBot
 {
-    internal class CustomMethod
+    static class CustomMethod
     {
         public static string GetConnString()
         {
@@ -60,7 +54,7 @@ namespace LiveBot
             DB.UserSettings newUSettings = new DB.UserSettings
             {
                 User_ID = user.Id,
-                User_Info = "Just a flesh wound",
+                User_Info = "There is a difference between knowing the path and walking the path.",
                 Image_ID = newUImage.ID_User_Images,
                 ID_User_Settings = us + 1
             };
@@ -74,11 +68,11 @@ namespace LiveBot
                 AddUserToLeaderboard(user);
             }
             List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
-            var local = (from lb in Leaderboard
+            var local = (from lb in Leaderboard.AsParallel()
                          where lb.User_ID == user.Id
                          where lb.Server_ID == guild.Id
-                         select lb).ToList();
-            if (local.Count == 0)
+                         select lb).FirstOrDefault();
+            if (local is null)
             {
                 DB.ServerRanks newEntry = new DB.ServerRanks
                 {
@@ -92,19 +86,19 @@ namespace LiveBot
 
         public static string ScoreToTime(int Time)
         {
-            string[] sTime = new string[3];
+            StringBuilder[] sTime = { new StringBuilder(), new StringBuilder() };
             for (int i = 0; i < Time.ToString().Length; i++)
             {
                 if (i < Time.ToString().Length - 3)
                 {
-                    sTime[0] += Time.ToString()[i];
+                    sTime[0].Append(Time.ToString()[i]);
                 }
                 else
                 {
-                    sTime[1] += Time.ToString()[i];
+                    sTime[1].Append(Time.ToString()[i]);
                 }
             }
-            TimeSpan seconds = TimeSpan.FromSeconds(double.Parse(sTime[0]));
+            TimeSpan seconds = TimeSpan.FromSeconds(double.Parse(sTime[0].ToString()));
             if (seconds.Hours == 0)
             {
                 return $"{seconds.Minutes}:{seconds.Seconds}.{sTime[1]}";
@@ -121,13 +115,11 @@ namespace LiveBot
             var users = leaderboard.OrderByDescending(x => x.Followers).ToList();
             users = users.Where(w => w.Server_ID == ctx.Guild.Id).ToList();
             sb.AppendLine("```csharp\n📋 Rank | Username");
-            for (int i = (int)(page * 10) - 10; i < page * 10; i++)
+            for (int i = (page * 10) - 10; i < page * 10; i++)
             {
                 var duser = ctx.Client.GetUserAsync(Convert.ToUInt64(users[i].User_ID));
                 if (duser.Result.Username.StartsWith("Deleted User "))
                 {
-                    var UserSR = DB.DBLists.ServerRanks.Where(w => w.User_ID == duser.Result.Id).ToArray();
-                    UserSR.Select(s => { s.Followers = 0; return s; });
                     users[i].Followers = 0;
                     DB.DBLists.UpdateServerRanks(users[i]);
                     sb.AppendLine($"[{i + 1}]\tUser account deleted");
@@ -137,7 +129,7 @@ namespace LiveBot
                     sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{users[i].Followers}");
                     if (i == users.Count - 1)
                     {
-                        i = (int)page * 10;
+                        i = page * 10;
                     }
                 }
             }
@@ -166,13 +158,11 @@ namespace LiveBot
             List<DB.Leaderboard> leaderboard = DB.DBLists.Leaderboard;
             var users = leaderboard.OrderByDescending(x => x.Followers).ToList();
             sb.AppendLine("```csharp\n📋 Rank | Username");
-            for (int i = (int)(page * 10) - 10; i < page * 10; i++)
+            for (int i = (page * 10) - 10; i < page * 10; i++)
             {
                 var duser = ctx.Client.GetUserAsync(Convert.ToUInt64(users[i].ID_User));
                 if (duser.Result.Username.StartsWith("Deleted User "))
                 {
-                    var UserSR = DB.DBLists.ServerRanks.Where(w => w.User_ID == duser.Result.Id).ToArray();
-                    UserSR.Select(s => { s.Followers = 0; return s; });
                     users[i].Followers = 0;
                     users[i].Bucks = 0;
                     DB.DBLists.UpdateLeaderboard(users[i]);
@@ -183,7 +173,7 @@ namespace LiveBot
                     sb.AppendLine($"[{i + 1}]\t# {duser.Result.Username}\n\t\t\tFollowers:{users[i].Followers}\tLevel:{users[i].Level}");
                     if (i == users.Count - 1)
                     {
-                        i = (int)page * 10;
+                        i = page * 10;
                     }
                 }
             }
@@ -214,24 +204,24 @@ namespace LiveBot
 
             StringBuilder sb = new StringBuilder();
             sb.Append("Visual representation of the backgrounds can be viewed here: <http://bit.ly/LiveBG>\n```csharp\n[ID]\tBackground Name\n");
-            for (int i = (int)(page * 10) - 10; i < page * 10; i++)
+            for (int i = (page * 10) - 10; i < page * 10; i++)
             {
                 bool check = false;
                 foreach (var userimage in List)
                 {
-                    if (Backgrounds[i].ID_BG == (int)userimage.ID_BG)
+                    if (Backgrounds[i].ID_BG == userimage.ID_BG)
                     {
                         sb.Append($"[{Backgrounds[i].ID_BG}]\t# {Backgrounds[i].Name}\n\t\t\t [OWNED]\n");
                         check = true;
                     }
                 }
-                if (check == false)
+                if (!check)
                 {
                     sb.Append($"[{Backgrounds[i].ID_BG}]\t# {Backgrounds[i].Name}\n\t\t\t Price:{Backgrounds[i].Price} Bucks\n");
                 }
                 if (i == Backgrounds.Count - 1)
                 {
-                    i = (int)page * 10;
+                    i = page * 10;
                 }
             }
             sb.Append("```");
@@ -264,7 +254,7 @@ namespace LiveBot
             StringBuilder SB = new StringBuilder();
             decimal uid = user.Id, aid = admin.Id;
             bool kick = false, ban = false;
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
+            DiscordEmbedBuilder embed;
             if (ServerSettings.WKB_Log != 0)
             {
                 DiscordChannel modlog = server.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
@@ -279,6 +269,7 @@ namespace LiveBot
                         User_ID = user.Id
                     };
                     DB.DBLists.InsertServerRanks(newEntry);
+                    WarnedUserStats = newEntry;
                 }
                 else
                 {
@@ -305,7 +296,7 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertWarnings(newWarning);
 
-                int warning_count = DB.DBLists.Warnings.Where(w => w.User_ID == user.Id && w.Server_ID == server.Id).Count();
+                int warning_count = DB.DBLists.Warnings.Count(w => w.User_ID == user.Id && w.Server_ID == server.Id);
 
                 SB.AppendLine($"You have been warned by <@{admin.Id}>.\n**Warning Reason:**\t{reason}\n**Warning Level:** {WarnedUserStats.Warning_Level}\n**Server:** {server.Name}");
                 embed = new DiscordEmbedBuilder
@@ -329,7 +320,7 @@ namespace LiveBot
                     kick = true;
                 }
 
-                if (automsg == true)
+                if (automsg)
                 {
                     SB.Append("*This warning is given out by a bot, contact an admin if you think this is a mistake*");
                 }
@@ -347,11 +338,11 @@ namespace LiveBot
                     modinfo = $":exclamation:{user.Mention} could not be contacted via DM. Reason not sent";
                 }
 
-                if (kick == true && member != null)
+                if (kick && member != null)
                 {
                     await member.RemoveAsync("Exceeded warning limit!");
                 }
-                if (ban == true && user != null)
+                if (ban && user != null)
                 {
                     await server.BanMemberAsync(user.Id, 0, "Exceeded warning limit!");
                 }
@@ -399,6 +390,7 @@ namespace LiveBot
                     (363977914196295681) => "ru",
                     (423845614686699521) => "lv",
                     (585529567708446731) => "es",
+                    (741656080051863662) => "jp",
                     _ => "gb"
                 };
             }
@@ -407,10 +399,10 @@ namespace LiveBot
                 member = ctx.Member;
             }
 
-            var OutputEntry = DB.DBLists.BotOutputList.Where(w => w.Command.Equals(command) && w.Language.Equals(language)).FirstOrDefault();
+            var OutputEntry = DB.DBLists.BotOutputList.FirstOrDefault(w => w.Command.Equals(command) && w.Language.Equals(language));
             if (OutputEntry is null)
             {
-                OutputEntry = DB.DBLists.BotOutputList.Where(w => w.Command.Equals(command) && w.Language.Equals("gb")).FirstOrDefault();
+                OutputEntry = DB.DBLists.BotOutputList.FirstOrDefault(w => w.Command.Equals(command) && w.Language.Equals("gb"));
                 if (OutputEntry is null)
                 {
                     return $"{ctx.Member.Mention}, Command output not found. Contact an admin.";
@@ -438,7 +430,7 @@ namespace LiveBot
                 var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).ToList();
                 foreach (var item in WarningsList)
                 {
-                    if ((bool)item.Active == true)
+                    if (item.Active)
                     {
                         Reason.Append("[✓] ");
                     }

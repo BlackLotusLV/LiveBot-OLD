@@ -4,21 +4,14 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using LiveBot.Json;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Newtonsoft.Json;
-using Npgsql;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -28,7 +21,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Point = SixLabors.ImageSharp.Point;
 using PointF = SixLabors.ImageSharp.PointF;
-using SixLabors.ImageSharp.Processing.Processors;
 
 namespace LiveBot.Commands
 {
@@ -40,8 +32,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] If user account has been deleted, it's score will be reset.\n" +
-                "[INTERNAL] Code cleanup - Deleted old code, unifying format, boring stuff\n" +
+            string changelog = "[INTERNAL] Tentative fix for an internal error\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -162,7 +153,7 @@ namespace LiveBot.Commands
             }
             foreach (var item in username.Roles)
             {
-                if ((item == pc || item == ps || item == xb) && check == false)
+                if ((item == pc || item == ps || item == xb) && !check)
                 {
                     content = CustomMethod.GetCommandOutput(ctx, "lfc1", null, username);
                     check = true;
@@ -523,7 +514,7 @@ namespace LiveBot.Commands
                                     select vl).ToList();
             }
 
-            if (SelectedVehicles.Count(c => c.IsSelected is true) == SelectedVehicles.Count())
+            if (SelectedVehicles.Count(c => c.IsSelected is true) == SelectedVehicles.Count)
             {
                 DB.DBLists.UpdateVehicleList(SelectedVehicles.Select(s => { s.IsSelected = false; return s; }).ToArray());
             }
@@ -628,198 +619,6 @@ namespace LiveBot.Commands
             }
             await ctx.RespondAsync(output);
         }
-
-        [Command("profile")]
-        [Description("Shows users live bot profile.")]
-        [Priority(10)]
-        [RequireGuild]
-        public async Task Profile(CommandContext ctx, DiscordMember Member = null)
-        {
-            await ctx.TriggerTypingAsync();
-
-            if (Member == null)
-            {
-                Member = ctx.Member;
-            }
-
-            DB.DBLists.LoadUserSettings();
-            List<DB.Leaderboard> Leaderboard = DB.DBLists.Leaderboard;
-            List<DB.UserSettings> USettings = DB.DBLists.UserSettings;
-            var UserStats = (from gl in Leaderboard
-                          where gl.ID_User == Member.Id
-                          select gl).FirstOrDefault();
-            var UserSettings = (from us in USettings
-                                join ui in DB.DBLists.UserImages on us.Image_ID equals ui.ID_User_Images
-                                join bi in DB.DBLists.BackgroundImage on ui.BG_ID equals bi.ID_BG
-                                where us.User_ID == ui.User_ID
-                                where us.User_ID == Member.Id
-                                select new { us, ui, bi }).FirstOrDefault();
-
-            string UsersName = Member.Username;
-            if (Member.Nickname!=null)
-            {
-                UsersName = Member.Nickname;
-            }
-
-            int usernameSize = 28;
-            if (UsersName.Length>16)
-            {
-                UsersName = $"{UsersName.Substring(0, UsersName.Length / 2)}\n{UsersName.Substring(UsersName.Length / 2, UsersName.Length / 2 +(UsersName.Length % 2 != 0 ? 1 : 0)) }";
-                usernameSize = 19;
-            }
-            UsersName = Regex.Replace(UsersName, @"[^\u0000-\u007F]+", "�");
-
-            string
-                level = UserStats.Level.ToString(),
-                followers = $"{UserStats.Followers}/{(int)UserStats.Level * (300 * ((int)UserStats.Level + 1) * 0.5)}",
-                bucks = UserStats.Bucks.ToString(),
-                bio = UserSettings.us.User_Info.ToString();
-
-            double
-                FollowersBetweenLevels = ((UserStats.Level + 1) * (300 * (UserStats.Level + 2) * 0.5)) - (UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)),
-                FollowersToNextLevel = (UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)) - UserStats.Followers,
-                FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel;
-
-            var webclinet = new WebClient();
-            byte[] ProfilePicture = webclinet.DownloadData(Member.AvatarUrl);
-            using Image<Rgba32>
-                Base = new Image<Rgba32>(590, 590),
-                pfp = Image.Load<Rgba32>(ProfilePicture),
-                background = Image.Load<Rgba32>((byte[])UserSettings.bi.Image),
-                FollowersBar = new Image<Rgba32>(System.Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20);
-
-
-            Font 
-                UsernameFont = Program.fonts.CreateFont("Roboto Mono", usernameSize, FontStyle.BoldItalic),
-                BaseFont = Program.fonts.CreateFont("Roboto Mono", 18, FontStyle.Italic),
-                LevelTextFont = Program.fonts.CreateFont("Roboto Mono", 30, FontStyle.Regular),
-                LevelNumberFont = Program.fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic),
-                InfoTextFont = Program.fonts.CreateFont("Roboto Mono", 19, FontStyle.Regular);
-
-            var AlignCenter = new TextGraphicsOptions()
-            {
-                TextOptions =
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                }
-            };
-            var AlignBottomLeft = new TextGraphicsOptions()
-            {
-                TextOptions =
-                {
-                    HorizontalAlignment=HorizontalAlignment.Left,
-                    VerticalAlignment=VerticalAlignment.Bottom
-                }
-            };
-
-            int
-                BGX = 10,
-                BGY = 10,
-                MarginWidth = 20 + BGX,
-                MarginHeight = 20 + BGY,
-                FollowersY = 300,
-                SmallStatBoxHeight = 35,
-                BucksY = FollowersY + SmallStatBoxHeight + 5,
-                StatBoxWidth = 300,
-                StatBoxShift = 20,
-                LevelBoxSize = (SmallStatBoxHeight * 2) + 5,
-                LevelBoxX = background.Width - MarginWidth - LevelBoxSize,
-                LevelBoxY = FollowersY,
-                NameWidth = 290,
-                NameX = BGX+background.Width/2 - NameWidth/2,
-                NameY = 240,
-                NameYellowWidth=5,
-                NameHeight = 50;
-
-            Color
-                TC2Yellow = Color.ParseHex("FFDB15"),
-                TC2Grey = Color.ParseHex("202328");
-
-            pfp.Mutate(ctx => ctx
-            .Resize(140,140)
-            .DrawPolygon(new Pen(TC2Grey,5f), new PointF[] { new PointF(0,0), new PointF(140,0), new PointF(140,140), new PointF(0,140), new PointF(0,0)})
-            );
-
-            Base.Mutate(ctx => ctx
-            .DrawImage(background, new Point(BGX, BGY), 1f)
-            .FillPolygon(TC2Grey, new PointF[] { new PointF(BGX, BGY), new PointF(BGX + 250, BGY), new PointF(BGX, BGY + 170) })
-            .FillPolygon(TC2Grey, new PointF[] { new PointF(background.Width + BGX, background.Height + BGY), new PointF(background.Width + BGX - 300, background.Height + BGY), new PointF(background.Width + BGX, background.Height + BGY - 220) })
-            .DrawImage(pfp, new Point(35, 35), 1f)
-            .FillPolygon(TC2Yellow, new PointF[] { new PointF(StatBoxShift + NameX - NameYellowWidth, NameY), new PointF(StatBoxShift + NameX, NameY), new PointF(NameX, NameY + NameHeight), new PointF(NameX - NameYellowWidth, NameY + NameHeight) })
-            .FillPolygon(TC2Grey, new PointF[] { new PointF(StatBoxShift + NameX, NameY), new PointF(StatBoxShift + NameX + NameWidth, NameY), new PointF(NameX + NameWidth, NameY + NameHeight), new PointF(NameX, NameY + NameHeight) })
-            .FillPolygon(TC2Yellow, new PointF[] { new PointF(MarginWidth + StatBoxShift, FollowersY), new PointF(MarginWidth + StatBoxShift + StatBoxWidth, FollowersY), new PointF(MarginWidth + StatBoxWidth, FollowersY + SmallStatBoxHeight), new PointF(MarginWidth, FollowersY + SmallStatBoxHeight) })
-            .FillPolygon(TC2Yellow, new PointF[] { new PointF(MarginWidth + StatBoxShift, BucksY), new PointF(MarginWidth + StatBoxShift + StatBoxWidth, BucksY), new PointF(MarginWidth + StatBoxWidth, BucksY + SmallStatBoxHeight), new PointF(MarginWidth, BucksY + SmallStatBoxHeight) })
-            .FillPolygon(TC2Yellow, new PointF[] { new PointF(LevelBoxX + StatBoxShift, LevelBoxY), new PointF(LevelBoxX + StatBoxShift + LevelBoxSize, LevelBoxY), new PointF(LevelBoxX + LevelBoxSize, LevelBoxY + LevelBoxSize), new PointF(LevelBoxX, LevelBoxY + LevelBoxSize) })
-            .DrawText(AlignCenter, UsersName, UsernameFont, TC2Yellow, new PointF(BGX + StatBoxShift/2 + background.Width / 2, NameY + NameHeight / 2.3f))
-            .DrawText(AlignBottomLeft, $"Followers: {followers}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, FollowersY + SmallStatBoxHeight / 1.5f))
-            .DrawText(AlignBottomLeft, $"Bucks: {bucks}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, BucksY + SmallStatBoxHeight / 1.5f))
-            .DrawText(AlignCenter, level, LevelNumberFont, TC2Grey, new PointF((LevelBoxX + StatBoxShift + LevelBoxX + LevelBoxSize) / 2, (LevelBoxY * 2 + LevelBoxSize / 1.5f) / 2))
-            );
-
-            string imageLoc = $"{Program.tmpLoc}{Member.Id}-profile.png";
-            Base.Save(imageLoc);
-            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-            await ctx.RespondWithFileAsync(upFile);
-        }
-
-        [Command("profile")]
-        [Description("Profile customisation command")]
-        [Priority(9)]
-        public async Task Profile(CommandContext ctx, [Description("profile settings command input, write `/profile help` for info")] params string[] input)
-        {
-            string output = string.Empty;
-            if (input[0] == "update" && input.Length > 1)
-            {
-                var UserSettings = (from us in DB.DBLists.UserSettings
-                                    where us.User_ID == ctx.User.Id
-                                    select us).FirstOrDefault();
-                if (input.Length > 2 && (input[1] == "bg" || input[1] == "background"))
-                {
-                    List<DB.UserImages> UImages = DB.DBLists.UserImages;
-                    var UserImages = (from ui in UImages
-                                      where ui.User_ID == ctx.User.Id
-                                      where ui.BG_ID == Int32.Parse(input[2])
-                                      select ui).ToList();
-                    if (UserImages.Count == 0)
-                    {
-                        output = "You do not have this background!";
-                    }
-                    else if (UserImages.Count == 1)
-                    {
-                        UserSettings.Image_ID = UserImages[0].ID_User_Images;
-                        DB.DBLists.UpdateUserSettings(UserSettings);
-                        output = $"You have changed your profile background";
-                    }
-                }
-                else if (input.Length > 2 && input[1] == "info")
-                {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 2; i < input.Length; i++)
-                    {
-                        sb.Append(input[i] + " ");
-                    }
-                    UserSettings.User_Info = sb.ToString();
-
-                    DB.DBLists.UpdateUserSettings(UserSettings);
-                    output = "You have changed your user info.";
-                }
-                else
-                {
-                    output = "Wrong parameters, try again";
-                }
-            }
-            else if (input[0] == "help" || input[0] != null)
-            {
-                output = "This is how to use the update command:\n" +
-                    "1. Updating background - `/profile update background [image id]` write `/background` to see your aviable backgrounds\n" +
-                    "2. Updating info - `/profile update info [your info]` If you want to make a new line in your info, write `$n`\n" +
-                    "";
-            }
-            await ctx.RespondAsync(output);
-        }
-
-        //*/
 
         [Command("globaltop")]
         [Aliases("gtop")]
@@ -1001,7 +800,7 @@ namespace LiveBot.Commands
                 {
                     if (backgroundrow.Count == 0)
                     {
-                        if ((long)background[0].Price <= (long)user.Bucks)
+                        if ((long)background[0].Price <= user.Bucks)
                         {
                             var idui = UserImg.Max(m => m.ID_User_Images);
                             user.Bucks -= (long)background[0].Price;
@@ -1215,7 +1014,7 @@ namespace LiveBot.Commands
 
                     var Result = await platformMSG.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
 
-                    if (Result.TimedOut == true)
+                    if (Result.TimedOut)
                     {
                         await platformMSG.ModifyAsync("Nothing selected, defaulting to PC");
                         platform = "pc";
@@ -1266,11 +1065,11 @@ namespace LiveBot.Commands
                         search = "stadia";
                         break;
                 }
-                if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() == 1)
+                if (JTCE.Subs.Count(w => w.Platform.Equals(search)) == 1)
                 {
-                    UserInfo = JTCE.Subs.Where(w => w.Platform.Equals(search)).FirstOrDefault();
+                    UserInfo = JTCE.Subs.FirstOrDefault(w => w.Platform.Equals(search));
                 }
-                else if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() != 1)
+                else if (JTCE.Subs.Count(w => w.Platform.Equals(search)) != 1)
                 {
                     UserInfo = JTCE.Subs[0];
                 }
@@ -1354,7 +1153,7 @@ namespace LiveBot.Commands
                             {
                                 ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                             }
-                            string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", string.Empty).Split(' ');
+                            string[] EventTitle = Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value.Replace("\"", string.Empty).Split(' ');
                             TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}?page_size=1"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
@@ -1477,7 +1276,6 @@ namespace LiveBot.Commands
             string OutMessage = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-topsummit.png";
 
-            bool SendImage = false;
             bool alleventscompleted = true;
 
             DateTime endtime;
@@ -1522,7 +1320,6 @@ namespace LiveBot.Commands
 
             Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
             Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-            Font SummitCaps12 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
 
             var AllignCenter = new TextGraphicsOptions()
             {
@@ -1581,7 +1378,7 @@ namespace LiveBot.Commands
                     {
                         ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                     }
-                    string[] EventTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(ThisEventNameID)).FirstOrDefault().Value.Replace("\"", string.Empty).Split(' ');
+                    string[] EventTitle = Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value.Replace("\"", string.Empty).Split(' ');
                     TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}?page_size=1"));
                     StringBuilder sb = new StringBuilder();
                     for (int j = 0; j < EventTitle.Length; j++)
@@ -1647,17 +1444,9 @@ namespace LiveBot.Commands
             TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             BaseImage.Save(imageLoc);
             OutMessage = $"{ctx.User.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : platform == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
-            SendImage = true;
-
-            if (SendImage)
-            {
-                using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                await ctx.RespondWithFileAsync(upFile, OutMessage);
-            }
-            else
-            {
-                await ctx.RespondAsync(OutMessage);
-            }
+            
+            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+            await ctx.RespondWithFileAsync(upFile, OutMessage);
         }
 
         [Command("summitrewards")]
@@ -1674,25 +1463,23 @@ namespace LiveBot.Commands
 
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
             int RewardWidth = 412;
-            StringBuilder sb = new StringBuilder();
             TCHubJson.Reward[] Rewards = Program.JSummit[0].Rewards;
             Font Font = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
             using (Image<Rgba32> RewardsImage = new Image<Rgba32>(4 * RewardWidth, 328))
             {
-                Program.JSummit.Where(w => w.Rewards.Length == 4);
                 Parallel.For(0, Rewards.Length, (i, state) =>
                  {
                      string RewardTitle = string.Empty;
                      switch (Rewards[i].Type)
                      {
                          case "phys_part":
-                             RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("quality_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}" +
-                             $" {Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("bonus_icon")).FirstOrDefault().Value, "\\w{0,}_", "")} {Rewards[i].Extra.Where(w => w.Key.Equals("type")).FirstOrDefault().Value}" +
-                             $"({Regex.Replace(Rewards[i].Extra.Where(w => w.Key.Equals("vcat_icon")).FirstOrDefault().Value, "\\w{0,}_", "")})";
+                             RewardTitle = $"{Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)).Value}" +
+                             $" {Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("bonus_icon")).Value, "\\w{0,}_", "")} {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("type")).Value}" +
+                             $"({Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("vcat_icon")).Value, "\\w{0,}_", "")})";
                              break;
 
                          case "vanity":
-                             RewardTitle = Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Title_Text_ID)).FirstOrDefault().Value;
+                             RewardTitle = Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Title_Text_ID)).Value;
                              if (RewardTitle is null)
                              {
                                  if (Rewards[i].Img_Path.Contains("emote"))
@@ -1707,11 +1494,11 @@ namespace LiveBot.Commands
                              break;
 
                          case "currency":
-                             RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.Where(w => w.Key.Equals("currency_amount")).FirstOrDefault().Value}";
+                             RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("currency_amount")).Value}";
                              break;
 
                          case "vehicle":
-                             RewardTitle = $"{Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("brand_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value} - {Program.TCHubDictionary.Where(w => w.Key.Equals(Rewards[i].Extra.Where(w => w.Key.Equals("model_text_id")).FirstOrDefault().Value)).FirstOrDefault().Value}";
+                             RewardTitle = $"{Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("brand_text_id")).Value)).Value} - {Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("model_text_id")).Value)).Value}";
                              break;
 
                          default:
@@ -1751,7 +1538,6 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
 
             string OutMessage = string.Empty;
-            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-myfame.png";
 
             string search = string.Empty;
 
@@ -1778,12 +1564,12 @@ namespace LiveBot.Commands
             {
                 if (JTCE.Error == "Unregistered user")
                 {
-                    OutMessage = $"{ctx.User.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
+                    await ctx.RespondAsync($"{ctx.User.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.");
                 }
                 else if (JTCE.Error == "Invalid API key !" || JTCE.Error == "No Connection.")
                 {
-                    OutMessage = $"{ctx.User.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
-                        $"<@85017957343694848> Rip API";
+                    await ctx.RespondAsync($"{ctx.User.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
+                        $"<@85017957343694848> Rip API");
                 }
             }
             else if (JTCE.Subs.Length == 1)
@@ -1818,11 +1604,11 @@ namespace LiveBot.Commands
                         search = "stadia";
                         break;
                 }
-                if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() == 1)
+                if (JTCE.Subs.Count(w => w.Platform.Equals(search)) == 1)
                 {
-                    UserInfo = JTCE.Subs.Where(w => w.Platform.Equals(search)).FirstOrDefault();
+                    UserInfo = JTCE.Subs.FirstOrDefault(w => w.Platform.Equals(search));
                 }
-                else if (JTCE.Subs.Where(w => w.Platform.Equals(search)).Count() != 1)
+                else if (JTCE.Subs.Count(w => w.Platform.Equals(search)) != 1)
                 {
                     UserInfo = JTCE.Subs[0];
                 }
@@ -1831,7 +1617,7 @@ namespace LiveBot.Commands
             try
             {
                 TCHubJson.Fame Fame = JsonConvert.DeserializeObject<TCHubJson.Fame>(wc.DownloadString($"https://api.thecrew-hub.com/v1/leaderboard/{UserInfo.Platform}/fame?profile_id={UserInfo.Profile_ID}"));
-                var HubUserInfo = Fame.Scores.Where(w => w.Profile_ID.Equals(UserInfo.Profile_ID)).FirstOrDefault();
+                var HubUserInfo = Fame.Scores.FirstOrDefault(w => w.Profile_ID.Equals(UserInfo.Profile_ID));
                 OutMessage = $"{ctx.User.Mention}, Your follower count is **{HubUserInfo.Score}**. Your Icon Level is **[WIP]**. You are ranked **{HubUserInfo.Rank} on {search}**";
             }
             catch (WebException)
