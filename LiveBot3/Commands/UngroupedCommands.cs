@@ -2,7 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using LiveBot.Json;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
@@ -32,8 +32,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[INTERNAL] Tentative fix for an internal error\n" +
-                "";
+            string changelog = "[FIX] Mod Mail auto closer fix\n" +
+                "[FIX] Mod Mail closing message for admins sent to user and vice versa.\n" +
+                "[INTERNAL] Continuation of code cleanup";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -903,8 +904,8 @@ namespace LiveBot.Commands
                     SummitImg.Mutate(ctx => ctx.Crop(300, SummitImg.Height));
                     Color TextColour = Color.WhiteSmoke;
                     Point SummitLocation = new Point(0 + (300 * i), 0);
-                    Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
-                    Font FooterFont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+                    Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
+                    Font FooterFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                     FooterImg.Mutate(ctx => ctx
                     .Fill(Color.Black)
                     .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
@@ -1090,9 +1091,9 @@ namespace LiveBot.Commands
 
                 int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
 
-                Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
-                Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-                Font SummitCaps12 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
+                Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
+                Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+                Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
 
                 var AllignCenter = new TextGraphicsOptions()
                 {
@@ -1318,8 +1319,8 @@ namespace LiveBot.Commands
 
             int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
 
-            Font Basefont = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
-            Font SummitCaps15 = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+            Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
+            Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
 
             var AllignCenter = new TextGraphicsOptions()
             {
@@ -1464,7 +1465,7 @@ namespace LiveBot.Commands
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
             int RewardWidth = 412;
             TCHubJson.Reward[] Rewards = Program.JSummit[0].Rewards;
-            Font Font = Program.fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+            Font Font = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
             using (Image<Rgba32> RewardsImage = new Image<Rgba32>(4 * RewardWidth, 328))
             {
                 Parallel.For(0, Rewards.Length, (i, state) =>

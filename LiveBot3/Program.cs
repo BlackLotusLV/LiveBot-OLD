@@ -5,6 +5,7 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using LiveBot.Automation;
 using LiveBot.Json;
 using Microsoft.Extensions.Logging;
@@ -12,10 +13,8 @@ using Newtonsoft.Json;
 using SixLabors.Fonts;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,19 +27,19 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20201012_A";
-        public static bool TestBuild;
+        public readonly static string BotVersion = $"20201017_A";
+        public static bool TestBuild { get; set; } = true;
         // TC Hub
 
-        public static ConfigJson.TCHubAPI TCHubJson;
-        public static Dictionary<string, string> TCHubDictionary;
-        public static TCHubJson.TCHub TCHub;
-        public static List<TCHubJson.Summit> JSummit;
-        public static ConfigJson.TCE TCEJson;
+        public static ConfigJson.TheCrewHubApi TCHubJson { get; set; }
+        public static Dictionary<string, string> TCHubDictionary { get; set; }
+        public static TCHubJson.TCHub TCHub { get; set; }
+        public static List<TCHubJson.Summit> JSummit { get; set; }
+        public static ConfigJson.TheCrewExchange TCEJson { get; set; }
 
         // Lists
 
-        public static List<ulong> ServerIdList = new List<ulong>();
+        public static List<ulong> ServerIdList { get; set; } = new List<ulong>();
 
         // string
 
@@ -50,10 +49,10 @@ namespace LiveBot
         private DiscordChannel BotErrorLogChannel;
 
         // guild
-        public static DiscordGuild TCGuild;
+        public static DiscordGuild TCGuild { get; private set; }
 
         // fonts
-        public static FontCollection fonts = new FontCollection();
+        public static FontCollection Fonts { get; set; } = new FontCollection();
 
         private static void Main(string[] args)
         {
@@ -63,17 +62,14 @@ namespace LiveBot
 
         public async Task RunBotAsync(string[] args)
         {
-            fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
-            fonts.Install("Assets/Fonts/RobotoMono-BoldItalic.ttf");
-            fonts.Install("Assets/Fonts/RobotoMono-Bold.ttf");
-            fonts.Install("Assets/Fonts/RobotoMono-Italic.ttf");
-            fonts.Install("Assets/Fonts/RobotoMono-Regular.ttf");
-
-            TestBuild = true;
+            Fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
+            Fonts.Install("Assets/Fonts/RobotoMono-BoldItalic.ttf");
+            Fonts.Install("Assets/Fonts/RobotoMono-Bold.ttf");
+            Fonts.Install("Assets/Fonts/RobotoMono-Italic.ttf");
+            Fonts.Install("Assets/Fonts/RobotoMono-Regular.ttf");
 
             var json = string.Empty;
-            using (var fs = File.OpenRead("Config.json"))
-            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+            using (var sr = new StreamReader(File.OpenRead("Config.json"), new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
             TCEJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
             ConfigJson.Bot cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
@@ -144,10 +140,10 @@ namespace LiveBot
             //*/
             Weather.StartTimer();
             _ = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
-            _ = new Timer(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            _ =new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+            _ = new Timer(e => TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            _ = new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
             _ = new Timer(e => AutoMod.ClearMSGCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
-            _ = new Timer(async e => await ModMail.ModMailCloser(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            _ = new Timer(e => ModMail.ModMailCloser(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 
             if (!TestBuild) //Only enables these when using live version
             {

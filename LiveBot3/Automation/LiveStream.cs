@@ -10,7 +10,9 @@ namespace LiveBot.Automation
 {
     static class LiveStream
     {
-        public static List<LiveStreamer> LiveStreamerList = new List<LiveStreamer>();
+        public static List<LiveStreamer> LiveStreamerList { get; set; } = new List<LiveStreamer>();
+
+
         public readonly static int StreamCheckDelay = 5;
 
         public static async Task Stream_Notification(DiscordClient Client, PresenceUpdateEventArgs e)

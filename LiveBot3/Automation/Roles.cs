@@ -11,7 +11,7 @@ namespace LiveBot.Automation
 {
     static class Roles
     {
-        public static List<ActivateRolesTimer> ActivateRolesTimer = new List<ActivateRolesTimer>();
+        public static List<ActivateRolesTimer> ActivateRolesTimer { get; set; } = new List<ActivateRolesTimer>();
 
         public static async Task Reaction_Roles(DiscordClient Client, MessageReactionAddEventArgs e)
         {

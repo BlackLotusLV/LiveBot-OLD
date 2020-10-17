@@ -100,8 +100,7 @@ namespace LiveBot.Commands
                 FollowersToNextLevel = (UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)) - UserStats.Followers,
                 FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel;
 
-            var webclinet = new WebClient();
-            byte[] ProfilePicture = webclinet.DownloadData(Member.AvatarUrl);
+            byte[] ProfilePicture = new WebClient().DownloadData(Member.AvatarUrl);
             using Image<Rgba32>
                 Base = new Image<Rgba32>(590, 590),
                 pfp = Image.Load<Rgba32>(ProfilePicture),
@@ -110,11 +109,11 @@ namespace LiveBot.Commands
 
 
             Font
-                UsernameFont = Program.fonts.CreateFont("Roboto Mono", usernameSize, FontStyle.BoldItalic),
-                BaseFont = Program.fonts.CreateFont("Roboto Mono", 18, FontStyle.Italic),
-                LevelTextFont = Program.fonts.CreateFont("Roboto Mono", 30, FontStyle.Regular),
-                LevelNumberFont = Program.fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic),
-                InfoTextFont = Program.fonts.CreateFont("Roboto Mono", 19, FontStyle.Regular);
+                UsernameFont = Program.Fonts.CreateFont("Roboto Mono", usernameSize, FontStyle.BoldItalic),
+                BaseFont = Program.Fonts.CreateFont("Roboto Mono", 18, FontStyle.Italic),
+                LevelTextFont = Program.Fonts.CreateFont("Roboto Mono", 30, FontStyle.Regular),
+                LevelNumberFont = Program.Fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic),
+                InfoTextFont = Program.Fonts.CreateFont("Roboto Mono", 19, FontStyle.Regular);
 
             var AlignCenter = new TextGraphicsOptions()
             {

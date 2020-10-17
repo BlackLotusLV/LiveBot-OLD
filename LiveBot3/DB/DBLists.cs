@@ -11,25 +11,25 @@ namespace LiveBot.DB
     static class DBLists
     {
         public readonly static int TableCount = 17;
-        public static int LoadedTableCount = 0;
+        public static int LoadedTableCount { get; set; } = 0;
 
-        public static List<VehicleList> VehicleList;
-        public static List<DisciplineList> DisciplineList;
-        public static List<ReactionRoles> ReactionRoles;
-        public static List<StreamNotifications> StreamNotifications;
-        public static List<BackgroundImage> BackgroundImage;
-        public static List<Leaderboard> Leaderboard;
-        public static List<ServerRanks> ServerRanks;
-        public static List<UserImages> UserImages;
-        public static List<UserSettings> UserSettings;
-        public static List<Warnings> Warnings;
-        public static List<ServerSettings> ServerSettings;
-        public static List<RankRoles> RankRoles;
-        public static List<CommandsUsedCount> CommandsUsedCount;
-        public static List<BotOutputList> BotOutputList;
-        public static List<WeatherSchedule> WeatherSchedule;
-        public static List<AMBannedWords> AMBannedWords;
-        public static List<ModMail> ModMail;
+        public static List<VehicleList> VehicleList { get; set; } = new List<VehicleList>();
+        public static List<DisciplineList> DisciplineList { get; set; } = new List<DisciplineList>();
+        public static List<ReactionRoles> ReactionRoles { get; set; } = new List<ReactionRoles>();
+        public static List<StreamNotifications> StreamNotifications { get; set; } = new List<StreamNotifications>();
+        public static List<BackgroundImage> BackgroundImage { get; set; } = new List<BackgroundImage>();
+        public static List<Leaderboard> Leaderboard { get; set; } = new List<Leaderboard>();
+        public static List<ServerRanks> ServerRanks { get; set; } = new List<ServerRanks>();
+        public static List<UserImages> UserImages { get; set; } = new List<UserImages>();
+        public static List<UserSettings> UserSettings { get; set; } = new List<UserSettings>();
+        public static List<Warnings> Warnings { get; set; } = new List<Warnings>();
+        public static List<ServerSettings> ServerSettings { get; set; } = new List<ServerSettings>();
+        public static List<RankRoles> RankRoles { get; set; } = new List<RankRoles>();
+        public static List<CommandsUsedCount> CommandsUsedCount { get; set; } = new List<CommandsUsedCount>();
+        public static List<BotOutputList> BotOutputList { get; set; } = new List<BotOutputList>();
+        public static List<WeatherSchedule> WeatherSchedule { get; set; } = new List<WeatherSchedule>();
+        public static List<AMBannedWords> AMBannedWords { get; set; } = new List<AMBannedWords>();
+        public static List<ModMail> ModMail { get; set; } = new List<ModMail>();
 
         public static void LoadAllLists()
         {

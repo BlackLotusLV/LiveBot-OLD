@@ -14,8 +14,8 @@ namespace LiveBot
     static class TimerMethod
     {
         private static DateTime TCHubLastUpdated = new DateTime();
-        public static byte[][] EventLogoBitArr = new byte[9][];
-        public static byte[][] RewardsImageBitArr = new byte[4][];
+        public static byte[][] EventLogoBitArr { get; set; } = new byte[9][];
+        public static byte[][] RewardsImageBitArr { get; set; } = new byte[4][];
 
         public static void StreamListCheck(List<LiveStreamer> list, int StreamCheckDelay)
         {

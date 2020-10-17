@@ -164,7 +164,7 @@ namespace LiveBot.Commands
             }
             else
             {
-                await Automation.ModMail.CloseModMail(modMail, ctx.User, "Mod Mail closed by the user", "**Mod Mail closed!\n----------------------------------------------------**");
+                await Automation.ModMail.CloseModMail(modMail, ctx.User, "[CLOSED] Mod Mail closed by the user", "**Mod Mail closed!\n----------------------------------------------------**");
                 Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"Mod mail entry #{modMail.ID} closed by the user");
             }
         }
@@ -187,8 +187,8 @@ namespace LiveBot.Commands
                 await Automation.ModMail.CloseModMail(
                     modMail,
                     ctx.User,
-                    $"**Mod Mail closed by {ctx.User.Username}!\n----------------------------------------------------**",
-                    $"[CLOSED] #{modMail.ID} Mod Mail closed by {ctx.User.Username}");
+                    $"[CLOSED] #{modMail.ID} Mod Mail closed by {ctx.User.Username}",
+                    $"**Mod Mail closed by {ctx.User.Username}!\n----------------------------------------------------**");
                 Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"Mod mail entry #{modMail.ID} closed by an admin/moderator");
             }
         }
@@ -262,7 +262,7 @@ namespace LiveBot.Commands
                 StringBuilder sb = new StringBuilder();
                 foreach (var entry in ModMailEntries)
                 {
-                    sb.AppendLine($"**ID:** {entry.ID}\t **User:** {entry.ID}\t**Has Chatted:** {entry.HasChatted}\t**Time Remaining:** {Automation.ModMail.TimeoutMinutes - (DateTime.Now - entry.LastMSGTime).Minutes} Minutes");
+                    sb.AppendLine($"**ID:** {entry.ID}\t **User:** {entry.User_ID}\t**Has Chatted:** {entry.HasChatted}\t**Time Remaining:** {Automation.ModMail.TimeoutMinutes - (DateTime.Now - entry.LastMSGTime).Minutes} Minutes");
                 }
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
                 {

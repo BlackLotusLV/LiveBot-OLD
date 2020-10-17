@@ -2,7 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -402,7 +402,6 @@ namespace LiveBot.Commands
 
                     await msg.CreateReactionAsync(Yes);
                     await Task.Delay(300).ContinueWith(t => msg.CreateReactionAsync(No));
-
                     var Result = await msg.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
 
                     if (Result.TimedOut)

@@ -9,8 +9,8 @@ namespace LiveBot.Automation
 {
     static class Leveling
     {
-        public static List<LevelTimer> UserLevelTimer = new List<LevelTimer>();
-        public static List<ServerLevelTimer> ServerUserLevelTimer = new List<ServerLevelTimer>();
+        public static List<LevelTimer> UserLevelTimer { get; set; } = new List<LevelTimer>();
+        public static List<ServerLevelTimer> ServerUserLevelTimer { get; set; } = new List<ServerLevelTimer>();
 
         public static async Task Update_User_Levels(object o, MessageCreateEventArgs e)
         {
@@ -157,24 +157,24 @@ namespace LiveBot.Automation
 
         public static async Task Add_To_Leaderboards(object O, GuildMemberAddEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                var global = (from lb in DB.DBLists.Leaderboard.AsParallel()
-                              where lb.ID_User == e.Member.Id
+            _ = Task.Run(() =>
+             {
+                 var global = (from lb in DB.DBLists.Leaderboard.AsParallel()
+                               where lb.ID_User == e.Member.Id
+                               select lb).FirstOrDefault();
+                 if (global is null)
+                 {
+                     CustomMethod.AddUserToLeaderboard(e.Member);
+                 }
+                 var local = (from lb in DB.DBLists.ServerRanks.AsParallel()
+                              where lb.User_ID == e.Member.Id
+                              where lb.Server_ID == e.Guild.Id
                               select lb).FirstOrDefault();
-                if (global is null)
-                {
-                    CustomMethod.AddUserToLeaderboard(e.Member);
-                }
-                var local = (from lb in DB.DBLists.ServerRanks.AsParallel()
-                             where lb.User_ID == e.Member.Id
-                             where lb.Server_ID == e.Guild.Id
-                             select lb).FirstOrDefault();
-                if (local is null)
-                {
-                    CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
-                }
-            });
+                 if (local is null)
+                 {
+                     CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
+                 }
+             });
         }
     }
 

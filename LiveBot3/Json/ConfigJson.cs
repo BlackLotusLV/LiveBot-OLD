@@ -16,10 +16,10 @@ namespace LiveBot
             public DB DataBase { get; private set; }
 
             [JsonProperty("TCE")]
-            public TCE TCE { get; private set; }
+            public TheCrewExchange TCE { get; private set; }
 
             [JsonProperty("TCHub")]
-            public TCHubAPI TCHub { get; private set; }
+            public TheCrewHubApi TCHub { get; private set; }
         }
 
         public struct Bot
@@ -49,7 +49,7 @@ namespace LiveBot
             public string Port { get; private set; }
         }
 
-        public struct TCE
+        public struct TheCrewExchange
         {
             [JsonProperty("key")]
             public string Key { get; private set; }
@@ -58,7 +58,7 @@ namespace LiveBot
             public string Link { get; private set; }
         }
 
-        public struct TCHubAPI
+        public struct TheCrewHubApi
         {
             [JsonProperty("summit")]
             public string Summit { get; private set; }

@@ -172,7 +172,7 @@ namespace LiveBot.Automation
 
         public static async Task User_Join_Log(DiscordClient Client, GuildMemberAddEventArgs e)
         {
-            await Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 var GuildSettings = (from ss in DB.DBLists.ServerSettings
                                      where ss.ID_Server == e.Guild.Id
