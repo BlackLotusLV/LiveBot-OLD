@@ -3,15 +3,16 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LiveBot.Automation
 {
-    static class Weather
+    internal static class Weather
     {
         private static DiscordChannel WeatherChannel;
         private static int Interval = Timeout.Infinite;
         private static string OldWeather = string.Empty;
-        private static readonly Timer WeatherTimer = new Timer(e => CheckWeather(), null, Timeout.Infinite, Interval);
+        private static readonly Timer WeatherTimer = new Timer(async e =>await CheckWeather(), null, Timeout.Infinite, Interval);
 
         public static void StartTimer()
         {
@@ -24,7 +25,7 @@ namespace LiveBot.Automation
             }
         }
 
-        private async static void CheckWeather()
+        private static async Task CheckWeather()
         {
             StringBuilder sb = new StringBuilder();
             TimeSpan now = DateTime.UtcNow.TimeOfDay;

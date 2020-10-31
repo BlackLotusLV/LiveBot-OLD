@@ -4,7 +4,6 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -439,6 +438,7 @@ namespace LiveBot.Commands
             DiscordMessage msg = await ctx.RespondAsync("User has been banned.");
             await Task.Delay(10000).ContinueWith(t => msg.DeleteAsync());
         }
+
         [Command("lookup")]
         [Description("Looks up a user by ID")]
         public async Task Lookup(CommandContext ctx, ulong ID)
@@ -448,7 +448,6 @@ namespace LiveBot.Commands
             DiscordUser user;
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
             {
-
             };
             try
             {

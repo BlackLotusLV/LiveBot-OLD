@@ -159,19 +159,19 @@ namespace LiveBot.Json
             public int Rank { get; private set; }
         }
 
-        public struct TCESummit
+        public struct TceSummit
         {
             [JsonProperty("discord_id")]
             public ulong Discord_ID { get; private set; }
 
             [JsonProperty("subs")]
-            public TCESummitSubs[] Subs { get; private set; }
+            public TceSummitSubs[] Subs { get; private set; }
 
             [JsonProperty("error")]
             public string Error { get; set; }
         }
 
-        public struct TCESummitSubs
+        public struct TceSummitSubs
         {
             [JsonProperty("platform")]
             public string Platform { get; private set; }

@@ -32,9 +32,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Mod Mail auto closer fix\n" +
-                "[FIX] Mod Mail closing message for admins sent to user and vice versa.\n" +
-                "[INTERNAL] Continuation of code cleanup";
+            string changelog = "[INTERNAL] Code Cleanup and minor fixes\n" +
+                "[]";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -865,7 +864,7 @@ namespace LiveBot.Commands
 
                 endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
-            TCHubJson.Rank[] Events = new TCHubJson.Rank[0];
+            TCHubJson.Rank[] Events = Array.Empty<TCHubJson.Rank>();
             if (platforms == 4)
             {
                 Events = new TCHubJson.Rank[4] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(StadiaJson) };
@@ -947,24 +946,24 @@ namespace LiveBot.Commands
             string search = string.Empty;
             string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
-            TCHubJson.TCESummit JTCE;
+            TCHubJson.TceSummit JTCE;
             using (WebClient wc = new WebClient())
             {
                 try
                 {
                     string Jdown = wc.DownloadString(link);
-                    JTCE = JsonConvert.DeserializeObject<TCHubJson.TCESummit>(Jdown);
+                    JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
                 }
                 catch (Exception)
                 {
-                    JTCE = new TCHubJson.TCESummit
+                    JTCE = new TCHubJson.TceSummit
                     {
                         Error = "No Connection."
                     };
                 }
             }
 
-            TCHubJson.TCESummitSubs UserInfo = new TCHubJson.TCESummitSubs();
+            TCHubJson.TceSummitSubs UserInfo = new TCHubJson.TceSummitSubs();
 
             if (JTCE.Error != null)
             {
@@ -1154,7 +1153,8 @@ namespace LiveBot.Commands
                             {
                                 ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                             }
-                            string[] EventTitle = Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value.Replace("\"", string.Empty).Split(' ');
+
+                            string[] EventTitle = (Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value ?? "[Event Info Missing]").Replace("\"", string.Empty).Split(' ');
                             TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}?page_size=1"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
@@ -1379,7 +1379,8 @@ namespace LiveBot.Commands
                     {
                         ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                     }
-                    string[] EventTitle = Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value.Replace("\"", string.Empty).Split(' ');
+
+                    string[] EventTitle = (Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value ?? "[Event Info Missing]").Replace("\"", string.Empty).Split(' ');
                     TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}?page_size=1"));
                     StringBuilder sb = new StringBuilder();
                     for (int j = 0; j < EventTitle.Length; j++)
@@ -1487,6 +1488,10 @@ namespace LiveBot.Commands
                                  {
                                      RewardTitle = "Emote";
                                  }
+                                 else
+                                 {
+                                     RewardTitle = "[unknown]";
+                                 }
                              }
                              break;
 
@@ -1544,22 +1549,22 @@ namespace LiveBot.Commands
 
             string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
-            TCHubJson.TCESummit JTCE;
+            TCHubJson.TceSummit JTCE;
             using WebClient wc = new WebClient();
             try
             {
                 string Jdown = wc.DownloadString(link);
-                JTCE = JsonConvert.DeserializeObject<TCHubJson.TCESummit>(Jdown);
+                JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
             }
             catch (Exception)
             {
-                JTCE = new TCHubJson.TCESummit
+                JTCE = new TCHubJson.TceSummit
                 {
                     Error = "No Connection."
                 };
             }
 
-            TCHubJson.TCESummitSubs UserInfo = new TCHubJson.TCESummitSubs();
+            TCHubJson.TceSummitSubs UserInfo = new TCHubJson.TceSummitSubs();
 
             if (JTCE.Error != null)
             {

@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 using LiveBot.Automation;
 using LiveBot.Json;
 using Microsoft.Extensions.Logging;
@@ -11,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace LiveBot
 {
-    static class TimerMethod
+    internal static class TimerMethod
     {
-        private static DateTime TCHubLastUpdated = new DateTime();
+        private static DateTime TCHubLastUpdated;
         public static byte[][] EventLogoBitArr { get; set; } = new byte[9][];
         public static byte[][] RewardsImageBitArr { get; set; } = new byte[4][];
 
@@ -97,7 +96,7 @@ namespace LiveBot
                     {
                         RewardsImageBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Rewards[i].Img_Path}");
                     }
-                    Program.Client.Logger.LogInformation(CustomLogEvents.TCHub,$"Info downloaded for {JSummit[0].Summit_ID} summit.");
+                    Program.Client.Logger.LogInformation(CustomLogEvents.TCHub, $"Info downloaded for {JSummit[0].Summit_ID} summit.");
                 }
             }
         }
@@ -107,8 +106,8 @@ namespace LiveBot
             using WebClient wc = new WebClient();
             wc.Headers.Add("Ubi-AppId", "dda77324-f9d6-44ea-9ecb-30e57b286f6d");
             wc.Headers.Add("Ubi-localeCode", "us-en");
-            string NewsString=string.Empty;
-            bool Connected=true;
+            string NewsString = string.Empty;
+            bool Connected = true;
 
             try
             {

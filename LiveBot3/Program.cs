@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20201017_A";
+        public readonly static string BotVersion = $"20201021_B";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -45,7 +45,7 @@ namespace LiveBot
 
         public static readonly string tmpLoc = Path.GetTempPath() + "/livebot-";
 
-        //channels
+        // channels
         private DiscordChannel BotErrorLogChannel;
 
         // guild
@@ -53,6 +53,13 @@ namespace LiveBot
 
         // fonts
         public static FontCollection Fonts { get; set; } = new FontCollection();
+
+        // Timers
+        private  Timer StreamDelayTimer { get; set; } = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
+        private Timer ActiveRoleTimer { get; set; } = new Timer(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer));
+        private Timer HubUpdateTimer { get; set; } = new Timer(e => TimerMethod.UpdateHubInfo());
+        private Timer MessageCacheClearTimer { get; set; } = new Timer(e => AutoMod.ClearMSGCache());
+        private Timer ModMailCloserTimer { get; set; } = new Timer(async e => await ModMail.ModMailCloser());
 
         private static void Main(string[] args)
         {
@@ -81,16 +88,13 @@ namespace LiveBot
             //
             LogLevel logLevel = LogLevel.Debug;
 
-            if (args.Length == 1)
+            if (args.Length == 1 && args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
             {
-                if (args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
-                {
-                    cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).LiveBot;
-                    Console.WriteLine($"Running live version: {BotVersion}");
+                cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).LiveBot;
+                Console.WriteLine($"Running live version: {BotVersion}");
 
-                    TestBuild = false;
-                    logLevel = LogLevel.Information;
-                }
+                TestBuild = false;
+                logLevel = LogLevel.Information;
             }
             var cfg = new DiscordConfiguration
             {
@@ -139,11 +143,11 @@ namespace LiveBot
 
             //*/
             Weather.StartTimer();
-            _ = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay), null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
-            _ = new Timer(e => TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            _ = new Timer(e => TimerMethod.UpdateHubInfo(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
-            _ = new Timer(e => AutoMod.ClearMSGCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
-            _ = new Timer(e => ModMail.ModMailCloser(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+            StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            ActiveRoleTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
+            MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
+            ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
 
             if (!TestBuild) //Only enables these when using live version
             {
@@ -251,9 +255,7 @@ namespace LiveBot
         private async Task Commands_CommandErrored(CommandsNextExtension ext, CommandErrorEventArgs e)
         {
             Client.Logger.LogError(CustomLogEvents.CommandError, e.Exception, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored");
-#pragma warning disable IDE0059 // Value assigned to symbol is never used
             if (e.Exception is ChecksFailedException ex)
-#pragma warning restore IDE0059 // Value assigned to symbol is never used
             {
                 var no_entry = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
                 string msgContent;

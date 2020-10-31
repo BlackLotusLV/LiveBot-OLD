@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace LiveBot
 {
-    static class CustomMethod
+    internal static class CustomMethod
     {
         public static string GetConnString()
         {
@@ -230,7 +230,6 @@ namespace LiveBot
 
         public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
         {
-
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id == f.Server_ID && user.Id == f.User_ID);
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id == f.ID_Server);
 
@@ -484,19 +483,19 @@ namespace LiveBot
             }
         }
 
-        public static void DBProgress(int LoadedTableCount, TimeSpan time, string DataTableName=null)
+        public static void DBProgress(int LoadedTableCount, TimeSpan time, string DataTableName = null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("[");
+            sb.Append('[');
             for (int i = 1; i <= DB.DBLists.TableCount; i++)
             {
                 if (i <= LoadedTableCount)
                 {
-                    sb.Append("#");
+                    sb.Append('#');
                 }
                 else
                 {
-                    sb.Append(" ");
+                    sb.Append(' ');
                 }
             }
             sb.Append(((float)LoadedTableCount / (float)DB.DBLists.TableCount).ToString($"] - [0.00%] [{time.Seconds}:{time.Milliseconds}]"));

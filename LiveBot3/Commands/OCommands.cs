@@ -36,6 +36,7 @@ namespace LiveBot.Commands
                     break;
 
                 case "vehicle":
+                case "vehicles":
                     DB.DBLists.LoadVehicleList();
                     msgcontent = "Vehicle list updated";
                     break;
@@ -46,9 +47,12 @@ namespace LiveBot.Commands
                     break;
 
                 case "bannedw":
+                case "banword":
+                case "bword":
                     DB.DBLists.LoadBannedWords();
                     msgcontent = "Banned Words list updated";
                     break;
+
                 default:
                     msgcontent = "Couldn't find this table. Nothing was updated\n" +
                         "all - updates all tables\n" +

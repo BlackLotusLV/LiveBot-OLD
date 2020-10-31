@@ -9,17 +9,17 @@ using System.Threading.Tasks;
 
 namespace LiveBot.Automation
 {
-    static class Roles
+    internal static class Roles
     {
         public static List<ActivateRolesTimer> ActivateRolesTimer { get; set; } = new List<ActivateRolesTimer>();
 
         public static async Task Reaction_Roles(DiscordClient Client, MessageReactionAddEventArgs e)
         {
-            if (e.User != null)
+            _ = Task.Run(async () =>
             {
                 if (e.Emoji.Id != 0 && !e.User.IsBot)
                 {
-                    new Thread(async() =>
+                    new Thread(async () =>
                     {
                         DiscordEmoji used = e.Emoji;
                         DiscordMessage sourcemsg = e.Message;
@@ -77,11 +77,11 @@ namespace LiveBot.Automation
                                 await m.DeleteAsync();
                             }
                         }
-
                     }).Start();
                     await Task.Delay(0);
                 }
-            }
+            });
+            await Task.Delay(1);
         }
     }
 

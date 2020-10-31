@@ -1,14 +1,14 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus;
 using LiveBot.DB;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace LiveBot.Commands
 {
@@ -20,7 +20,7 @@ namespace LiveBot.Commands
         [GroupCommand]
         [RequireDirectMessage]
         [Description("Opens a Mod Mail chat with a specific server in the bot's DMs.")]
-        public async Task ModMail(CommandContext ctx,[Description("The name of the server that you want to open the Mod Mail with. *Spaces are replaced with `-`*")] string serverName = null)
+        public static async Task ModMail(CommandContext ctx, [Description("The name of the server that you want to open the Mod Mail with. *Spaces are replaced with `-`*")] string serverName = null)
         {
             if (ctx.Guild is null)
             {
@@ -102,7 +102,7 @@ namespace LiveBot.Commands
         [RequireUserPermissions(Permissions.KickMembers)]
         [RequireGuild]
         [Description("Responds to the specified Mod Mail chat.")]
-        public async Task Reply(CommandContext ctx,[Description("Mod Mail entry ID")] long ModMailID, [Description("Text that is being sent to the user via DM")][RemainingText] string reply)
+        public async Task Reply(CommandContext ctx, [Description("Mod Mail entry ID")] long ModMailID, [Description("Text that is being sent to the user via DM")][RemainingText] string reply)
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
@@ -194,7 +194,7 @@ namespace LiveBot.Commands
         }
 
         [Command("directmessage")]
-        [Aliases("dm","pm")]
+        [Aliases("dm", "pm")]
         [RequireGuild]
         [RequirePermissions(Permissions.KickMembers)]
         [Description("Bot sends a DM to the specified user with the text you want it to say. It tells where and who it is from as well as logs it in mod mail channel.")]
@@ -203,7 +203,7 @@ namespace LiveBot.Commands
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
             ServerSettings SSettings = DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id);
-            if (SSettings.ModMailID!=0)
+            if (SSettings.ModMailID != 0)
             {
                 string DMMessage = $"You are recieveing a Moderator DM from {ctx.Guild.Name} Discord\n{ctx.User.Username} - {text}";
                 bool ErrorCheck = false;
@@ -220,15 +220,15 @@ namespace LiveBot.Commands
                     DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)SSettings.ModMailID);
                     DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                     {
-                        Author= new DiscordEmbedBuilder.EmbedAuthor
+                        Author = new DiscordEmbedBuilder.EmbedAuthor
                         {
-                            IconUrl=member.AvatarUrl,
-                            Name=member.Username
+                            IconUrl = member.AvatarUrl,
+                            Name = member.Username
                         },
                         Title = $"[MOD DM] Moderator DM to {member.Username}",
                         Description = DMMessage
                     };
-                    await MMChannel.SendMessageAsync(embed:embed);
+                    await MMChannel.SendMessageAsync(embed: embed);
                     Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"A Dirrect message was sent to {member.Username}({member.Id}) from {ctx.Member.Username}({ctx.Member.Id}) through Mod Mail system.");
                 }
                 else

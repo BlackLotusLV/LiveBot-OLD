@@ -19,7 +19,7 @@ namespace LiveBot.Commands
 {
     [Group("profile")]
     [Description("Profile commands")]
-    class ProfileCommands : BaseCommandModule
+    internal class ProfileCommands : BaseCommandModule
     {
         [GroupCommand]
         [Description("Shows users live bot profile.")]
@@ -67,7 +67,7 @@ namespace LiveBot.Commands
                 followers = $"{UserStats.Followers}/{UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)}",
                 bucks = UserStats.Bucks.ToString(),
                 bio = Regex.Replace(UserSettings.us.User_Info.ToString(), @"[^\u0000-\u007F]+", "�");
-            string[] BioLines = bio.Split(new[] { "\r\n", "\r", "\n" },StringSplitOptions.None);
+            string[] BioLines = bio.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             StringBuilder BioWrapper = new StringBuilder();
             foreach (string line in BioLines)
             {
@@ -98,22 +98,24 @@ namespace LiveBot.Commands
             double
                 FollowersBetweenLevels = ((UserStats.Level + 1) * (300 * (UserStats.Level + 2) * 0.5)) - (UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)),
                 FollowersToNextLevel = (UserStats.Level * (300 * (UserStats.Level + 1) * 0.5)) - UserStats.Followers,
-                FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel;
+                FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel
+                ;
 
             byte[] ProfilePicture = new WebClient().DownloadData(Member.AvatarUrl);
             using Image<Rgba32>
                 Base = new Image<Rgba32>(590, 590),
                 pfp = Image.Load<Rgba32>(ProfilePicture),
-                background = Image.Load<Rgba32>(UserSettings.bi.Image),
-                FollowersBar = new Image<Rgba32>(System.Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20);
-
+                background = Image.Load<Rgba32>(UserSettings.bi.Image)
+                //FollowersBar = new Image<Rgba32>(Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20)
+                ;
 
             Font
                 UsernameFont = Program.Fonts.CreateFont("Roboto Mono", usernameSize, FontStyle.BoldItalic),
                 BaseFont = Program.Fonts.CreateFont("Roboto Mono", 18, FontStyle.Italic),
-                LevelTextFont = Program.Fonts.CreateFont("Roboto Mono", 30, FontStyle.Regular),
-                LevelNumberFont = Program.Fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic),
-                InfoTextFont = Program.Fonts.CreateFont("Roboto Mono", 19, FontStyle.Regular);
+                //LevelTextFont = Program.Fonts.CreateFont("Roboto Mono", 30, FontStyle.Regular),
+                LevelNumberFont = Program.Fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic)
+                //InfoTextFont = Program.Fonts.CreateFont("Roboto Mono", 19, FontStyle.Regular)
+                ;
 
             var AlignCenter = new TextGraphicsOptions()
             {
@@ -144,7 +146,7 @@ namespace LiveBot.Commands
                 BGX = 10,
                 BGY = 10,
                 MarginWidth = 20 + BGX,
-                MarginHeight = 20 + BGY,
+                //MarginHeight = 20 + BGY,
                 FollowersY = 300,
                 SmallStatBoxHeight = 35,
                 BucksY = FollowersY + SmallStatBoxHeight + 5,
@@ -163,7 +165,11 @@ namespace LiveBot.Commands
                 BioX = MarginWidth,
                 BioY = BucksY + SmallStatBoxHeight + 10,
                 BioHeight = 190,
-                BioWidth = Base.Width - BGX - 2 * MarginWidth;
+                BioWidth = Base.Width - BGX - 2 * MarginWidth,
+                FollowersBarX =MarginWidth+10,
+                FollowersBarY =FollowersY+SmallStatBoxHeight-5,
+                FollowersBarLenght= FollowersBarX + (int)(0.01*FBarLenght* StatBoxWidth-10)
+                ;
 
             Color
                 TC2Yellow = Color.ParseHex("FFDB15"),
@@ -185,6 +191,7 @@ namespace LiveBot.Commands
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(MarginWidth + StatBoxShift, BucksY), new PointF(MarginWidth + StatBoxShift + StatBoxWidth, BucksY), new PointF(MarginWidth + StatBoxWidth, BucksY + SmallStatBoxHeight), new PointF(MarginWidth, BucksY + SmallStatBoxHeight) })
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(LevelBoxX + StatBoxShift, LevelBoxY), new PointF(LevelBoxX + StatBoxShift + LevelBoxSize, LevelBoxY), new PointF(LevelBoxX + LevelBoxSize, LevelBoxY + LevelBoxSize), new PointF(LevelBoxX, LevelBoxY + LevelBoxSize) })
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(BioX + StatBoxShift, BioY), new PointF(BioX + StatBoxShift + BioWidth, BioY), new PointF(BioX + BioWidth, BioY + BioHeight), new PointF(BioX, BioY + BioHeight) })
+            .DrawLines(TC2Grey, 2f,new PointF[] { new PointF(FollowersBarX,FollowersBarY), new PointF(FollowersBarLenght,FollowersBarY) })
             .DrawText(AlignCenter, UsersName, UsernameFont, TC2Yellow, new PointF(BGX + StatBoxShift / 2 + background.Width / 2, NameY + NameHeight / 2.3f))
             .DrawText(AlignBottomLeft, $"Followers: {followers}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, FollowersY + SmallStatBoxHeight / 1.5f))
             .DrawText(AlignBottomLeft, $"Bucks: {bucks}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, BucksY + SmallStatBoxHeight / 1.5f))
@@ -199,7 +206,7 @@ namespace LiveBot.Commands
         }
 
         [Command("updatebackground")]
-        [Aliases("updatebg", "bgupdate","backgroundupdate")]
+        [Aliases("updatebg", "bgupdate", "backgroundupdate")]
         public async Task UpdateBackground(CommandContext ctx, int BackgroundID)
         {
             var UserSettings = (from us in DB.DBLists.UserSettings
@@ -235,6 +242,7 @@ namespace LiveBot.Commands
             DB.DBLists.UpdateUserSettings(UserSettings);
             await ctx.RespondAsync("You have changed your user info.");
         }
+
         [Command("update")]
         [Description("Profile customisation command")]
         public async Task Update(CommandContext ctx)

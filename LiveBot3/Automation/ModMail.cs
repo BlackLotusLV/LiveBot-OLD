@@ -8,45 +8,49 @@ using System.Threading.Tasks;
 
 namespace LiveBot.Automation
 {
-    static class ModMail
+    internal static class ModMail
     {
         public readonly static int TimeoutMinutes = 120;
 
         public static async Task ModMailDM(DiscordClient Client, MessageCreateEventArgs e)
         {
-            var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Author.Id && w.IsActive);
-            if (e.Guild == null && MMEntry != null && !(e.Message.Content.StartsWith("/mm") || e.Message.Content.StartsWith("/modmail")))
+            _ = Task.Run(async () =>
             {
-                DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)MMEntry.Server_ID);
-                DiscordChannel ModMailChannel = Guild.GetChannel((ulong)DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Author.Id && w.IsActive);
+                if (e.Guild == null && MMEntry != null && !(e.Message.Content.StartsWith("/mm") || e.Message.Content.StartsWith("/modmail")))
                 {
-                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                    DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)MMEntry.Server_ID);
+                    DiscordChannel ModMailChannel = Guild.GetChannel((ulong)DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                     {
-                        IconUrl = e.Author.AvatarUrl,
-                        Name = $"{e.Author.Username} ({e.Author.Id})"
-                    },
-                    Color = new DiscordColor(MMEntry.ColorHex),
-                    Title = $"[INBOX] #{MMEntry.ID} Mod Mail user message.",
-                    Description = e.Message.Content
-                };
+                        Author = new DiscordEmbedBuilder.EmbedAuthor
+                        {
+                            IconUrl = e.Author.AvatarUrl,
+                            Name = $"{e.Author.Username} ({e.Author.Id})"
+                        },
+                        Color = new DiscordColor(MMEntry.ColorHex),
+                        Title = $"[INBOX] #{MMEntry.ID} Mod Mail user message.",
+                        Description = e.Message.Content
+                    };
 
-                if (e.Message.Attachments != null)
-                {
-                    foreach (var attachment in e.Message.Attachments)
+                    if (e.Message.Attachments != null)
                     {
-                        embed.AddField("Atachment", attachment.Url, false);
+                        foreach (var attachment in e.Message.Attachments)
+                        {
+                            embed.AddField("Atachment", attachment.Url, false);
+                        }
                     }
+
+                    await ModMailChannel.SendMessageAsync(embed: embed);
+
+                    MMEntry.HasChatted = true;
+                    MMEntry.LastMSGTime = DateTime.Now;
+                    DB.DBLists.UpdateModMail(MMEntry);
+
+                    Client.Logger.LogInformation(CustomLogEvents.ModMail, $"New Mod Mail message sent to {ModMailChannel.Name}({ModMailChannel.Id}) in {ModMailChannel.Guild.Name} from {e.Author.Username}({e.Author.Id})");
                 }
-
-                await ModMailChannel.SendMessageAsync(embed: embed);
-
-                MMEntry.HasChatted = true;
-                MMEntry.LastMSGTime = DateTime.Now;
-                DB.DBLists.UpdateModMail(MMEntry);
-
-                Client.Logger.LogInformation(CustomLogEvents.ModMail, $"New Mod Mail message sent to {ModMailChannel.Name}({ModMailChannel.Id}) in {ModMailChannel.Guild.Name} from {e.Author.Username}({e.Author.Id})");
-            }
+            });
+            await Task.Delay(1);
         }
 
         public async static Task ModMailCloser()
