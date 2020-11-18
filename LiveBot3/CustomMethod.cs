@@ -425,7 +425,7 @@ namespace LiveBot
                 kcount = UserStats.Kick_Count;
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).ToList();
+                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id && w.Type=="warning").ToList();
                 foreach (var item in WarningsList)
                 {
                     if (item.Active)
@@ -436,7 +436,7 @@ namespace LiveBot
                     {
                         Reason.Append("[X] ");
                     }
-                    Reason.AppendLine($"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n");
+                    Reason.AppendLine($"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}");
                     wcount++;
                 }
                 if (WarningsList.Count == 0)

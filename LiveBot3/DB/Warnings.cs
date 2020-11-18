@@ -33,5 +33,9 @@ namespace LiveBot.DB
         [Required]
         [Column("server_id")]
         public decimal Server_ID { get; set; }
+
+        [Required]
+        [Column("type")]
+        public string Type { get; set; }
     }
 }
