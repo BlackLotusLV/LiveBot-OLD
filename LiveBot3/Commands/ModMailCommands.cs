@@ -20,7 +20,8 @@ namespace LiveBot.Commands
         [GroupCommand]
         [RequireDirectMessage]
         [Description("Opens a Mod Mail chat with a specific server in the bot's DMs.")]
-        public static async Task ModMail(CommandContext ctx, [Description("The name of the server that you want to open the Mod Mail with. *Spaces are replaced with `-`*")] string serverName = null)
+        public async Task ModMail(CommandContext ctx,
+                                  [Description("The name of the server that you want to open the Mod Mail with. *Spaces are replaced with `-`*")] string serverName = null)
         {
             if (ctx.Guild is null)
             {
@@ -102,7 +103,9 @@ namespace LiveBot.Commands
         [RequireUserPermissions(Permissions.KickMembers)]
         [RequireGuild]
         [Description("Responds to the specified Mod Mail chat.")]
-        public async Task Reply(CommandContext ctx, [Description("Mod Mail entry ID")] long ModMailID, [Description("Text that is being sent to the user via DM")][RemainingText] string reply)
+        public async Task Reply(CommandContext ctx,
+                                [Description("Mod Mail entry ID")] long ModMailID,
+                                [Description("Text that is being sent to the user via DM")][RemainingText] string reply)
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();

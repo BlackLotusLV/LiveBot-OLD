@@ -99,7 +99,10 @@ namespace LiveBot.Automation
                 var messages = await WeatherChannel.GetMessagesAsync(10);
                 if (messages.Count == 0 || !messages[0].Author.Equals(Program.Client.CurrentUser))
                 {
-                    await WeatherChannel.DeleteMessagesAsync(messages);
+                    if (messages.Count != 0)
+                    {
+                        await WeatherChannel.DeleteMessagesAsync(messages);
+                    }
                     await WeatherChannel.SendMessageAsync(weathertext);
                 }
                 else if (messages[0].Author.Equals(Program.Client.CurrentUser))
