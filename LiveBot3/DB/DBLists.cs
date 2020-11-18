@@ -10,7 +10,7 @@ namespace LiveBot.DB
 {
     static class DBLists
     {
-        public readonly static int TableCount = 17;
+        public readonly static int TableCount = 18;
         public static int LoadedTableCount { get; set; } = 0;
 
         public static List<VehicleList> VehicleList { get; set; } = new List<VehicleList>();
@@ -30,6 +30,7 @@ namespace LiveBot.DB
         public static List<WeatherSchedule> WeatherSchedule { get; set; } = new List<WeatherSchedule>();
         public static List<AMBannedWords> AMBannedWords { get; set; } = new List<AMBannedWords>();
         public static List<ModMail> ModMail { get; set; } = new List<ModMail>();
+        public static List<RoleTagSettings> RoleTagSettings { get; set; } = new List<RoleTagSettings>();
 
         public static void LoadAllLists()
         {
@@ -51,6 +52,7 @@ namespace LiveBot.DB
             new Thread(() => LoadBannedWords(true)).Start();
             new Thread(() => LoadBotOutputList(true)).Start();
             new Thread(() => LoadModMail(true)).Start();
+            new Thread(() => LoadRoleTagSettings(true)).Start();
         }
 
         #region Load Functions
@@ -378,6 +380,25 @@ namespace LiveBot.DB
             }
         }
 
+        public static void LoadRoleTagSettings(bool progress = false)
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            using var ctx = new RoleTagSettingsContext();
+            RoleTagSettings = (from c in ctx.RoleTagSettings
+                               select c).ToList();
+            timer.Stop();
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "RoleTagSettings");
+            }
+            else
+            {
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "RoleTag Settings Loaded");
+            }
+        }
+
         #endregion Load Functions
 
         #region Update Functions
@@ -469,6 +490,12 @@ namespace LiveBot.DB
         public static void UpdateModMail(params ModMail[] o)
         {
             using var ctx = new ModMailContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+        public static void UpdateRoleTagSettings(params RoleTagSettings[] o)
+        {
+            using var ctx = new RoleTagSettingsContext();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
@@ -579,6 +606,13 @@ namespace LiveBot.DB
             ctx.ModMail.Add(o);
             ctx.SaveChanges();
             LoadModMail();
+        }
+        public static void InsertRoleTagSettings(RoleTagSettings o)
+        {
+            using var ctx = new RoleTagSettingsContext();
+            ctx.RoleTagSettings.Add(o);
+            ctx.SaveChanges();
+            LoadRoleTagSettings();
         }
 
         #endregion Insert Functions

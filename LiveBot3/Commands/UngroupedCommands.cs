@@ -32,8 +32,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[INTERNAL] Code Cleanup and minor fixes\n" +
-                "[]";
+            string changelog = "[NEW] Bot now logs Ban and Kick messages same as it does with warnings.(Old bans and kicks not logged)\n" +
+                "[NEW] New command `/roletag` or `/rt`. Tags a role, that can't be mentioned, but only if criteria is met - e.g. `/rt :TheCrew2:` pings LFC-TC2 role in the LFC channel and only in that channel.\n" +
+                "[NEW] `/profile` command now displays a badge for activity - 1 month, 1 year badges, ect. (All credit to badge artwork goes to <@160007823978135552>)";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1774,6 +1775,39 @@ namespace LiveBot.Commands
             catch
             {
                 await ctx.RespondAsync($"{ctx.Member.Mention}, Could not contact you through DMs.");
+            }
+        }
+
+        [Command("roletag")]
+        [Aliases("rt")]
+        [Description("Tags a role ")]
+        public async Task RoleTag(CommandContext ctx, DiscordEmoji Emoji)
+        {
+            DB.RoleTagSettings RT = DB.DBLists.RoleTagSettings.FirstOrDefault(w => w.Server_ID == ctx.Guild.Id && w.Emoji_ID == Emoji.Id);
+            if (RT != null)
+            {
+                if (RT.Channel_ID == ctx.Channel.Id)
+                {
+                    DiscordRole role = ctx.Guild.GetRole((ulong)RT.Role_ID);
+                    if (RT.Last_Used<DateTime.Now-TimeSpan.FromMinutes(RT.Cooldown))
+                    {
+                        await ctx.RespondAsync($"{role.Mention} - {ctx.Member.Mention}: {RT.Message}");
+                        RT.Last_Used = DateTime.Now;
+                        DB.DBLists.UpdateRoleTagSettings(RT);
+                    }
+                    else
+                    {
+                        await ctx.RespondAsync($"{ctx.Member.Mention}, This role can't be mentioned right now, cooldown has not passed yet.");
+                    }
+                }
+                else
+                {
+                    await ctx.RespondAsync($"{ctx.Member.Mention}, This channel does not allow this role to be pinged");
+                }
+            }
+            else
+            {
+                await ctx.RespondAsync($"{ctx.Member.Mention}, This emoji does not represent a role in this server.");
             }
         }
     }
