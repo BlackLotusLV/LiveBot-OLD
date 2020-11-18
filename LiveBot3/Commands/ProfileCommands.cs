@@ -106,15 +106,28 @@ namespace LiveBot.Commands
                 Base = new Image<Rgba32>(590, 590),
                 pfp = Image.Load<Rgba32>(ProfilePicture),
                 background = Image.Load<Rgba32>(UserSettings.bi.Image)
-                //FollowersBar = new Image<Rgba32>(Convert.ToInt32(Math.Floor((220 * FBarLenght) / 100)), 20)
                 ;
+
+            Image<Rgba32> Badge = new Image<Rgba32>(1,1);
+            if (DateTimeOffset.Now-Member.JoinedAt>TimeSpan.FromDays(365.25))
+            {
+                int years = (int)Math.Floor((DateTimeOffset.Now - Member.JoinedAt) / TimeSpan.FromDays(365.25));
+                if (years>4)
+                {
+                    years = 4;
+                }
+                Badge = Image.Load<Rgba32>($"Assets/Badges/{years}Year.png");
+            }
+            else if (DateTimeOffset.Now - Member.JoinedAt < TimeSpan.FromDays(365.25) && DateTimeOffset.Now - Member.JoinedAt > TimeSpan.FromDays(30))
+            {
+                int months = (int)Math.Floor((DateTimeOffset.Now - Member.JoinedAt) / TimeSpan.FromDays(30));
+                Badge = Image.Load<Rgba32>($"Assets/Badges/{months}Month.png");
+            }
 
             Font
                 UsernameFont = Program.Fonts.CreateFont("Roboto Mono", usernameSize, FontStyle.BoldItalic),
                 BaseFont = Program.Fonts.CreateFont("Roboto Mono", 18, FontStyle.Italic),
-                //LevelTextFont = Program.Fonts.CreateFont("Roboto Mono", 30, FontStyle.Regular),
                 LevelNumberFont = Program.Fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic)
-                //InfoTextFont = Program.Fonts.CreateFont("Roboto Mono", 19, FontStyle.Regular)
                 ;
 
             var AlignCenter = new TextGraphicsOptions()
@@ -142,6 +155,8 @@ namespace LiveBot.Commands
                 }
             };
 
+
+
             int
                 BGX = 10,
                 BGY = 10,
@@ -157,6 +172,8 @@ namespace LiveBot.Commands
                 LevelBoxSize = (SmallStatBoxHeight * 2) + 5,
                 LevelBoxX = background.Width - MarginWidth - LevelBoxSize,
                 LevelBoxY = FollowersY,
+                BadgeX = (int)(LevelBoxX - (LevelBoxSize * 1.25)),
+                BadgeY = LevelBoxY,
                 NameWidth = 290,
                 NameX = BGX + background.Width / 2 - NameWidth / 2,
                 NameY = 240,
@@ -166,9 +183,9 @@ namespace LiveBot.Commands
                 BioY = BucksY + SmallStatBoxHeight + 10,
                 BioHeight = 190,
                 BioWidth = Base.Width - BGX - 2 * MarginWidth,
-                FollowersBarX =MarginWidth+10,
-                FollowersBarY =FollowersY+SmallStatBoxHeight-5,
-                FollowersBarLenght= FollowersBarX + (int)(0.01*FBarLenght* StatBoxWidth-10)
+                FollowersBarX = MarginWidth + 10,
+                FollowersBarY = FollowersY + SmallStatBoxHeight - 5,
+                FollowersBarLenght = FollowersBarX + (int)(0.01 * FBarLenght * StatBoxWidth - 10)
                 ;
 
             Color
@@ -191,6 +208,7 @@ namespace LiveBot.Commands
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(MarginWidth + StatBoxShift, BucksY), new PointF(MarginWidth + StatBoxShift + StatBoxWidth, BucksY), new PointF(MarginWidth + StatBoxWidth, BucksY + SmallStatBoxHeight), new PointF(MarginWidth, BucksY + SmallStatBoxHeight) })
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(LevelBoxX + StatBoxShift, LevelBoxY), new PointF(LevelBoxX + StatBoxShift + LevelBoxSize, LevelBoxY), new PointF(LevelBoxX + LevelBoxSize, LevelBoxY + LevelBoxSize), new PointF(LevelBoxX, LevelBoxY + LevelBoxSize) })
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(BioX + StatBoxShift, BioY), new PointF(BioX + StatBoxShift + BioWidth, BioY), new PointF(BioX + BioWidth, BioY + BioHeight), new PointF(BioX, BioY + BioHeight) })
+            .DrawImage(Badge,new Point(BadgeX,BadgeY),1f)
             .DrawLines(TC2Grey, 2f,new PointF[] { new PointF(FollowersBarX,FollowersBarY), new PointF(FollowersBarLenght,FollowersBarY) })
             .DrawText(AlignCenter, UsersName, UsernameFont, TC2Yellow, new PointF(BGX + StatBoxShift / 2 + background.Width / 2, NameY + NameHeight / 2.3f))
             .DrawText(AlignBottomLeft, $"Followers: {followers}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, FollowersY + SmallStatBoxHeight / 1.5f))
