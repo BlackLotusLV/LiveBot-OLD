@@ -108,13 +108,17 @@ namespace LiveBot.Commands
                 background = Image.Load<Rgba32>(UserSettings.bi.Image)
                 ;
 
-            Image<Rgba32> Badge = new Image<Rgba32>(1,1);
-            if (DateTimeOffset.Now-Member.JoinedAt>TimeSpan.FromDays(365.25))
+            Image<Rgba32> Badge = new Image<Rgba32>(1, 1);
+            if (DateTimeOffset.Now - Member.JoinedAt > TimeSpan.FromDays(365.25) || Math.Floor((DateTimeOffset.Now - Member.JoinedAt) / TimeSpan.FromDays(30)) == 12)
             {
                 int years = (int)Math.Floor((DateTimeOffset.Now - Member.JoinedAt) / TimeSpan.FromDays(365.25));
-                if (years>4)
+                if (years > 6)
                 {
-                    years = 4;
+                    years = 6;
+                }
+                else if (years == 0)
+                {
+                    years = 1;
                 }
                 Badge = Image.Load<Rgba32>($"Assets/Badges/{years}Year.png");
             }
@@ -154,8 +158,6 @@ namespace LiveBot.Commands
                     VerticalAlignment = VerticalAlignment.Top
                 }
             };
-
-
 
             int
                 BGX = 10,
@@ -208,8 +210,8 @@ namespace LiveBot.Commands
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(MarginWidth + StatBoxShift, BucksY), new PointF(MarginWidth + StatBoxShift + StatBoxWidth, BucksY), new PointF(MarginWidth + StatBoxWidth, BucksY + SmallStatBoxHeight), new PointF(MarginWidth, BucksY + SmallStatBoxHeight) })
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(LevelBoxX + StatBoxShift, LevelBoxY), new PointF(LevelBoxX + StatBoxShift + LevelBoxSize, LevelBoxY), new PointF(LevelBoxX + LevelBoxSize, LevelBoxY + LevelBoxSize), new PointF(LevelBoxX, LevelBoxY + LevelBoxSize) })
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(BioX + StatBoxShift, BioY), new PointF(BioX + StatBoxShift + BioWidth, BioY), new PointF(BioX + BioWidth, BioY + BioHeight), new PointF(BioX, BioY + BioHeight) })
-            .DrawImage(Badge,new Point(BadgeX,BadgeY),1f)
-            .DrawLines(TC2Grey, 2f,new PointF[] { new PointF(FollowersBarX,FollowersBarY), new PointF(FollowersBarLenght,FollowersBarY) })
+            .DrawImage(Badge, new Point(BadgeX, BadgeY), 1f)
+            .DrawLines(TC2Grey, 2f, new PointF[] { new PointF(FollowersBarX, FollowersBarY), new PointF(FollowersBarLenght, FollowersBarY) })
             .DrawText(AlignCenter, UsersName, UsernameFont, TC2Yellow, new PointF(BGX + StatBoxShift / 2 + background.Width / 2, NameY + NameHeight / 2.3f))
             .DrawText(AlignBottomLeft, $"Followers: {followers}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, FollowersY + SmallStatBoxHeight / 1.5f))
             .DrawText(AlignBottomLeft, $"Bucks: {bucks}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, BucksY + SmallStatBoxHeight / 1.5f))

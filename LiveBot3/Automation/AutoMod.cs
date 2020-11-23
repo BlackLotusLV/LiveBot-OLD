@@ -312,7 +312,7 @@ namespace LiveBot.Automation
                         Color = new DiscordColor(0xff0000),
                     };
                     await wkbLog.SendMessageAsync(embed: embed);
-                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = logs[0].Reason, Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = logs[0].UserResponsible.Id, User_ID = e.Member.Id, Server_ID = e.Guild.Id, Type="ban"});
+                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = logs[0].Reason, Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = logs[0].UserResponsible.Id, User_ID = e.Member.Id, Server_ID = e.Guild.Id, Type = "ban" });
                 }
                 var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
                 if (UserSettings == null)
@@ -324,7 +324,6 @@ namespace LiveBot.Automation
                 UserSettings.Ban_Count += 1;
                 UserSettings.Followers = 0;
                 DB.DBLists.UpdateServerRanks(UserSettings);
-
             });
             await Task.Delay(1);
         }

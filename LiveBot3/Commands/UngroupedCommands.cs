@@ -32,9 +32,13 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Bot now logs Ban and Kick messages same as it does with warnings.(Old bans and kicks not logged)\n" +
-                "[NEW] New command `/roletag` or `/rt`. Tags a role, that can't be mentioned, but only if criteria is met - e.g. `/rt :TheCrew2:` pings LFC-TC2 role in the LFC channel and only in that channel.\n" +
-                "[NEW] `/profile` command now displays a badge for activity - 1 month, 1 year badges, ect. (All credit to badge artwork goes to <@160007823978135552>)";
+            string changelog = "[FIX] Closing a Mod Mail from the moderator side text output duplicating.\n" +
+                "[FIX] Mod Mail clarity, from user side.\n" +
+                "[NEW] `/roletag` command now displays time remaining on the role colldown.\n" +
+                "[FIX] un-warn command output typo fix\n" +
+                "[INTERNAL] hub TextId finder now prasing the `&#8209;` to `-`\n" +
+                "[NEW] Work in progress command released to patreons\n" +
+                "[?] You hear that, Mr. Anderson? That is the sound of inevitability.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -1155,7 +1159,7 @@ namespace LiveBot.Commands
                                 ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                             }
 
-                            string[] EventTitle = (Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value ?? "[Event Info Missing]").Replace("\"", string.Empty).Split(' ');
+                            string[] EventTitle = (CustomMethod.HubNameLookup(ThisEventNameID)).Replace("\"", string.Empty).Split(' ');
                             TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}?page_size=1"));
                             StringBuilder sb = new StringBuilder();
                             for (int j = 0; j < EventTitle.Length; j++)
@@ -1381,7 +1385,7 @@ namespace LiveBot.Commands
                         ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
                     }
 
-                    string[] EventTitle = (Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ThisEventNameID)).Value ?? "[Event Info Missing]").Replace("\"", string.Empty).Split(' ');
+                    string[] EventTitle = (CustomMethod.HubNameLookup(ThisEventNameID)).Replace("\"", string.Empty).Split(' ');
                     TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}?page_size=1"));
                     StringBuilder sb = new StringBuilder();
                     for (int j = 0; j < EventTitle.Length; j++)
@@ -1447,7 +1451,7 @@ namespace LiveBot.Commands
             TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             BaseImage.Save(imageLoc);
             OutMessage = $"{ctx.User.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : platform == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
-            
+
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             await ctx.RespondWithFileAsync(upFile, OutMessage);
         }
@@ -1476,13 +1480,13 @@ namespace LiveBot.Commands
                      switch (Rewards[i].Type)
                      {
                          case "phys_part":
-                             RewardTitle = $"{Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)).Value}" +
+                             RewardTitle = $"{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)}" +
                              $" {Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("bonus_icon")).Value, "\\w{0,}_", "")} {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("type")).Value}" +
                              $"({Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("vcat_icon")).Value, "\\w{0,}_", "")})";
                              break;
 
                          case "vanity":
-                             RewardTitle = Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Title_Text_ID)).Value;
+                             RewardTitle = CustomMethod.HubNameLookup(Rewards[i].Title_Text_ID);
                              if (RewardTitle is null)
                              {
                                  if (Rewards[i].Img_Path.Contains("emote"))
@@ -1505,7 +1509,7 @@ namespace LiveBot.Commands
                              break;
 
                          case "vehicle":
-                             RewardTitle = $"{Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("brand_text_id")).Value)).Value} - {Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("model_text_id")).Value)).Value}";
+                             RewardTitle = $"{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("brand_text_id")).Value)} - {CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("model_text_id")).Value)}";
                              break;
 
                          default:
@@ -1760,7 +1764,7 @@ namespace LiveBot.Commands
                 await ctx.RespondAsync("The Crew 2 Server is Offline");
             }
         }
-        
+
         [Command("mywarnings")]
         [RequireGuild]
         [Description("Shows your warning, kick and ban history.")]
@@ -1783,13 +1787,14 @@ namespace LiveBot.Commands
         [Description("Tags a role ")]
         public async Task RoleTag(CommandContext ctx, DiscordEmoji Emoji)
         {
-            DB.RoleTagSettings RT = DB.DBLists.RoleTagSettings.FirstOrDefault(w => w.Server_ID == ctx.Guild.Id && w.Emoji_ID == Emoji.Id);
-            if (RT != null)
+            List<DB.RoleTagSettings> Roles = DB.DBLists.RoleTagSettings.Where(w => w.Server_ID == ctx.Guild.Id && w.Emoji_ID == Emoji.Id).ToList();
+            if (Roles != null)
             {
-                if (RT.Channel_ID == ctx.Channel.Id)
+                DB.RoleTagSettings RT = Roles.FirstOrDefault(w => (ulong)w.Channel_ID == ctx.Channel.Id);
+                if (RT != null)
                 {
                     DiscordRole role = ctx.Guild.GetRole((ulong)RT.Role_ID);
-                    if (RT.Last_Used<DateTime.Now-TimeSpan.FromMinutes(RT.Cooldown))
+                    if (RT.Last_Used < DateTime.Now - TimeSpan.FromMinutes(RT.Cooldown))
                     {
                         await ctx.RespondAsync($"{role.Mention} - {ctx.Member.Mention}: {RT.Message}");
                         RT.Last_Used = DateTime.Now;
@@ -1797,7 +1802,8 @@ namespace LiveBot.Commands
                     }
                     else
                     {
-                        await ctx.RespondAsync($"{ctx.Member.Mention}, This role can't be mentioned right now, cooldown has not passed yet.");
+                        TimeSpan remainingTime = TimeSpan.FromMinutes(RT.Cooldown) - (DateTime.Now - RT.Last_Used);
+                        await ctx.RespondAsync($"{ctx.Member.Mention}, This role can't be mentioned right now, cooldown has not passed yet. ({remainingTime.Hours}:{remainingTime.Minutes}:{remainingTime.Seconds})");
                     }
                 }
                 else
@@ -1808,6 +1814,106 @@ namespace LiveBot.Commands
             else
             {
                 await ctx.RespondAsync($"{ctx.Member.Mention}, This emoji does not represent a role in this server.");
+            }
+        }
+
+        [Command("hubevent")]
+        [RequireRoles(RoleCheckMode.Any, "Patreon", "Discord-Moderator", "Ubisoft")]
+        public async Task HubEvent(CommandContext ctx)
+        {
+            var interactivity = ctx.Client.GetInteractivity();
+
+            StringBuilder Families = new StringBuilder();
+            Families.AppendLine("```csharp");
+            List<TCHubJson.Family> FamilyList = Program.TCHub.Families.OrderBy(w => w.ID).ToList();
+            for (int i = 0; i < FamilyList.Count; i++)
+            {
+                Families.AppendLine($"#{i} - {CustomMethod.HubNameLookup(FamilyList[i].Text_ID)}");
+            }
+            Families.AppendLine("```");
+            await ctx.RespondAsync(Families.ToString());
+            var FamilyIdMsg = await interactivity.WaitForMessageAsync(w => w.Author == ctx.User && w.Channel == ctx.Channel, TimeSpan.FromSeconds(30));
+            if (!FamilyIdMsg.TimedOut)
+            {
+                bool isNumber = int.TryParse(FamilyIdMsg.Result.Content, out int familyID);
+                if (isNumber && familyID >= 0 && familyID < FamilyList.Count)
+                {
+                    StringBuilder Disciplines = new StringBuilder();
+                    List<TCHubJson.Discipline> DisciplinesList = Program.TCHub.Disciplines.Where(w => w.Family_ID == FamilyList[familyID].ID).OrderBy(w => w.ID).ToList();
+                    Disciplines.AppendLine("```csharp");
+                    for (int i = 0; i < DisciplinesList.Count; i++)
+                    {
+                        Disciplines.AppendLine($"#{i} - {CustomMethod.HubNameLookup(DisciplinesList[i].Text_ID)}");
+                    }
+                    Disciplines.AppendLine("```");
+
+                    await ctx.RespondAsync($"{ctx.User.Mention}\n{Disciplines}");
+
+                    var DisciplineIdMsg = await interactivity.WaitForMessageAsync(w => w.Author == ctx.User && w.Channel == ctx.Channel, TimeSpan.FromSeconds(30));
+                    if (!DisciplineIdMsg.TimedOut)
+                    {
+                        isNumber = int.TryParse(DisciplineIdMsg.Result.Content, out int disciplineID);
+                        if (isNumber && disciplineID >= 0 && disciplineID < DisciplinesList.Count)
+                        {
+                            List<TCHubJson.Mission> MissionList = Program.TCHub.Missions.Where(w => w.Discipline_ID == DisciplinesList[disciplineID].ID).OrderBy(w => w.ID).ToList();
+                            int page = 1;
+                            bool end = false;
+
+                            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
+                            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
+                            DiscordMessage MissionMsg = await ctx.RespondAsync($"{CustomMethod.GetMissionList(MissionList, page)}");
+                            await MissionMsg.CreateReactionAsync(left);
+                            await Task.Delay(300).ContinueWith(t => MissionMsg.CreateReactionAsync(right));
+                            do
+                            {
+                                var reactionResult = MissionMsg.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+                                if (reactionResult.Result.TimedOut)
+                                {
+                                    end = reactionResult.Result.TimedOut;
+                                }
+                                else if (reactionResult.Result.Result.Emoji == left)
+                                {
+                                    await MissionMsg.DeleteReactionAsync(reactionResult.Result.Result.Emoji, ctx.User);
+                                    if (page > 1)
+                                    {
+                                        page--;
+                                        await MissionMsg.ModifyAsync(CustomMethod.GetMissionList(MissionList, page));
+                                    }
+                                }
+                                else if (reactionResult.Result.Result.Emoji == right)
+                                {
+                                    await MissionMsg.DeleteReactionAsync(reactionResult.Result.Result.Emoji, ctx.User);
+                                    page++;
+                                    try
+                                    {
+                                        await MissionMsg.ModifyAsync(CustomMethod.GetMissionList(MissionList, page));
+                                    }
+                                    catch (Exception)
+                                    {
+                                        page--;
+                                    }
+                                }
+                            }
+                            while (!end);
+                        }
+                        else
+                        {
+                            await ctx.RespondAsync($"{ctx.User.Mention}, Oops, something went wrong. Wrong ID");
+                        }
+                    }
+                    else
+                    {
+                        await ctx.RespondAsync($"{ctx.User.Mention}, The request timed out, you didn't specify the Discipline ID");
+                    }
+                }
+                else
+                {
+                    await ctx.RespondAsync($"{ctx.User.Mention}, Oops, something went wrong. Wrong ID");
+                }
+            }
+            else
+            {
+                await ctx.RespondAsync($"{ctx.User.Mention}, The request timed out, you didn't specify the Family ID");
             }
         }
     }

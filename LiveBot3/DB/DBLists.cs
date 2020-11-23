@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +7,7 @@ using System.Threading;
 
 namespace LiveBot.DB
 {
-    static class DBLists
+    internal static class DBLists
     {
         public readonly static int TableCount = 18;
         public static int LoadedTableCount { get; set; } = 0;
@@ -68,7 +67,7 @@ namespace LiveBot.DB
             if (progress)
             {
                 LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed,"Vehicle");
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Vehicle");
             }
             else
             {
@@ -493,6 +492,7 @@ namespace LiveBot.DB
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
+
         public static void UpdateRoleTagSettings(params RoleTagSettings[] o)
         {
             using var ctx = new RoleTagSettingsContext();
@@ -607,6 +607,7 @@ namespace LiveBot.DB
             ctx.SaveChanges();
             LoadModMail();
         }
+
         public static void InsertRoleTagSettings(RoleTagSettings o)
         {
             using var ctx = new RoleTagSettingsContext();

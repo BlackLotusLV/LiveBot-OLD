@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20201118_A";
+        public readonly static string BotVersion = $"20201123_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -55,7 +55,8 @@ namespace LiveBot
         public static FontCollection Fonts { get; set; } = new FontCollection();
 
         // Timers
-        private  Timer StreamDelayTimer { get; set; } = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
+        private Timer StreamDelayTimer { get; set; } = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
+
         private Timer ActiveRoleTimer { get; set; } = new Timer(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer));
         private Timer HubUpdateTimer { get; set; } = new Timer(e => TimerMethod.UpdateHubInfo());
         private Timer MessageCacheClearTimer { get; set; } = new Timer(e => AutoMod.ClearMSGCache());

@@ -72,7 +72,8 @@ namespace LiveBot.Commands
                         };
 
                         DBLists.InsertModMail(newEntry);
-                        await ctx.RespondAsync($"Modmail entry open with `{serverName.ToLower()}`. Continue to write as you would normaly ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
+                        await ctx.RespondAsync($"**----------------------------------------------------**\n" +
+                            $"Modmail entry **open** with `{serverName.ToLower()}`. Continue to write as you would normaly ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
                         DiscordChannel MMChannel = Guild.GetChannel((ulong)ModMailServers.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
                         DiscordEmbedBuilder ModeratorEmbed = new DiscordEmbedBuilder
                         {
@@ -190,7 +191,7 @@ namespace LiveBot.Commands
                 await Automation.ModMail.CloseModMail(
                     modMail,
                     ctx.User,
-                    $"[CLOSED] #{modMail.ID} Mod Mail closed by {ctx.User.Username}",
+                    $" Mod Mail closed by {ctx.User.Username}",
                     $"**Mod Mail closed by {ctx.User.Username}!\n----------------------------------------------------**");
                 Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"Mod mail entry #{modMail.ID} closed by an admin/moderator");
             }

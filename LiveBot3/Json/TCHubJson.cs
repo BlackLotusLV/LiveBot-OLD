@@ -231,7 +231,7 @@ namespace LiveBot.Json
             public string IMG_Path { get; private set; }
 
             [JsonProperty("discipline")]
-            public string Discipline_ID { get; private set; }
+            public ulong Discipline_ID { get; private set; }
         }
 
         public struct Skill
@@ -374,7 +374,6 @@ namespace LiveBot.Json
 
             [JsonProperty("links")]
             public NewsLinks[] NewsLinks { get; private set; }
-
         }
 
         public struct NewsObj
@@ -393,7 +392,6 @@ namespace LiveBot.Json
 
             [JsonProperty("actionName")]
             public string ActionName { get; private set; }
-
         }
     }
 }

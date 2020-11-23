@@ -228,6 +228,18 @@ namespace LiveBot
             return sb.ToString();
         }
 
+        public static string GetMissionList(List<Json.TCHubJson.Mission> MissionList, int page)
+        {
+            StringBuilder Missions = new StringBuilder();
+            Missions.AppendLine("```csharp");
+            for (int i = (page * 10) - 10; i < page * 10; i++)
+            {
+                Missions.AppendLine($"{i}\t{MissionList[i].ID}\t{HubNameLookup(MissionList[i].Text_ID)}");
+            }
+            Missions.Append("```");
+            return Missions.ToString();
+        }
+
         public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
         {
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id == f.Server_ID && user.Id == f.User_ID);
@@ -290,7 +302,8 @@ namespace LiveBot
                     Date = DateTime.Now.ToString("yyyy-MM-dd"),
                     Admin_ID = aid,
                     User_ID = uid,
-                    Server_ID = server.Id
+                    Server_ID = server.Id,
+                    Type = "warning"
                 };
                 DB.DBLists.InsertWarnings(newWarning);
 
@@ -425,7 +438,7 @@ namespace LiveBot
                 kcount = UserStats.Kick_Count;
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id && w.Type=="warning").ToList();
+                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id && w.Type == "warning").ToList();
                 foreach (var item in WarningsList)
                 {
                     if (item.Active)
@@ -505,6 +518,13 @@ namespace LiveBot
             {
                 DB.DBLists.LoadedTableCount = 0;
             }
+        }
+
+        public static string HubNameLookup(string ID)
+        {
+            string HubText = Program.TCHubDictionary.FirstOrDefault(w => w.Key.Equals(ID)).Value ?? "[Item Name Missing]";
+            HubText = HubText.Replace("&#8209;", "-");
+            return HubText;
         }
     }
 }

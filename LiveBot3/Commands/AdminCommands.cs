@@ -107,7 +107,7 @@ namespace LiveBot.Commands
                         };
                         try
                         {
-                            await member.SendMessageAsync($"Your warning level in **{ctx.Guild.Name}** has been lowerd to {WarnedUserStats.Warning_Level} by {ctx.User.Mention}");
+                            await member.SendMessageAsync($"Your warning level in **{ctx.Guild.Name}** has been lowered to {WarnedUserStats.Warning_Level} by {ctx.User.Mention}");
                         }
                         catch
                         {
