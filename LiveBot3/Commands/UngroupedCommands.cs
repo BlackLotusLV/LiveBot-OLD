@@ -32,13 +32,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Closing a Mod Mail from the moderator side text output duplicating.\n" +
-                "[FIX] Mod Mail clarity, from user side.\n" +
-                "[NEW] `/roletag` command now displays time remaining on the role colldown.\n" +
-                "[FIX] un-warn command output typo fix\n" +
-                "[INTERNAL] hub TextId finder now prasing the `&#8209;` to `-`\n" +
-                "[NEW] Work in progress command released to patreons\n" +
-                "[?] You hear that, Mr. Anderson? That is the sound of inevitability.";
+            string changelog = "[INTERNAL] Live Stream list check loggs updated to standard\n" +
+                "[FIX] Mod Mail still trying to close already closed entries.\n" +
+                "[REMOVED] Nationality commands removed. Followup to removal of roles in the server. Were causing issues when used in other servers(old code)\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -343,51 +340,6 @@ namespace LiveBot.Commands
                 }
             };
             await ctx.RespondAsync(embed: embed);
-        }
-
-        [Command("german"), RequireRoles(RoleCheckMode.Any, "German")]
-        [Description("Give german role to user to access language voice channel. Requires the role to give the role")]
-        public async Task GermanRole(CommandContext ctx, [Description("Who to give the role to.")] DiscordMember user)
-        {
-            DiscordRole role = ctx.Guild.GetRole(261616587923128330);
-            await user.GrantRoleAsync(role);
-            await ctx.RespondAsync($"German role given to {user.Mention}.");
-        }
-
-        [Command("russian"), RequireRoles(RoleCheckMode.Any, "Russian")]
-        [Description("Give russian role to user to access language voice channel. Requires the role to give the role")]
-        public async Task RussianRole(CommandContext ctx, [Description("Who to give the role to.")] DiscordMember user)
-        {
-            DiscordRole role = ctx.Guild.GetRole(458654242862006294);
-            await user.GrantRoleAsync(role);
-            await ctx.RespondAsync($"Russian role given to {user.Mention}.");
-        }
-
-        [Command("french"), RequireRoles(RoleCheckMode.Any, "French")]
-        [Description("Give french role to user to access language voice channel. Requires the role to give the role")]
-        public async Task FrenchRole(CommandContext ctx, [Description("Who to give the role to.")] DiscordMember user)
-        {
-            DiscordRole role = ctx.Guild.GetRole(326292304535224321);
-            await user.GrantRoleAsync(role);
-            await ctx.RespondAsync($"French role given to {user.Mention}.");
-        }
-
-        [Command("swedish"), RequireRoles(RoleCheckMode.Any, "Swedish")]
-        [Description("Give swedish role to user to access language voice channel. Requires the role to give the role")]
-        public async Task SwedishRole(CommandContext ctx, [Description("Who to give the role to.")] DiscordMember user)
-        {
-            DiscordRole role = ctx.Guild.GetRole(458660241731616796);
-            await user.GrantRoleAsync(role);
-            await ctx.RespondAsync($"Swedish role given to {user.Mention}.");
-        }
-
-        [Command("latvian"), RequireRoles(RoleCheckMode.Any, "Latvian")]
-        [Description("Give latvian role to user to access language voice channel. Requires the role to give the role")]
-        public async Task LatvianRole(CommandContext ctx, [Description("Who to give the role to.")] DiscordMember user)
-        {
-            DiscordRole role = ctx.Guild.GetRole(458660350842241034);
-            await user.GrantRoleAsync(role);
-            await ctx.RespondAsync($"Latvian role given to {user.Mention}.");
         }
 
         [Command("convert")]
