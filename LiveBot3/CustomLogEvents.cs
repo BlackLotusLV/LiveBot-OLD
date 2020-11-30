@@ -15,5 +15,6 @@ namespace LiveBot
         public static EventId DeleteLog { get; } = new EventId(204, "DeleteLog");
         public static EventId ModMail { get; } = new EventId(205, "ModMail");
         public static EventId PhotoCleanup { get; } = new EventId(206, "PhotoCleanup");
+        public static EventId LiveStream { get; } = new EventId(207, "LiveStream");
     }
 }

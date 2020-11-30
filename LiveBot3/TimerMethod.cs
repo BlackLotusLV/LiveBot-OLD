@@ -24,14 +24,14 @@ namespace LiveBot
                 {
                     if (item.Time.AddHours(StreamCheckDelay) < DateTime.Now && item.User.Presence.Activity.ActivityType != ActivityType.Streaming)
                     {
-                        Console.WriteLine($"{item.User.Username} removed for time out");
+                        Program.Client.Logger.LogInformation(CustomLogEvents.LiveStream, $"User {item.User.Username} removed from Live Stream List - {LiveStream.StreamCheckDelay} hours passed.");
                         list.Remove(item);
                     }
                 }
             }
             catch (Exception)
             {
-                Console.WriteLine("[System] LiveStream list is empty!");
+                Program.Client.Logger.LogInformation(CustomLogEvents.LiveStream, "Live Stream list is empty. No-one to remove or check.");
             }
         }
 
