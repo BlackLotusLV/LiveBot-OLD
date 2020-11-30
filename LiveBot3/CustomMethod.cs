@@ -307,7 +307,7 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertWarnings(newWarning);
 
-                int warning_count = DB.DBLists.Warnings.Count(w => w.User_ID == user.Id && w.Server_ID == server.Id);
+                int warning_count = DB.DBLists.Warnings.Count(w => w.User_ID == user.Id && w.Server_ID == server.Id && w.Type=="warning");
 
                 SB.AppendLine($"You have been warned by <@{admin.Id}>.\n**Warning Reason:**\t{reason}\n**Warning Level:** {WarnedUserStats.Warning_Level}\n**Server:** {server.Name}");
                 embed = new DiscordEmbedBuilder
@@ -438,7 +438,7 @@ namespace LiveBot
                 kcount = UserStats.Kick_Count;
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id && w.Type == "warning").ToList();
+                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).ToList();
                 foreach (var item in WarningsList)
                 {
                     if (item.Active)
@@ -476,7 +476,7 @@ namespace LiveBot
             embed.AddField("Times warned: ", $"{wcount}", true);
             embed.AddField("Times kicked: ", $"{kcount}", true);
             embed.AddField("Times banned: ", $"{bcount}", true);
-            embed.AddField("Warnings: ", $"{Reason}", false);
+            embed.AddField("Infractions: ", $"{Reason}", false);
             if (!UserCheck)
             {
                 return new DiscordEmbedBuilder

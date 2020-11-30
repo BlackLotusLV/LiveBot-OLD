@@ -81,7 +81,7 @@ namespace LiveBot
                 {
                     endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
                 }
-                if (endtime != TCHubLastUpdated)
+                if (endtime != TCHubLastUpdated || forced)
                 {
                     TCHubLastUpdated = endtime;
                     Program.TCHubDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(wc.DownloadString(Program.TCHubJson.Dictionary));

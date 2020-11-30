@@ -58,7 +58,7 @@ namespace LiveBot.Automation
                         await WelcomeChannel.SendMessageAsync(msg);
                     }
                 }
-                var ModMailEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Member.Id && w.Server_ID == e.Guild.Id);
+                var ModMailEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Member.Id && w.Server_ID == e.Guild.Id && w.IsActive);
                 if (ModMailEntry != null)
                 {
                     await ModMail.CloseModMail(ModMailEntry, await Client.GetUserAsync(e.Member.Id), "Mod Mail entry closed due to user leaving", "**Mod Mail closed!\n----------------------------------------------------**");
