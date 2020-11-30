@@ -43,6 +43,10 @@ namespace LiveBot.DB
         public bool IsCCOnly { get; set; }
 
         [Required]
+        [Column("motorpass")]
+        public bool IsMotorPassExclusive { get; set; }
+
+        [Required]
         [Column("tier")]
         public char VehicleTier { get; set; }
     }

@@ -572,6 +572,7 @@ namespace LiveBot.Commands
             embed.AddField("Vehicle Tier", $"{SelectedVehicles[row].VehicleTier}", true);
             embed.AddField("Crew Credits only?", $"{SelectedVehicles[row].IsCCOnly}", true);
             embed.AddField("Summit exclusive?", $"{SelectedVehicles[row].IsSummitVehicle}", true);
+            embed.AddField("MP exclusive?", $"{SelectedVehicles[row].IsMotorPassExclusive}", true);
 
             await ctx.RespondAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", false, embed);
         }
