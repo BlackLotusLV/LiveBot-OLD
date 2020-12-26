@@ -32,9 +32,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[INTERNAL] Live Stream list check loggs updated to standard\n" +
-                "[FIX] Mod Mail still trying to close already closed entries.\n" +
-                "[REMOVED] Nationality commands removed. Followup to removal of roles in the server. Were causing issues when used in other servers(old code)\n" +
+            string changelog = "[UPDATE] `/srewards` command improved readability of rewards\n" +
+                "[UPDATE] `/srewards` added support for more currency type names(no longer just fame)\n" +
+                "[UPDATE] `/srewards` command now shows the affixes for part sets.(still WIP with images and callibration with the API names)\n" +
+                "[Temp-Change] `/randomvehcile` command now locked to certain roles as it is used for PvP events. Different command coming later\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -328,7 +329,7 @@ namespace LiveBot.Commands
                     IconUrl = user.AvatarUrl
                 },
                 Description = $"**ID**\t\t\t\t\t\t\t\t\t\t\t\t**Nickname**\n" +
-                $"{user.Id}\t\t\t{(user.Nickname ?? "*none*")}\n" +
+                $"{user.Id}\t\t\t{user.Nickname ?? "*none*"}\n" +
                 $"**Account created**\n" +
                 $"{createdstring}\n" +
                 $"**Join date**\n" +
@@ -392,6 +393,7 @@ namespace LiveBot.Commands
 
         [Command("rvehicle")]
         [Aliases("rv")]
+        [RequireRoles(RoleCheckMode.Any,"Discord-Moderator", "Patreon", "Eldorado King", "Ubisoft", "Event Organizer", "Content Creator")]
         [Description("Gives a random vehicle from a discipline. Street race gives both a bike and a car")]
         public async Task RandomVehicle(CommandContext ctx, DiscordEmoji discipline = null)
         {
