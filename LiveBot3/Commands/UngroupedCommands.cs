@@ -1424,18 +1424,55 @@ namespace LiveBot.Commands
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
             int RewardWidth = 412;
             TCHubJson.Reward[] Rewards = Program.JSummit[0].Rewards;
-            Font Font = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+            Font Font = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 25);
             using (Image<Rgba32> RewardsImage = new Image<Rgba32>(4 * RewardWidth, 328))
             {
                 Parallel.For(0, Rewards.Length, (i, state) =>
                  {
                      string RewardTitle = string.Empty;
+
+                     Image<Rgba32>
+                                 affix1 = new Image<Rgba32>(1,1),
+                                 affix2 = new Image<Rgba32>(1, 1),
+                                 affixbonus = new Image<Rgba32>(1, 1);
+                     bool isParts = false;
                      switch (Rewards[i].Type)
                      {
                          case "phys_part":
-                             RewardTitle = $"{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)}" +
-                             $" {Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("bonus_icon")).Value, "\\w{0,}_", "")} {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("type")).Value}" +
-                             $"({Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("vcat_icon")).Value, "\\w{0,}_", "")})";
+                             string
+                                    affix1name = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("affix1")).Value ?? "unknown", "\\w{0,}", string.Empty),
+                                    affix2name = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("affix2")).Value ?? "unknown", "\\w{0,}", string.Empty),
+                                    affixBonusName = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("bonus_icon")).Value ?? "unknown", "\\w{0,}_", string.Empty);
+                             try
+                             {
+                                 affix1 = Image.Load<Rgba32>($"Assets/Affix/{affix1name.ToLower()}.png");
+                             }
+                             catch
+                             {
+                                 affix1 = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
+                             }
+                             try
+                             {
+                                 affix2 = Image.Load<Rgba32>($"Assets/Affix/{affix2name.ToLower()}.png");
+                             }
+                             catch
+                             {
+                                 affix2 = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
+                             }
+                             try
+                             {
+                                 affixbonus = Image.Load<Rgba32>($"Assets/Affix/{affixBonusName.ToLower()}.png");
+                             }
+                             catch
+                             {
+                                 affixbonus = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
+                             }
+                             RewardTitle = $"{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)} " +
+                             $"{affixBonusName} " +
+                             $"{Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("type")).Value}" +
+                             $"({Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("vcat_icon")).Value??"unknown", "\\w{0,}_", string.Empty)})";
+
+                             isParts = true;
                              break;
 
                          case "vanity":
@@ -1458,7 +1495,7 @@ namespace LiveBot.Commands
                              break;
 
                          case "currency":
-                             RewardTitle = $"{Rewards[i].Debug_Title} - {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("currency_amount")).Value}";
+                             RewardTitle = $"{Rewards[i].Extra.FirstOrDefault(w=>w.Key.Equals("currency_type")).Value} - {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("currency_amount")).Value}";
                              break;
 
                          case "vehicle":
@@ -1481,11 +1518,26 @@ namespace LiveBot.Commands
                      TopBar.Mutate(ctx => ctx.
                      Fill(RewardColours[i])
                      );
+                     TextGraphicsOptions TextOptions = new TextGraphicsOptions
+                     {
+                         TextOptions = new TextOptions
+                         {
+                             WrapTextWidth = RewardWidth
+                         }
+                     };
                      RewardsImage.Mutate(ctx => ctx
                      .DrawImage(RewardImage, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
                      .DrawImage(TopBar, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
-                     .DrawText(RewardTitle, Font, Color.White, new PointF(((4 - Rewards[i].Level) * RewardWidth) + 5, 0))
+                     .DrawText(TextOptions, RewardTitle, Font, Brushes.Solid(Color.White), Pens.Solid(Color.Black, 1f), new PointF(((4 - Rewards[i].Level) * RewardWidth) + 5, 15))
                      );
+                     if (isParts)
+                     {
+                         RewardsImage.Mutate(ctx => ctx
+                         .DrawImage(affix1, new Point((4 - Rewards[i].Level) * RewardWidth, RewardImage.Height - affix1.Height), 1)
+                         .DrawImage(affix2, new Point((4 - Rewards[i].Level) * RewardWidth+affix1.Width, RewardImage.Height - affix2.Height), 1)
+                         .DrawImage(affixbonus, new Point((4 - Rewards[i].Level) * RewardWidth + affix1.Width+affix2.Width, RewardImage.Height - affixbonus.Height), 1)
+                         );
+                     }
                  });
                 RewardsImage.Save(imageLoc);
             }
