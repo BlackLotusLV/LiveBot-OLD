@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20202601_A";
+        public readonly static string BotVersion = $"20210212_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -46,7 +46,7 @@ namespace LiveBot
         public static readonly string tmpLoc = Path.GetTempPath() + "/livebot-";
 
         // channels
-        private DiscordChannel BotErrorLogChannel;
+        private static DiscordChannel BotErrorLogChannel { get; set; }
 
         // guild
         public static DiscordGuild TCGuild { get; private set; }
@@ -88,7 +88,6 @@ namespace LiveBot
             HubThread.Start();
             //
             LogLevel logLevel = LogLevel.Debug;
-
             if (args.Length == 1 && args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
             {
                 cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).LiveBot;
@@ -105,7 +104,6 @@ namespace LiveBot
                 ReconnectIndefinitely = false,
                 MinimumLogLevel = logLevel
             };
-
             Client = new DiscordClient(cfg);
             DB.DBLists.LoadAllLists(); // loads data from database
             Client.Ready += this.Client_Ready;
@@ -117,7 +115,6 @@ namespace LiveBot
                 PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore,
                 Timeout = TimeSpan.FromMinutes(2)
             });
-
             var ccfg = new CommandsNextConfiguration
             {
                 StringPrefixes = new string[] { cfgjson.CommandPrefix },
@@ -134,21 +131,9 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.OCommands>();
             this.Commands.RegisterCommands<Commands.ModMailCommands>();
             this.Commands.RegisterCommands<Commands.ProfileCommands>();
-
-            // Servers
-            TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
-            DiscordGuild testserver = await Client.GetGuildAsync(282478449539678210);
-
-            // Channels
-            BotErrorLogChannel = testserver.GetChannel(673105806778040320);
+            this.Commands.RegisterCommands<Commands.TheCrewHubCommands>();
 
             //*/
-            Weather.StartTimer();
-            StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
-            ActiveRoleTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
-            MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
-            ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
 
             if (!TestBuild) //Only enables these when using live version
             {
@@ -160,6 +145,7 @@ namespace LiveBot
                 Client.MessageCreated += AutoMod.Photomode_Cleanup;
                 Client.MessageCreated += AutoMod.Auto_Moderator_Banned_Words;
                 Client.MessageCreated += AutoMod.Spam_Protection;
+                Client.MessageCreated += AutoMod.Link_Spam_Protection;
                 Client.MessageDeleted += AutoMod.Delete_Log;
                 Client.MessagesBulkDeleted += AutoMod.Bulk_Delete_Log;
                 Client.GuildMemberAdded += AutoMod.User_Join_Log;
@@ -173,17 +159,35 @@ namespace LiveBot
                 Client.GuildMemberAdded += MemberFlow.Welcome_Member;
                 Client.GuildMemberRemoved += MemberFlow.Say_Goodbye;
 
+                Client.GuildMemberUpdated += MembershipScreening.AcceptRules;
+
                 Client.MessageCreated += ModMail.ModMailDM;
             }
-            DiscordActivity BotActivity = new DiscordActivity("DM /modmail to open chat with mods", ActivityType.Playing);
 
+            DiscordActivity BotActivity = new DiscordActivity($"DM /modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
         }
-
         private Task Client_Ready(DiscordClient Client, ReadyEventArgs e)
         {
             Client.Logger.LogInformation(CustomLogEvents.LiveBot, "[LiveBot] Client is ready to process events.");
+            _ = Task.Run(async () =>
+            {
+                // Servers
+                TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
+                DiscordGuild testserver = await Client.GetGuildAsync(282478449539678210);
+                // Channels
+                BotErrorLogChannel = testserver.GetChannel(673105806778040320);
+                while (!ServerIdList.Contains(TCGuild.Id))
+                {
+                    await Task.Delay(100);
+                }
+                StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
+                ActiveRoleTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+                HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
+                MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
+                ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
+            });
             return Task.CompletedTask;
         }
 
@@ -225,7 +229,8 @@ namespace LiveBot
             {
                 File.WriteAllText($"{tmpLoc}{errormsg.Length}-errorFile.txt", errormsg);
                 using var upFile = new FileStream($"{tmpLoc}{errormsg.Length}-errorFile.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                await BotErrorLogChannel.SendFileAsync(upFile);
+                var msgBuilder = new DiscordMessageBuilder().WithFile(upFile);
+                await BotErrorLogChannel.SendMessageAsync(msgBuilder);
             }
             return Task.CompletedTask;
         }

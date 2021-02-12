@@ -124,7 +124,6 @@ namespace LiveBot.Automation
                         }
                     }
                 }
-
             });
             await Task.Delay(1);
         }

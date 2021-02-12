@@ -103,7 +103,7 @@ namespace LiveBot.Commands
 
             byte[] ProfilePicture = new WebClient().DownloadData(Member.AvatarUrl);
             using Image<Rgba32>
-                Base = new Image<Rgba32>(590, 590),
+                Base = new Image<Rgba32>(580, 580),
                 pfp = Image.Load<Rgba32>(ProfilePicture),
                 background = Image.Load<Rgba32>(UserSettings.bi.Image)
                 ;
@@ -160,31 +160,31 @@ namespace LiveBot.Commands
             };
 
             int
-                BGX = 10,
-                BGY = 10,
-                MarginWidth = 20 + BGX,
-                //MarginHeight = 20 + BGY,
-                FollowersY = 300,
+                BGX = 0,
+                BGY = 0,
+                MarginWidth = 20,
+                //MarginHeight = 30,
+                FollowersY = BGY + 290,
                 SmallStatBoxHeight = 35,
                 BucksY = FollowersY + SmallStatBoxHeight + 5,
                 StatBoxWidth = 300,
                 StatBoxShift = 20,
-                pfpX = 35,
-                pfpY = 35,
+                pfpX = BGX + 25,
+                pfpY = BGY + 25,
                 LevelBoxSize = (SmallStatBoxHeight * 2) + 5,
-                LevelBoxX = background.Width - MarginWidth - LevelBoxSize,
+                LevelBoxX = background.Width - (MarginWidth + StatBoxShift + LevelBoxSize),
                 LevelBoxY = FollowersY,
                 BadgeX = (int)(LevelBoxX - (LevelBoxSize * 1.25)),
                 BadgeY = LevelBoxY,
                 NameWidth = 290,
                 NameX = BGX + background.Width / 2 - NameWidth / 2,
-                NameY = 240,
+                NameY = BGY + 230,
                 NameYellowWidth = 5,
                 NameHeight = 50,
                 BioX = MarginWidth,
                 BioY = BucksY + SmallStatBoxHeight + 10,
                 BioHeight = 190,
-                BioWidth = Base.Width - BGX - 2 * MarginWidth,
+                BioWidth = Base.Width - 3 * MarginWidth,
                 FollowersBarX = MarginWidth + 10,
                 FollowersBarY = FollowersY + SmallStatBoxHeight - 5,
                 FollowersBarLenght = FollowersBarX + (int)(0.01 * FBarLenght * StatBoxWidth - 10)
@@ -222,7 +222,10 @@ namespace LiveBot.Commands
             string imageLoc = $"{Program.tmpLoc}{Member.Id}-profile.png";
             Base.Save(imageLoc);
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-            await ctx.RespondWithFileAsync(upFile);
+            await new DiscordMessageBuilder()
+                .WithFile(upFile)
+                .WithReply(ctx.Message.Id, true)
+                .SendAsync(ctx.Channel);
         }
 
         [Command("updatebackground")]
@@ -248,7 +251,10 @@ namespace LiveBot.Commands
                 DB.DBLists.UpdateUserSettings(UserSettings);
                 output = $"You have changed your profile background";
             }
-            await ctx.RespondAsync(output);
+            await new DiscordMessageBuilder()
+                .WithContent(output)
+                 .WithReply(ctx.Message.Id, true)
+                 .SendAsync(ctx.Channel);
         }
 
         [Command("updateinfo")]
@@ -260,7 +266,10 @@ namespace LiveBot.Commands
             UserSettings.User_Info = Info;
 
             DB.DBLists.UpdateUserSettings(UserSettings);
-            await ctx.RespondAsync("You have changed your user info.");
+            await new DiscordMessageBuilder()
+                .WithContent("You have changed your user info.")
+                 .WithReply(ctx.Message.Id, true)
+                 .SendAsync(ctx.Channel);
         }
 
         [Command("update")]

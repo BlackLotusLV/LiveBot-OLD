@@ -33,5 +33,13 @@ namespace LiveBot.DB
         [Required]
         [Column("mod_mail")]
         public decimal ModMailID { get; set; }
+
+        [Required]
+        [Column("has_screening")]
+        public bool HasScreening { get; set; }
+
+        [Required]
+        [Column("has_link_protection")]
+        public bool HasLinkProtection { get; set; }
     }
 }

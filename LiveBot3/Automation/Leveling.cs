@@ -20,19 +20,25 @@ namespace LiveBot.Automation
                 {
                     bool checkglobal = false, checklocal = false;
                     Random r = new Random();
-                    int MinInterval = 10, MaxInterval = 30;
-                    if (e.Message.Content.Length > 500)
+                    int
+                        MinIntervalA = 10,
+                        MaxIntervalA = 30,
+                        CharCountSmall = 100,
+                        CharCountBig = 500,
+                        MinIntervalB = 55,
+                        MaxIntervalB = 85;
+                    if (e.Message.Content.Length > CharCountBig)
                     {
-                        MinInterval = 40;
-                        MaxInterval = 70;
+                        MinIntervalA = MinIntervalB;
+                        MaxIntervalA = MaxIntervalB;
                     }
-                    else if (e.Message.Content.Length > 100 && e.Message.Content.Length <= 500)
+                    else if (e.Message.Content.Length > CharCountSmall && e.Message.Content.Length <= CharCountBig)
                     {
-                        MinInterval += (29 / 500) * e.Message.Content.Length;
-                        MaxInterval += (29 / 500) * e.Message.Content.Length;
+                        MinIntervalA += (MinIntervalB - MinIntervalA - 1 / CharCountBig) * e.Message.Content.Length;
+                        MaxIntervalA += (MaxIntervalB - MaxIntervalA - 1 / CharCountBig) * e.Message.Content.Length;
                     }
                     int MinMoney = 2, MaxMoney = 5;
-                    int points_added = r.Next(MinInterval, MaxInterval);
+                    int points_added = r.Next(MinIntervalA, MaxIntervalA);
                     int money_added = r.Next(MinMoney, MaxMoney);
                     Parallel.ForEach(UserLevelTimer, Guser =>
                     {
@@ -86,7 +92,7 @@ namespace LiveBot.Automation
                         global = (from lb in Leaderboard.AsParallel()
                                   where lb.ID_User == e.Author.Id
                                   select lb).FirstOrDefault();
-                        points_added = r.Next(MinInterval, MaxInterval);
+                        points_added = r.Next(MinIntervalA, MaxIntervalA);
 
                         global.Followers += points_added;
                         global.Bucks += money_added;

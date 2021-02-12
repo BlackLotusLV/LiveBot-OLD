@@ -3,13 +3,6 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
-using LiveBot.Json;
-using Newtonsoft.Json;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,10 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Point = SixLabors.ImageSharp.Point;
-using PointF = SixLabors.ImageSharp.PointF;
 
 namespace LiveBot.Commands
 {
@@ -32,10 +22,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[UPDATE] `/srewards` command improved readability of rewards\n" +
-                "[UPDATE] `/srewards` added support for more currency type names(no longer just fame)\n" +
-                "[UPDATE] `/srewards` command now shows the affixes for part sets.(still WIP with images and callibration with the API names)\n" +
-                "[Temp-Change] `/randomvehcile` command now locked to certain roles as it is used for PvP events. Different command coming later\n" +
+            string changelog = "[UPDATE] Bot will no longer send the leave message if user has not agreed to the rules, reducing incorrect perspective on memberflow.\n" +
+                "[UPDATE] Improvements on auto moderator. Invite links that are not for this server will be filtered.\n" +
+                "[CHANGE] Removed the cooldown for mysummit command as checking multiple platforms became tedious.\n" +
+                "[CHANGE] Increased longer message follower gain. (affects messages above 100 characters)\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -60,9 +50,18 @@ namespace LiveBot.Commands
 
         [Command("getemote")]
         [Description("Returns the ID of an emote")]
-        public async Task GetEmote(CommandContext ctx, DiscordEmoji emote)
+        public async Task GetEmote(CommandContext ctx, params DiscordEmoji[] emotes)
         {
-            await ctx.RespondAsync(emote.Id.ToString());
+            StringBuilder sb = new StringBuilder();
+
+            foreach (DiscordEmoji emoji in emotes)
+            {
+                sb.AppendLine($"{emoji} - {emoji.Id}");
+            }
+            await new DiscordMessageBuilder()
+                .WithContent(sb.ToString())
+                .WithReply(ctx.Message.Id, true)
+                .SendAsync(ctx.Channel);
         }
 
         [Command("ping")]
@@ -172,14 +171,17 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             FileStream ITImage = new FileStream("Assets/ITC.jpg", FileMode.Open);
+            var msgBuilder = new DiscordMessageBuilder();
+            msgBuilder.WithFile(ITImage);
             if (username == null)
             {
-                await ctx.RespondWithFileAsync(ITImage, ctx.User.Mention);
+                msgBuilder.Content = $"{ctx.User.Mention}";
             }
             else
             {
-                await ctx.RespondWithFileAsync(ITImage, username.Mention);
+                msgBuilder.Content = $"{username.Mention}";
             }
+            await ctx.RespondAsync(msgBuilder);
         }
 
         [Command("supra")]
@@ -393,7 +395,7 @@ namespace LiveBot.Commands
 
         [Command("rvehicle")]
         [Aliases("rv")]
-        [RequireRoles(RoleCheckMode.Any,"Discord-Moderator", "Patreon", "Eldorado King", "Ubisoft", "Event Organizer", "Content Creator")]
+        [RequireRoles(RoleCheckMode.Any, "Discord-Moderator", "Patreon", "Eldorado King", "Ubisoft", "Event Organizer", "Content Creator")]
         [Description("Gives a random vehicle from a discipline. Street race gives both a bike and a car")]
         public async Task RandomVehicle(CommandContext ctx, DiscordEmoji discipline = null)
         {
@@ -528,7 +530,7 @@ namespace LiveBot.Commands
             embed.AddField("Summit exclusive?", $"{SelectedVehicles[row].IsSummitVehicle}", true);
             embed.AddField("MP exclusive?", $"{SelectedVehicles[row].IsMotorPassExclusive}", true);
 
-            await ctx.RespondAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", false, embed);
+            await ctx.RespondAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", embed);
         }
 
         [Command("rank")]
@@ -552,7 +554,10 @@ namespace LiveBot.Commands
                     output = $"{user.Username}'s rank:{rank}\t Followers: {item.Followers}";
                 }
             }
-            await ctx.RespondAsync(output);
+            await new DiscordMessageBuilder()
+                .WithContent(output)
+                 .WithReply(ctx.Message.Id, true)
+                 .SendAsync(ctx.Channel);
         }
 
         [Command("globalrank")]
@@ -577,7 +582,10 @@ namespace LiveBot.Commands
                     output = $"{user.Username}'s rank:{rank}\t Followers: {item.Followers}\t Level {item.Level}";
                 }
             }
-            await ctx.RespondAsync(output);
+            await new DiscordMessageBuilder()
+                .WithContent(output)
+                 .WithReply(ctx.Message.Id, true)
+                 .SendAsync(ctx.Channel);
         }
 
         [Command("globaltop")]
@@ -590,7 +598,10 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            DiscordMessage TopMessage = await ctx.RespondAsync(CustomMethod.GetGlobalTop(ctx, (int)page));
+            var msgBuilder = new DiscordMessageBuilder()
+               .WithContent(CustomMethod.GetGlobalTop(ctx, (int)page))
+                .WithReply(ctx.Message.Id, true);
+            DiscordMessage TopMessage = await ctx.RespondAsync(msgBuilder);
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
@@ -641,8 +652,10 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-
-            DiscordMessage TopMessage = await ctx.RespondAsync(CustomMethod.GetServerTop(ctx, (int)page));
+            var msgBuilder = new DiscordMessageBuilder()
+                .WithContent(CustomMethod.GetServerTop(ctx, (int)page))
+                 .WithReply(ctx.Message.Id, true);
+            DiscordMessage TopMessage = await ctx.RespondAsync(msgBuilder);
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
@@ -692,7 +705,10 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            DiscordMessage TopMessage = await ctx.RespondAsync(CustomMethod.GetBackgroundList(ctx, (int)page));
+            var msgBuilder = new DiscordMessageBuilder()
+                .WithContent(CustomMethod.GetBackgroundList(ctx, (int)page))
+                 .WithReply(ctx.Message.Id, true);
+            DiscordMessage TopMessage = await ctx.RespondAsync(msgBuilder);
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
@@ -789,861 +805,10 @@ namespace LiveBot.Commands
             {
                 output = "Wrong parameters";
             }
-            await ctx.RespondAsync(output);
-        }
-
-        [Command("summit")]
-        [Cooldown(1, 300, CooldownBucketType.User)]
-        [Description("Shows summit tier list and time left.")]
-        public async Task Summit(CommandContext ctx)
-        {
-            await ctx.TriggerTypingAsync();
-            string PCJson = string.Empty, XBJson = string.Empty, PSJson = string.Empty, StadiaJson = string.Empty;
-            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summit.png";
-            byte[] SummitLogo;
-            DateTime endtime;
-
-            int platforms = 4;
-
-            using (WebClient wc = new WebClient())
-            {
-                List<TCHubJson.Summit> JSummit = Program.JSummit;
-                PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                try
-                {
-                    StadiaJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/stadia/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                }
-                catch (Exception)
-                {
-                    platforms = 3;
-                }
-
-                SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
-
-                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
-            }
-            TCHubJson.Rank[] Events = Array.Empty<TCHubJson.Rank>();
-            if (platforms == 4)
-            {
-                Events = new TCHubJson.Rank[4] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(StadiaJson) };
-            }
-            else
-            {
-                Events = new TCHubJson.Rank[3] { JsonConvert.DeserializeObject<TCHubJson.Rank>(PCJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(PSJson), JsonConvert.DeserializeObject<TCHubJson.Rank>(XBJson) };
-            }
-            string[,] pts = new string[platforms, 4];
-            for (int i = 0; i < Events.Length; i++)
-            {
-                for (int j = 0; j < Events[i].Tier_entries.Length; j++)
-                {
-                    if (Events[i].Tier_entries[j].Points == 4294967295)
-                    {
-                        pts[i, j] = "-";
-                    }
-                    else
-                    {
-                        pts[i, j] = Events[i].Tier_entries[j].Points.ToString();
-                    }
-                }
-            }
-            using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Assets/Summit/PC.jpeg"))
-            using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Assets/Summit/PS.jpg"))
-            using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Assets/Summit/XB.png"))
-            using (Image<Rgba32> StadiaImg = Image.Load<Rgba32>("Assets/Summit/STADIA.png"))
-            using (Image<Rgba32> BaseImg = new Image<Rgba32>(300 * platforms, 643))
-            {
-                Image<Rgba32>[] PlatformImg = new Image<Rgba32>[4] { PCImg, PSImg, XBImg, StadiaImg };
-                Parallel.For(0, Events.Length, (i, state) =>
-                {
-                    using Image<Rgba32> TierImg = Image.Load<Rgba32>("Assets/Summit/SummitBase.png");
-                    using Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo);
-                    using Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30);
-                    SummitImg.Mutate(ctx => ctx.Crop(300, SummitImg.Height));
-                    Color TextColour = Color.WhiteSmoke;
-                    Point SummitLocation = new Point(0 + (300 * i), 0);
-                    Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
-                    Font FooterFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-                    FooterImg.Mutate(ctx => ctx
-                    .Fill(Color.Black)
-                    .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
-                    );
-                    BaseImg.Mutate(ctx => ctx
-                        .DrawImage(SummitImg, SummitLocation, 1)
-                        .DrawImage(TierImg, SummitLocation, 1)
-                        .DrawText(pts[i, 3], Basefont, TextColour, new PointF(80 + (300 * i), 365))
-                        .DrawText(pts[i, 2], Basefont, TextColour, new PointF(80 + (300 * i), 435))
-                        .DrawText(pts[i, 1], Basefont, TextColour, new PointF(80 + (300 * i), 505))
-                        .DrawText(pts[i, 0], Basefont, TextColour, new PointF(80 + (300 * i), 575))
-                        .DrawImage(FooterImg, new Point(0 + (300 * i), 613), 1)
-                        .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
-                        );
-                });
-                BaseImg.Save(imageLoc);
-            }
-            TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
-            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-            await ctx.RespondWithFileAsync(upFile, $"Summit tier lists.\n *Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes.*");
-        }
-
-        [Command("mysummit")]
-        [Description("Shows your summit scores.")]
-        [Cooldown(1, 30, CooldownBucketType.User)]
-        [Aliases("sinfo", "summitinfo")]
-        public async Task MySummit(CommandContext ctx, string platform = null)
-        {
-            await ctx.TriggerTypingAsync();
-            TimerMethod.UpdateHubInfo();
-
-            string OutMessage = string.Empty;
-            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
-
-            bool SendImage = false;
-
-            DateTime endtime;
-
-            string search = string.Empty;
-            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
-
-            TCHubJson.TceSummit JTCE;
-            using (WebClient wc = new WebClient())
-            {
-                try
-                {
-                    string Jdown = wc.DownloadString(link);
-                    JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
-                }
-                catch (Exception)
-                {
-                    JTCE = new TCHubJson.TceSummit
-                    {
-                        Error = "No Connection."
-                    };
-                }
-            }
-
-            TCHubJson.TceSummitSubs UserInfo = new TCHubJson.TceSummitSubs();
-
-            if (JTCE.Error != null)
-            {
-                if (JTCE.Error == "Unregistered user")
-                {
-                    OutMessage = $"{ctx.User.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.";
-                }
-                else if (JTCE.Error == "Invalid API key !" || JTCE.Error == "No Connection.")
-                {
-                    OutMessage = $"{ctx.User.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
-                        $"<@85017957343694848> Rip API";
-                }
-            }
-            else if (JTCE.Subs.Length == 1)
-            {
-                UserInfo = JTCE.Subs[0];
-                search = UserInfo.Platform;
-            }
-            else if (JTCE.Subs.Length > 1)
-            {
-                if (platform == null)
-                {
-                    DiscordMessage platformMSG = await ctx.RespondAsync($"{ctx.User.Mention}, you have multiple platforms stored on TCE, please select platform you want to see the scores for.");
-                    DiscordEmoji X1Emoji = await Program.TCGuild.GetEmojiAsync(445234294915334146);
-                    DiscordEmoji PCEmoji = await Program.TCGuild.GetEmojiAsync(445234293019770900);
-                    DiscordEmoji PSEmoji = await Program.TCGuild.GetEmojiAsync(445234294676258816);
-                    DiscordEmoji STADIAEmoji = await Program.TCGuild.GetEmojiAsync(697798396584656896);
-
-                    foreach (var sub in JTCE.Subs)
-                    {
-                        if (sub.Platform.Contains("ps4"))
-                        {
-                            await platformMSG.CreateReactionAsync(PSEmoji);
-                        }
-                        if (sub.Platform.Contains("stadia"))
-                        {
-                            await platformMSG.CreateReactionAsync(STADIAEmoji);
-                        }
-                        if (sub.Platform.Contains("x1"))
-                        {
-                            await platformMSG.CreateReactionAsync(X1Emoji);
-                        }
-                        if (sub.Platform.Contains("pc"))
-                        {
-                            await platformMSG.CreateReactionAsync(PCEmoji);
-                        }
-                    }
-
-                    var Result = await platformMSG.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
-
-                    if (Result.TimedOut)
-                    {
-                        await platformMSG.ModifyAsync("Nothing selected, defaulting to PC");
-                        platform = "pc";
-                    }
-                    else if (Result.Result.Emoji == PCEmoji)
-                    {
-                        await platformMSG.ModifyAsync("PC Platform selected.");
-                        platform = "pc";
-                    }
-                    else if (Result.Result.Emoji == PSEmoji)
-                    {
-                        await platformMSG.ModifyAsync("Playstation Platform selected.");
-                        platform = "ps";
-                    }
-                    else if (Result.Result.Emoji == X1Emoji)
-                    {
-                        await platformMSG.ModifyAsync("Xbox Platform selected.");
-                        platform = "x1";
-                    }
-                    else if (Result.Result.Emoji == STADIAEmoji)
-                    {
-                        await platformMSG.ModifyAsync("Stadia Platform selected.");
-                        platform = "stadia";
-                    }
-                    await platformMSG.DeleteAllReactionsAsync();
-                }
-                switch (platform.ToLower())
-                {
-                    case "pc":
-                    case "computer":
-                        search = "pc";
-                        break;
-
-                    case "xbox":
-                    case "xb1":
-                    case "xb":
-                    case "x1":
-                        search = "x1";
-                        break;
-
-                    case "ps4":
-                    case "playstation":
-                    case "ps":
-                        search = "ps4";
-                        break;
-
-                    case "stadia":
-                        search = "stadia";
-                        break;
-                }
-                if (JTCE.Subs.Count(w => w.Platform.Equals(search)) == 1)
-                {
-                    UserInfo = JTCE.Subs.FirstOrDefault(w => w.Platform.Equals(search));
-                }
-                else if (JTCE.Subs.Count(w => w.Platform.Equals(search)) != 1)
-                {
-                    UserInfo = JTCE.Subs[0];
-                }
-            }
-
-            if (UserInfo.Profile_ID != null)
-            {
-                string SJson;
-                List<TCHubJson.Summit> JSummit = Program.JSummit;
-                byte[] EventLogoBit;
-                using (WebClient wc = new WebClient())
-                {
-                    SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
-
-                    endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
-                }
-                TCHubJson.Rank Events = JsonConvert.DeserializeObject<TCHubJson.Rank>(SJson);
-
-                int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
-
-                Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
-                Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-                Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
-
-                var AllignCenter = new TextGraphicsOptions()
-                {
-                    TextOptions =
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Top
-                    }
-                };
-                var AllignTopLeft = new TextGraphicsOptions()
-                {
-                    TextOptions =
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                        VerticalAlignment = VerticalAlignment.Top
-                    }
-                };
-                var AllignTopRight = new TextGraphicsOptions()
-                {
-                    TextOptions =
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        VerticalAlignment = VerticalAlignment.Top
-                    }
-                };
-
-                if (Events.Points != 0)
-                {
-                    using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
-                    Parallel.For(0, 9, (i, state) =>
-                    {
-                        var ThisEvent = JSummit[0].Events[i];
-                        var Activity = Events.Activities.Where(w => w.Activity_ID.Equals(ThisEvent.ID.ToString())).ToArray();
-
-                        EventLogoBit = TimerMethod.EventLogoBitArr[i];
-                        using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
-                        if (i == 5)
-                        {
-                            EventImage.Mutate(ctx => ctx.
-                            Resize(380, 483)
-                            );
-                        }
-                        else if (i >= 0 && i <= 3)
-                        {
-                            EventImage.Mutate(ctx => ctx.
-                            Resize(368, 239)
-                            );
-                        }
-                        if (Activity.Length > 0)
-                        {
-                            using WebClient wc = new WebClient();
-                            string ThisEventNameID = string.Empty;
-                            if (ThisEvent.Is_Mission)
-                            {
-                                ThisEventNameID = Program.TCHub.Missions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
-                            }
-                            else
-                            {
-                                ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
-                            }
-
-                            string[] EventTitle = (CustomMethod.HubNameLookup(ThisEventNameID)).Replace("\"", string.Empty).Split(' ');
-                            TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}?page_size=1"));
-                            StringBuilder sb = new StringBuilder();
-                            for (int j = 0; j < EventTitle.Length; j++)
-                            {
-                                if (j == 3)
-                                {
-                                    sb.AppendLine();
-                                }
-                                sb.Append(EventTitle[j] + " ");
-                            }
-                            string ActivityResult = $"Score: {Activity[0].Score}";
-                            if (leaderboard.Score_Format == "time")
-                            {
-                                ActivityResult = $"Time: {CustomMethod.ScoreToTime(Activity[0].Score)}";
-                            }
-                            else if (sb.ToString().Contains("SPEEDTRAP"))
-                            {
-                                ActivityResult = $"Speed: {Activity[0].Score.ToString().Insert(3, ".")} km/h";
-                            }
-                            else if (sb.ToString().Contains("ESCAPE"))
-                            {
-                                ActivityResult = $"Distance: {Activity[0].Score}m";
-                            }
-                            using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
-                            using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
-                            {
-                                ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
-                                TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
-                                EventImage.Mutate(ctx => ctx
-                                .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
-                                .DrawImage(TitleBar, new Point(0, 0), 0.7f)
-                                .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Color.White, new PointF(5, 0))
-                                .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank + 1}", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
-                                .DrawText(AllignTopRight, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
-                                .DrawText(AllignTopRight, $"Points: {Activity[0].Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
-                                );
-                            }
-                            BaseImage.Mutate(ctx => ctx
-                            .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                            );
-                        }
-                        else
-                        {
-                            using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
-                            NotComplete.Mutate(ctx => ctx
-                                .Fill(Color.Black)
-                                .DrawText(AllignCenter, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
-                                );
-                            BaseImage.Mutate(ctx => ctx
-                            .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                            .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
-                            );
-                        }
-                    });
-                    using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Assets/Summit/TierBar.png"))
-                    {
-                        TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Color.Black), new Point(0, 0), 0.35f));
-                        int[] TierXPos = new int[4] { 845, 563, 281, 0 };
-                        bool[] Tier = new bool[] { false, false, false, false };
-                        Parallel.For(0, Events.Tier_entries.Length, (i, state) =>
-                        {
-                            if (Events.Tier_entries[i].Points == 4294967295)
-                            {
-                                Tier[i] = true;
-                            }
-                            else
-                            {
-                                if (Events.Tier_entries[i].Points <= Events.Points)
-                                {
-                                    Tier[i] = true;
-                                }
-
-                                TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points}", SummitCaps12, Color.White, new PointF(TierXPos[i] + 5, 15))
-                                );
-                            }
-                        });
-
-                        TierBar.Mutate(ctx => ctx
-                                .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Color.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
-                                );
-
-                        BaseImage.Mutate(ctx => ctx
-                        .DrawImage(TierBar, new Point(0, BaseImage.Height - 30), 1)
-                        );
-                    }
-
-                    TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
-                    BaseImage.Save(imageLoc);
-                    OutMessage = $"{ctx.User.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : search == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
-                    SendImage = true;
-                }
-                else
-                {
-                    OutMessage = $"{ctx.User.Mention}, You have not completed any summit event!";
-                }
-            }
-
-            if (SendImage)
-            {
-                using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                await ctx.RespondWithFileAsync(upFile, OutMessage);
-            }
-            else
-            {
-                await ctx.RespondAsync(OutMessage);
-            }
-        }
-
-        [Command("topsummit")]
-        [Description("Shows the summit board with all the world record scores.")]
-        [Cooldown(1, 30, CooldownBucketType.User)]
-        public async Task TopSummit(CommandContext ctx, string platform = null)
-        {
-            await ctx.TriggerTypingAsync();
-            TimerMethod.UpdateHubInfo();
-
-            int TotalPoints = 0;
-
-            string OutMessage = string.Empty;
-            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-topsummit.png";
-
-            bool alleventscompleted = true;
-
-            DateTime endtime;
-
-            if (platform == null)
-            {
-                platform = "pc";
-            }
-
-            switch (platform.ToLower())
-            {
-                case null:
-                case "pc":
-                case "computer":
-                    platform = "pc";
-                    break;
-
-                case "xbox":
-                case "xb1":
-                case "xb":
-                case "x1":
-                    platform = "x1";
-                    break;
-
-                case "ps4":
-                case "playstation":
-                case "ps":
-                    platform = "ps4";
-                    break;
-
-                case "stadia":
-                    platform = "stadia";
-                    break;
-            }
-
-            List<TCHubJson.Summit> JSummit = Program.JSummit;
-            byte[] EventLogoBit;
-
-            endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
-
-            int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
-
-            Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
-            Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-
-            var AllignCenter = new TextGraphicsOptions()
-            {
-                TextOptions =
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Top
-                }
-            };
-            var AllignTopLeft = new TextGraphicsOptions()
-            {
-                TextOptions =
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Top
-                }
-            };
-            var AllignTopRight = new TextGraphicsOptions()
-            {
-                TextOptions =
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Top
-                }
-            };
-
-            using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 735);
-            Parallel.For(0, 9, (i, state) =>
-            {
-                using WebClient wc = new WebClient();
-                var ThisEvent = JSummit[0].Events[i];
-                var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{JSummit[0].Events[i].ID}?page_size=1"));
-
-                EventLogoBit = TimerMethod.EventLogoBitArr[i];
-                using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
-                if (i == 5)
-                {
-                    EventImage.Mutate(ctx => ctx.
-                    Resize(380, 483)
-                    );
-                }
-                else if (i >= 0 && i <= 3)
-                {
-                    EventImage.Mutate(ctx => ctx.
-                    Resize(368, 239)
-                    );
-                }
-                if (Activity.Entries.Length > 0)
-                {
-                    string ThisEventNameID = string.Empty;
-                    if (ThisEvent.Is_Mission)
-                    {
-                        ThisEventNameID = Program.TCHub.Missions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
-                    }
-                    else
-                    {
-                        ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
-                    }
-
-                    string[] EventTitle = (CustomMethod.HubNameLookup(ThisEventNameID)).Replace("\"", string.Empty).Split(' ');
-                    TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}?page_size=1"));
-                    StringBuilder sb = new StringBuilder();
-                    for (int j = 0; j < EventTitle.Length; j++)
-                    {
-                        if (j == 3)
-                        {
-                            sb.AppendLine();
-                        }
-                        sb.Append(EventTitle[j] + " ");
-                    }
-                    string ActivityResult = $"Score: {Activity.Entries[0].Score}";
-                    if (leaderboard.Score_Format == "time")
-                    {
-                        ActivityResult = $"Time: {CustomMethod.ScoreToTime(Activity.Entries[0].Score)}";
-                    }
-                    else if (sb.ToString().Contains("SPEEDTRAP"))
-                    {
-                        ActivityResult = $"Speed: {Activity.Entries[0].Score.ToString().Insert(3, ".")} km/h";
-                    }
-                    else if (sb.ToString().Contains("ESCAPE"))
-                    {
-                        ActivityResult = $"Distance: {Activity.Entries[0].Score}m";
-                    }
-                    using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
-                    using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
-                    {
-                        ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
-                        TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
-                        EventImage.Mutate(ctx => ctx
-                        .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
-                        .DrawImage(TitleBar, new Point(0, 0), 0.7f)
-                        .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Color.White, new PointF(5, 0))
-                        .DrawText(AllignTopLeft, $"Rank: 1", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
-                        .DrawText(AllignTopRight, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
-                        .DrawText(AllignTopRight, $"Points: {Activity.Entries[0].Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
-                        );
-                    }
-                    BaseImage.Mutate(ctx => ctx
-                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                    );
-                }
-                else
-                {
-                    using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
-                    NotComplete.Mutate(ctx => ctx
-                        .Fill(Color.Black)
-                        .DrawText(AllignCenter, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
-                        );
-                    BaseImage.Mutate(ctx => ctx
-                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                    .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
-                    );
-                    alleventscompleted = false;
-                }
-                TotalPoints += Activity.Entries[0].Points;
-            });
-
-            if (alleventscompleted)
-            {
-                TotalPoints += 100000;
-            }
-
-            TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
-            BaseImage.Save(imageLoc);
-            OutMessage = $"{ctx.User.Mention}, Here are the top summit scores for {(platform == "x1" ? "Xbox" : platform == "ps4" ? "PlayStation" : platform == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
-
-            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-            await ctx.RespondWithFileAsync(upFile, OutMessage);
-        }
-
-        [Command("summitrewards")]
-        [Aliases("srewards")]
-        [Cooldown(1, 60, CooldownBucketType.User)]
-        [Description("Shows this weeks summit rewards")]
-        public async Task SummitRewards(CommandContext ctx)
-        {
-            await ctx.Message.DeleteAsync();
-            await ctx.TriggerTypingAsync();
-            TimerMethod.UpdateHubInfo();
-
-            Color[] RewardColours = new Color[] { Rgba32.ParseHex("#0060A9"), Rgba32.ParseHex("#D5A45F"), Rgba32.ParseHex("#C2C2C2"), Rgba32.ParseHex("#B07C4D") };
-
-            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
-            int RewardWidth = 412;
-            TCHubJson.Reward[] Rewards = Program.JSummit[0].Rewards;
-            Font Font = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 25);
-            using (Image<Rgba32> RewardsImage = new Image<Rgba32>(4 * RewardWidth, 328))
-            {
-                Parallel.For(0, Rewards.Length, (i, state) =>
-                 {
-                     string RewardTitle = string.Empty;
-
-                     Image<Rgba32>
-                                 affix1 = new Image<Rgba32>(1,1),
-                                 affix2 = new Image<Rgba32>(1, 1),
-                                 affixbonus = new Image<Rgba32>(1, 1);
-                     bool isParts = false;
-                     switch (Rewards[i].Type)
-                     {
-                         case "phys_part":
-                             string
-                                    affix1name = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("affix1")).Value ?? "unknown", "\\w{0,}", string.Empty),
-                                    affix2name = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("affix2")).Value ?? "unknown", "\\w{0,}", string.Empty),
-                                    affixBonusName = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("bonus_icon")).Value ?? "unknown", "\\w{0,}_", string.Empty);
-                             try
-                             {
-                                 affix1 = Image.Load<Rgba32>($"Assets/Affix/{affix1name.ToLower()}.png");
-                             }
-                             catch
-                             {
-                                 affix1 = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
-                             }
-                             try
-                             {
-                                 affix2 = Image.Load<Rgba32>($"Assets/Affix/{affix2name.ToLower()}.png");
-                             }
-                             catch
-                             {
-                                 affix2 = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
-                             }
-                             try
-                             {
-                                 affixbonus = Image.Load<Rgba32>($"Assets/Affix/{affixBonusName.ToLower()}.png");
-                             }
-                             catch
-                             {
-                                 affixbonus = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
-                             }
-                             RewardTitle = $"{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)} " +
-                             $"{affixBonusName} " +
-                             $"{Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("type")).Value}" +
-                             $"({Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("vcat_icon")).Value??"unknown", "\\w{0,}_", string.Empty)})";
-
-                             isParts = true;
-                             break;
-
-                         case "vanity":
-                             RewardTitle = CustomMethod.HubNameLookup(Rewards[i].Title_Text_ID);
-                             if (RewardTitle is null)
-                             {
-                                 if (Rewards[i].Img_Path.Contains("emote"))
-                                 {
-                                     RewardTitle = "Emote";
-                                 }
-                                 else
-                                 {
-                                     RewardTitle = "[unknown]";
-                                 }
-                             }
-                             break;
-
-                         case "generic":
-                             RewardTitle = Rewards[i].Debug_Title;
-                             break;
-
-                         case "currency":
-                             RewardTitle = $"{Rewards[i].Extra.FirstOrDefault(w=>w.Key.Equals("currency_type")).Value} - {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("currency_amount")).Value}";
-                             break;
-
-                         case "vehicle":
-                             RewardTitle = $"{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("brand_text_id")).Value)} - {CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("model_text_id")).Value)}";
-                             break;
-
-                         default:
-                             RewardTitle = "LiveBot needs to be updated to view this reward!";
-                             break;
-                     }
-                     if (RewardTitle is null)
-                     {
-                         RewardTitle = "LiveBot needs to be updated to view this reward!";
-                     }
-
-                     RewardTitle = Regex.Replace(RewardTitle, "((<(\\w||[/=\"'#\\ ]){0,}>)||(&#\\d{0,}; )){0,}", "").ToUpper();
-
-                     using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[i]);
-                     using Image<Rgba32> TopBar = new Image<Rgba32>(RewardImage.Width, 20);
-                     TopBar.Mutate(ctx => ctx.
-                     Fill(RewardColours[i])
-                     );
-                     TextGraphicsOptions TextOptions = new TextGraphicsOptions
-                     {
-                         TextOptions = new TextOptions
-                         {
-                             WrapTextWidth = RewardWidth
-                         }
-                     };
-                     RewardsImage.Mutate(ctx => ctx
-                     .DrawImage(RewardImage, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
-                     .DrawImage(TopBar, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
-                     .DrawText(TextOptions, RewardTitle, Font, Brushes.Solid(Color.White), Pens.Solid(Color.Black, 1f), new PointF(((4 - Rewards[i].Level) * RewardWidth) + 5, 15))
-                     );
-                     if (isParts)
-                     {
-                         RewardsImage.Mutate(ctx => ctx
-                         .DrawImage(affix1, new Point((4 - Rewards[i].Level) * RewardWidth, RewardImage.Height - affix1.Height), 1)
-                         .DrawImage(affix2, new Point((4 - Rewards[i].Level) * RewardWidth+affix1.Width, RewardImage.Height - affix2.Height), 1)
-                         .DrawImage(affixbonus, new Point((4 - Rewards[i].Level) * RewardWidth + affix1.Width+affix2.Width, RewardImage.Height - affixbonus.Height), 1)
-                         );
-                     }
-                 });
-                RewardsImage.Save(imageLoc);
-            }
-            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-            await ctx.RespondWithFileAsync(upFile, $"{ctx.User.Mention}, here are this weeks summit rewards:");
-        }
-
-        [Command("myfame")]
-        [Cooldown(1, 60, CooldownBucketType.User)]
-        [Description("Tells your followers and rank on the leaderboard")]
-        [RequireRoles(RoleCheckMode.Any, "Patreon", "TCE Patreon", "Ubisoft", "Discord-Moderator")]
-        public async Task MyFame(CommandContext ctx, string platform = null)
-        {
-            await ctx.TriggerTypingAsync();
-
-            string OutMessage = string.Empty;
-
-            string search = string.Empty;
-
-            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
-
-            TCHubJson.TceSummit JTCE;
-            using WebClient wc = new WebClient();
-            try
-            {
-                string Jdown = wc.DownloadString(link);
-                JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
-            }
-            catch (Exception)
-            {
-                JTCE = new TCHubJson.TceSummit
-                {
-                    Error = "No Connection."
-                };
-            }
-
-            TCHubJson.TceSummitSubs UserInfo = new TCHubJson.TceSummitSubs();
-
-            if (JTCE.Error != null)
-            {
-                if (JTCE.Error == "Unregistered user")
-                {
-                    await ctx.RespondAsync($"{ctx.User.Mention}, You have not linked your TCE account, please check out <#302818290336530434> on how to do so.");
-                }
-                else if (JTCE.Error == "Invalid API key !" || JTCE.Error == "No Connection.")
-                {
-                    await ctx.RespondAsync($"{ctx.User.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
-                        $"<@85017957343694848> Rip API");
-                }
-            }
-            else if (JTCE.Subs.Length == 1)
-            {
-                UserInfo = JTCE.Subs[0];
-                search = UserInfo.Platform;
-            }
-            else if (JTCE.Subs.Length > 1)
-            {
-                switch (platform.ToLower())
-                {
-                    case null:
-                    case "pc":
-                    case "computer":
-                        search = "pc";
-                        break;
-
-                    case "xbox":
-                    case "xb1":
-                    case "xb":
-                    case "x1":
-                        search = "x1";
-                        break;
-
-                    case "ps4":
-                    case "playstation":
-                    case "ps":
-                        search = "ps4";
-                        break;
-
-                    case "stadia":
-                        search = "stadia";
-                        break;
-                }
-                if (JTCE.Subs.Count(w => w.Platform.Equals(search)) == 1)
-                {
-                    UserInfo = JTCE.Subs.FirstOrDefault(w => w.Platform.Equals(search));
-                }
-                else if (JTCE.Subs.Count(w => w.Platform.Equals(search)) != 1)
-                {
-                    UserInfo = JTCE.Subs[0];
-                }
-            }
-
-            try
-            {
-                TCHubJson.Fame Fame = JsonConvert.DeserializeObject<TCHubJson.Fame>(wc.DownloadString($"https://api.thecrew-hub.com/v1/leaderboard/{UserInfo.Platform}/fame?profile_id={UserInfo.Profile_ID}"));
-                var HubUserInfo = Fame.Scores.FirstOrDefault(w => w.Profile_ID.Equals(UserInfo.Profile_ID));
-                OutMessage = $"{ctx.User.Mention}, Your follower count is **{HubUserInfo.Score}**. Your Icon Level is **[WIP]**. You are ranked **{HubUserInfo.Rank} on {search}**";
-            }
-            catch (WebException)
-            {
-                OutMessage = $"{ctx.User.Mention}, The Crew HUB API is currently unavailable.";
-            }
-
-            await ctx.RespondAsync(OutMessage);
+            await new DiscordMessageBuilder()
+                .WithContent(output)
+                 .WithReply(ctx.Message.Id, true)
+                 .SendAsync(ctx.Channel);
         }
 
         [Command("daily")]
@@ -1672,7 +837,10 @@ namespace LiveBot.Commands
                     user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
                     user.Bucks += money;
                     DB.DBLists.UpdateLeaderboard(user);
-                    await ctx.RespondAsync($"{ctx.Member.Mention}, You have received {money} bucks");
+                    await new DiscordMessageBuilder()
+                        .WithContent($"You have received {money} bucks")
+                         .WithReply(ctx.Message.Id, true)
+                         .SendAsync(ctx.Channel);
                 }
                 else
                 {
@@ -1682,14 +850,20 @@ namespace LiveBot.Commands
                     reciever.Bucks += money;
                     DB.DBLists.UpdateLeaderboard(user);
                     DB.DBLists.UpdateLeaderboard(reciever);
-                    await ctx.RespondAsync($"{member.Mention}, You were given {money} bucks by {ctx.Member.Username}");
+                    await new DiscordMessageBuilder()
+                        .WithContent($"{member.Mention}, You were given {money} bucks by {ctx.Member.Username}")
+                         .WithReply(ctx.Message.Id)
+                         .SendAsync(ctx.Channel);
                 }
             }
             else
             {
                 DateTime now = DateTime.Now;
 
-                await ctx.RespondAsync($"Time untill you can use daily {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.");
+                await new DiscordMessageBuilder()
+                    .WithContent($"Time untill you can use daily {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.")
+                     .WithReply(ctx.Message.Id, true)
+                     .SendAsync(ctx.Channel);
             }
         }
 
@@ -1810,7 +984,7 @@ namespace LiveBot.Commands
                     else
                     {
                         TimeSpan remainingTime = TimeSpan.FromMinutes(RT.Cooldown) - (DateTime.Now - RT.Last_Used);
-                        await ctx.RespondAsync($"{ctx.Member.Mention}, This role can't be mentioned right now, cooldown has not passed yet. ({remainingTime.Hours}:{remainingTime.Minutes}:{remainingTime.Seconds})");
+                        await ctx.RespondAsync($"{ctx.Member.Mention}, This role can't be mentioned right now, cooldown has not passed yet. ({remainingTime.Hours} Hours {remainingTime.Minutes} Minutes {remainingTime.Seconds} Seconds left)");
                     }
                 }
                 else
@@ -1824,104 +998,15 @@ namespace LiveBot.Commands
             }
         }
 
-        [Command("hubevent")]
-        [RequireRoles(RoleCheckMode.Any, "Patreon", "Discord-Moderator", "Ubisoft")]
-        public async Task HubEvent(CommandContext ctx)
+        [Command("mysummit")]
+        public async Task MySummitOld(CommandContext ctx)
         {
-            var interactivity = ctx.Client.GetInteractivity();
-
-            StringBuilder Families = new StringBuilder();
-            Families.AppendLine("```csharp");
-            List<TCHubJson.Family> FamilyList = Program.TCHub.Families.OrderBy(w => w.ID).ToList();
-            for (int i = 0; i < FamilyList.Count; i++)
+            await new DiscordMessageBuilder
             {
-                Families.AppendLine($"#{i} - {CustomMethod.HubNameLookup(FamilyList[i].Text_ID)}");
+                Content = "The command has moved to `/hub mysummit` or `/hub sinfo`"
             }
-            Families.AppendLine("```");
-            await ctx.RespondAsync(Families.ToString());
-            var FamilyIdMsg = await interactivity.WaitForMessageAsync(w => w.Author == ctx.User && w.Channel == ctx.Channel, TimeSpan.FromSeconds(30));
-            if (!FamilyIdMsg.TimedOut)
-            {
-                bool isNumber = int.TryParse(FamilyIdMsg.Result.Content, out int familyID);
-                if (isNumber && familyID >= 0 && familyID < FamilyList.Count)
-                {
-                    StringBuilder Disciplines = new StringBuilder();
-                    List<TCHubJson.Discipline> DisciplinesList = Program.TCHub.Disciplines.Where(w => w.Family_ID == FamilyList[familyID].ID).OrderBy(w => w.ID).ToList();
-                    Disciplines.AppendLine("```csharp");
-                    for (int i = 0; i < DisciplinesList.Count; i++)
-                    {
-                        Disciplines.AppendLine($"#{i} - {CustomMethod.HubNameLookup(DisciplinesList[i].Text_ID)}");
-                    }
-                    Disciplines.AppendLine("```");
-
-                    await ctx.RespondAsync($"{ctx.User.Mention}\n{Disciplines}");
-
-                    var DisciplineIdMsg = await interactivity.WaitForMessageAsync(w => w.Author == ctx.User && w.Channel == ctx.Channel, TimeSpan.FromSeconds(30));
-                    if (!DisciplineIdMsg.TimedOut)
-                    {
-                        isNumber = int.TryParse(DisciplineIdMsg.Result.Content, out int disciplineID);
-                        if (isNumber && disciplineID >= 0 && disciplineID < DisciplinesList.Count)
-                        {
-                            List<TCHubJson.Mission> MissionList = Program.TCHub.Missions.Where(w => w.Discipline_ID == DisciplinesList[disciplineID].ID).OrderBy(w => w.ID).ToList();
-                            int page = 1;
-                            bool end = false;
-
-                            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
-                            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
-                            DiscordMessage MissionMsg = await ctx.RespondAsync($"{CustomMethod.GetMissionList(MissionList, page)}");
-                            await MissionMsg.CreateReactionAsync(left);
-                            await Task.Delay(300).ContinueWith(t => MissionMsg.CreateReactionAsync(right));
-                            do
-                            {
-                                var reactionResult = MissionMsg.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
-                                if (reactionResult.Result.TimedOut)
-                                {
-                                    end = reactionResult.Result.TimedOut;
-                                }
-                                else if (reactionResult.Result.Result.Emoji == left)
-                                {
-                                    await MissionMsg.DeleteReactionAsync(reactionResult.Result.Result.Emoji, ctx.User);
-                                    if (page > 1)
-                                    {
-                                        page--;
-                                        await MissionMsg.ModifyAsync(CustomMethod.GetMissionList(MissionList, page));
-                                    }
-                                }
-                                else if (reactionResult.Result.Result.Emoji == right)
-                                {
-                                    await MissionMsg.DeleteReactionAsync(reactionResult.Result.Result.Emoji, ctx.User);
-                                    page++;
-                                    try
-                                    {
-                                        await MissionMsg.ModifyAsync(CustomMethod.GetMissionList(MissionList, page));
-                                    }
-                                    catch (Exception)
-                                    {
-                                        page--;
-                                    }
-                                }
-                            }
-                            while (!end);
-                        }
-                        else
-                        {
-                            await ctx.RespondAsync($"{ctx.User.Mention}, Oops, something went wrong. Wrong ID");
-                        }
-                    }
-                    else
-                    {
-                        await ctx.RespondAsync($"{ctx.User.Mention}, The request timed out, you didn't specify the Discipline ID");
-                    }
-                }
-                else
-                {
-                    await ctx.RespondAsync($"{ctx.User.Mention}, Oops, something went wrong. Wrong ID");
-                }
-            }
-            else
-            {
-                await ctx.RespondAsync($"{ctx.User.Mention}, The request timed out, you didn't specify the Family ID");
-            }
+            .WithReply(ctx.Message.Id, true)
+            .SendAsync(ctx.Channel);
         }
     }
 }

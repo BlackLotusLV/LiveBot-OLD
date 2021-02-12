@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -116,6 +117,49 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondAsync("Something went wrong");
             }
+        }
+
+        [Command("updateimg")]
+        public async Task UpdateImage(CommandContext ctx, int id, int price = 0)
+        {
+            DB.BackgroundImage imgEntry = DB.DBLists.BackgroundImage.FirstOrDefault(w => w.ID_BG == id);
+
+            StringBuilder outputMSG = new StringBuilder();
+
+            outputMSG.Append($"{ctx.Member.Mention}, ");
+            if (imgEntry != null)
+            {
+                if (ctx.Message.Attachments != null)
+                {
+                    byte[] bg;
+                    using (WebClient client = new WebClient())
+                    {
+                        bg = client.DownloadData(ctx.Message.Attachments[0].Url);
+                    }
+                    imgEntry.Image = bg;
+
+                    outputMSG.AppendLine($"background **image** updated");
+                }
+                else
+                {
+                    outputMSG.AppendLine("background **image** not set");
+                }
+                if (price > 0)
+                {
+                    imgEntry.Price = price;
+                    outputMSG.AppendLine($"background **price** updated");
+                }
+                else
+                {
+                    outputMSG.AppendLine("background **price** not set");
+                }
+                DB.DBLists.UpdateBackgroundImages(imgEntry);
+            }
+            else
+            {
+                outputMSG.Append($"could not find image with this ID");
+            }
+            await ctx.RespondAsync(outputMSG.ToString());
         }
     }
 }

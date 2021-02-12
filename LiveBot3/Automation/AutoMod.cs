@@ -123,7 +123,13 @@ namespace LiveBot.Automation
                             {
                                 File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", Description);
                                 using var upFile = new FileStream($"{Program.tmpLoc}{e.Message.Id}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                                await DeleteLog.SendFileAsync(upFile, $"Deleted message and info too long, uploading fail instead.");
+                                var msgBuilder = new DiscordMessageBuilder
+                                {
+                                    Content = $"Deleted message and info too long, uploading fail instead."
+                                };
+                                msgBuilder.WithFile(upFile);
+
+                                await DeleteLog.SendMessageAsync(msgBuilder);
                             }
                         }
                     }
@@ -179,7 +185,12 @@ namespace LiveBot.Automation
                     {
                         File.WriteAllText($"{Program.tmpLoc}{e.Messages.Count}-BulkDeleteLog.txt", sb.ToString());
                         using var upFile = new FileStream($"{Program.tmpLoc}{e.Messages.Count}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                        await DeleteLog.SendFileAsync(upFile, $"Bulk delete log(Over the message cap) ({e.Messages.Count}) [{e.Messages[0].Timestamp} - {e.Messages[e.Messages.Count - 1].Timestamp}]");
+                        var msgBuilder = new DiscordMessageBuilder
+                        {
+                            Content = $"Bulk delete log(Over the message cap) ({e.Messages.Count}) [{e.Messages[0].Timestamp} - {e.Messages[e.Messages.Count - 1].Timestamp}]"
+                        };
+                        msgBuilder.WithFile(upFile);
+                        await DeleteLog.SendMessageAsync(msgBuilder);
                     }
                 }
             });
@@ -312,7 +323,7 @@ namespace LiveBot.Automation
                         Color = new DiscordColor(0xff0000),
                     };
                     await wkbLog.SendMessageAsync(embed: embed);
-                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = logs[0].Reason, Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = logs[0].UserResponsible.Id, User_ID = e.Member.Id, Server_ID = e.Guild.Id, Type = "ban" });
+                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = logs[0].Reason ?? "No reason specified", Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = logs[0].UserResponsible.Id, User_ID = e.Member.Id, Server_ID = e.Guild.Id, Type = "ban" });
                 }
                 var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
                 if (UserSettings == null)
@@ -388,11 +399,33 @@ namespace LiveBot.Automation
                                     }
                                     if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
                                     {
-                                        await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered.", true);
+                                        await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered - flood", true);
                                     }
                                 }
                             }
                         }
+                    }
+                }
+            });
+            await Task.Delay(1);
+        }
+
+        public static async Task Link_Spam_Protection(DiscordClient Client, MessageCreateEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                var Server_Settings = (from ss in DB.DBLists.ServerSettings
+                                       where ss.ID_Server == e.Guild.Id
+                                       select ss).FirstOrDefault();
+
+                if (Server_Settings.WKB_Log != 0 && Server_Settings.HasLinkProtection)
+                {
+                    var invites = await e.Guild.GetInvitesAsync();
+                    DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+                    if (!CustomMethod.CheckIfMemberAdmin(member) && (e.Message.Content.Contains("discordapp.com/invite/") || e.Message.Content.Contains("discord.gg/")) && !invites.Any(w => e.Message.Content.Contains($"/{w.Code}")))
+                    {
+                        await e.Message.DeleteAsync();
+                        await CustomMethod.WarnUserAsync(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered - invite links", true);
                     }
                 }
             });

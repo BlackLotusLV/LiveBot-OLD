@@ -500,6 +500,13 @@ namespace LiveBot.DB
             ctx.SaveChanges();
         }
 
+        public static void UpdateBackgroundImages(params BackgroundImage[] o)
+        {
+            using var ctx = new BackgroundImageContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+
         #endregion Update Functions
 
         #region Insert Functions
