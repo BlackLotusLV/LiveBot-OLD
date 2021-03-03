@@ -22,10 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[UPDATE] Bot will no longer send the leave message if user has not agreed to the rules, reducing incorrect perspective on memberflow.\n" +
-                "[UPDATE] Improvements on auto moderator. Invite links that are not for this server will be filtered.\n" +
-                "[CHANGE] Removed the cooldown for mysummit command as checking multiple platforms became tedious.\n" +
-                "[CHANGE] Increased longer message follower gain. (affects messages above 100 characters)\n" +
+            string changelog = "[FIX] MySummit command now should always indicate the right platform of which the stats are shown, when defaulting from a platform you have not linked.\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

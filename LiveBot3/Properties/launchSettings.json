@@ -1,7 +1,13 @@
 {
   "profiles": {
     "LiveBot": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "nativeDebugging": false
+    },
+    "WSL 2": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": "Debian"
     }
   }
 }

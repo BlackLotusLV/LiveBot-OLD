@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20210212_A";
+        public readonly static string BotVersion = $"20210215_B";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -102,7 +102,8 @@ namespace LiveBot
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 ReconnectIndefinitely = false,
-                MinimumLogLevel = logLevel
+                MinimumLogLevel = logLevel,
+                Intents = DiscordIntents.All
             };
             Client = new DiscordClient(cfg);
             DB.DBLists.LoadAllLists(); // loads data from database
@@ -168,6 +169,7 @@ namespace LiveBot
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
         }
+
         private Task Client_Ready(DiscordClient Client, ReadyEventArgs e)
         {
             Client.Logger.LogInformation(CustomLogEvents.LiveBot, "[LiveBot] Client is ready to process events.");

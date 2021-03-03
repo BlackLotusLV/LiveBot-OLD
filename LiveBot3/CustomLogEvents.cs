@@ -11,6 +11,7 @@ namespace LiveBot
         public static EventId POSTGRESQL { get; } = new EventId(300, "PSQL");
         public static EventId TableLoaded { get; } = new EventId(301, "TableLoaded");
         public static EventId TCHub { get; } = new EventId(400, "TCHub");
+        public static EventId TCE { get; } = new EventId(401, "TCE");
         public static EventId AutoMod { get; } = new EventId(203, "AutoMod");
         public static EventId DeleteLog { get; } = new EventId(204, "DeleteLog");
         public static EventId ModMail { get; } = new EventId(205, "ModMail");
