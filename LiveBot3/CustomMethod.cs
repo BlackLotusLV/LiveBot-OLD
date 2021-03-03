@@ -32,13 +32,13 @@ namespace LiveBot
 
         public static DateTime EpochConverter(long ms)
         {
-            DateTime f = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime f = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return f.AddMilliseconds(ms);
         }
 
         public static void AddUserToLeaderboard(DiscordUser user)
         {
-            DB.Leaderboard newEntry = new DB.Leaderboard
+            DB.Leaderboard newEntry = new()
             {
                 ID_User = user.Id,
                 Followers = (long)0,
@@ -48,7 +48,7 @@ namespace LiveBot
             DB.DBLists.InsertLeaderboard(newEntry);
             List<DB.UserImages> UserImg = DB.DBLists.UserImages;
             var idui = UserImg.Max(m => m.ID_User_Images);
-            DB.UserImages newUImage = new DB.UserImages
+            DB.UserImages newUImage = new()
             {
                 User_ID = user.Id,
                 BG_ID = 1,
@@ -57,7 +57,7 @@ namespace LiveBot
             DB.DBLists.InsertUserImages(newUImage);
             List<DB.UserSettings> UserSet = DB.DBLists.UserSettings;
             var us = UserSet.Max(m => m.ID_User_Settings);
-            DB.UserSettings newUSettings = new DB.UserSettings
+            DB.UserSettings newUSettings = new()
             {
                 User_ID = user.Id,
                 User_Info = "There is a difference between knowing the path and walking the path.",
@@ -80,7 +80,7 @@ namespace LiveBot
                          select lb).FirstOrDefault();
             if (local is null)
             {
-                DB.ServerRanks newEntry = new DB.ServerRanks
+                DB.ServerRanks newEntry = new()
                 {
                     User_ID = user.Id,
                     Server_ID = guild.Id,
@@ -115,7 +115,7 @@ namespace LiveBot
 
         public static string GetServerTop(CommandContext ctx, int page)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             string personalscore = "";
             List<DB.ServerRanks> leaderboard = DB.DBLists.ServerRanks;
             var users = leaderboard.OrderByDescending(x => x.Followers).ToList();
@@ -159,7 +159,7 @@ namespace LiveBot
 
         public static string GetGlobalTop(CommandContext ctx, int page)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             string personalscore = "";
             List<DB.Leaderboard> leaderboard = DB.DBLists.Leaderboard;
             var users = leaderboard.OrderByDescending(x => x.Followers).ToList();
@@ -208,7 +208,7 @@ namespace LiveBot
                         where ui.User_ID == ctx.User.Id
                         select bi).ToList();
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.Append("Visual representation of the backgrounds can be viewed here: <http://bit.ly/LiveBG>\n```csharp\n[ID]\tBackground Name\n");
             for (int i = (page * 10) - 10; i < page * 10; i++)
             {
@@ -237,7 +237,7 @@ namespace LiveBot
 
         public static string GetMissionList(List<Json.TCHubJson.Mission> MissionList, int page)
         {
-            StringBuilder Missions = new StringBuilder();
+            StringBuilder Missions = new();
             Missions.AppendLine("```csharp");
             for (int i = (page * 10) - 10; i < page * 10; i++)
             {
@@ -268,7 +268,7 @@ namespace LiveBot
             }
 
             string modinfo = "";
-            StringBuilder SB = new StringBuilder();
+            StringBuilder SB = new();
             decimal uid = user.Id, aid = admin.Id;
             bool kick = false, ban = false;
             DiscordEmbedBuilder embed;
@@ -277,7 +277,7 @@ namespace LiveBot
                 DiscordChannel modlog = server.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
                 if (WarnedUserStats is null) // creates new entry in DB (Followers set to default value)
                 {
-                    DB.ServerRanks newEntry = new DB.ServerRanks
+                    DB.ServerRanks newEntry = new()
                     {
                         Server_ID = server.Id,
                         Ban_Count = 0,
@@ -302,7 +302,7 @@ namespace LiveBot
                     DB.DBLists.UpdateServerRanks(WarnedUserStats);
                 }
 
-                DB.Warnings newWarning = new DB.Warnings
+                DB.Warnings newWarning = new()
                 {
                     Reason = reason,
                     Active = true,
@@ -437,7 +437,7 @@ namespace LiveBot
             List<DB.Warnings> warnings = DB.DBLists.Warnings;
             bool UserCheck = false;
             int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
-            StringBuilder Reason = new StringBuilder();
+            StringBuilder Reason = new();
             var UserStats = ServerRanks.FirstOrDefault(f => User.Id == f.User_ID && Guild.Id == f.Server_ID);
             if (UserStats != null)
             {
@@ -464,7 +464,7 @@ namespace LiveBot
                     Reason.AppendLine("User has no warnings.");
                 }
             }
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            DiscordEmbedBuilder embed = new()
             {
                 Color = new DiscordColor(0xFF6600),
                 Author = new DiscordEmbedBuilder.EmbedAuthor
@@ -505,7 +505,7 @@ namespace LiveBot
 
         public static void DBProgress(int LoadedTableCount, TimeSpan time, string DataTableName = null)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.Append('[');
             for (int i = 1; i <= DB.DBLists.TableCount; i++)
             {
@@ -566,7 +566,7 @@ namespace LiveBot
                     }
             };
 
-            Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 765);
+            Image<Rgba32> BaseImage = new(1127, 765);
             Parallel.For(0, 9, (i, state) =>
             {
                 var ThisEvent = JSummit[0].Events[i];
@@ -588,7 +588,7 @@ namespace LiveBot
                 }
                 if (Activity.Length > 0)
                 {
-                    using WebClient wc = new WebClient();
+                    using WebClient wc = new();
                     string ThisEventNameID = string.Empty;
                     if (ThisEvent.Is_Mission)
                     {
@@ -601,7 +601,7 @@ namespace LiveBot
 
                     string[] EventTitle = (CustomMethod.HubNameLookup(ThisEventNameID)).Replace("\"", string.Empty).Split(' ');
                     TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{ThisEvent.ID}?page_size=1"));
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = new();
                     for (int j = 0; j < EventTitle.Length; j++)
                     {
                         if (j == 3)
@@ -623,8 +623,8 @@ namespace LiveBot
                     {
                         ActivityResult = $"Distance: {Activity[0].Score}m";
                     }
-                    using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
-                    using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
+                    using (Image<Rgba32> TitleBar = new(EventImage.Width, 40))
+                    using (Image<Rgba32> ScoreBar = new(EventImage.Width, 40))
                     {
                         ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
                         TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
@@ -643,7 +643,7 @@ namespace LiveBot
                 }
                 else
                 {
-                    using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
+                    using Image<Rgba32> NotComplete = new(EventImage.Width, EventImage.Height);
                     NotComplete.Mutate(ctx => ctx
                         .Fill(Color.Black)
                         .DrawText(AllignCenter, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
@@ -688,12 +688,13 @@ namespace LiveBot
             }
             return BaseImage;
         }
+
         public static TCHubJson.TceSummit GetTCEInfo(CommandContext ctx)
         {
             string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
             TCHubJson.TceSummit JTCE;
-            using (WebClient wc = new WebClient())
+            using (WebClient wc = new())
             {
                 try
                 {
@@ -707,7 +708,8 @@ namespace LiveBot
                         Error = "No Connection."
                     };
                 }
-            }return JTCE;
+            }
+            return JTCE;
         }
     }
 }

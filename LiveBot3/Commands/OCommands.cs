@@ -85,7 +85,7 @@ namespace LiveBot.Commands
         [Command("getguilds")]
         public async Task GetGuilds(CommandContext ctx)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             foreach (var guild in Program.Client.Guilds)
             {
                 sb.AppendLine($"{guild.Value.Name} ({guild.Value.Id})");
@@ -106,7 +106,7 @@ namespace LiveBot.Commands
             if (ctx.Message.Attachments != null)
             {
                 byte[] bg;
-                using (WebClient client = new WebClient())
+                using (WebClient client = new())
                 {
                     bg = client.DownloadData(ctx.Message.Attachments[0].Url);
                 }
@@ -124,7 +124,7 @@ namespace LiveBot.Commands
         {
             DB.BackgroundImage imgEntry = DB.DBLists.BackgroundImage.FirstOrDefault(w => w.ID_BG == id);
 
-            StringBuilder outputMSG = new StringBuilder();
+            StringBuilder outputMSG = new();
 
             outputMSG.Append($"{ctx.Member.Mention}, ");
             if (imgEntry != null)
@@ -132,7 +132,7 @@ namespace LiveBot.Commands
                 if (ctx.Message.Attachments != null)
                 {
                     byte[] bg;
-                    using (WebClient client = new WebClient())
+                    using (WebClient client = new())
                     {
                         bg = client.DownloadData(ctx.Message.Attachments[0].Url);
                     }

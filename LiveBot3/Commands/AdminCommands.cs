@@ -95,7 +95,7 @@ namespace LiveBot.Commands
                     }
                     if (check)
                     {
-                        DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                        DiscordEmbedBuilder embed = new()
                         {
                             Color = new DiscordColor(0xf90707),
                             Author = new DiscordEmbedBuilder.EmbedAuthor
@@ -239,7 +239,7 @@ namespace LiveBot.Commands
         [RequireGuild]
         public async Task WarnCount(CommandContext ctx)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             int i = 0;
             sb.AppendLine("```csharp\n\t\tUsername");
             foreach (var item in DB.DBLists.Warnings.Where(w => w.Server_ID == ctx.Guild.Id).GroupBy(w => w.Admin_ID)
@@ -291,7 +291,7 @@ namespace LiveBot.Commands
                              select bw).FirstOrDefault();
             if (duplicate is null)
             {
-                DB.AMBannedWords newEntry = new DB.AMBannedWords()
+                DB.AMBannedWords newEntry = new()
                 {
                     Word = BannedWord.ToLower(),
                     Offense = warning,
@@ -383,7 +383,7 @@ namespace LiveBot.Commands
                 var existingEntry = DB.DBLists.WeatherSchedule.FirstOrDefault(w => w.Day.Equals(day) && w.Time.Equals(time));
                 if (existingEntry is null)
                 {
-                    DB.WeatherSchedule newEntry = new DB.WeatherSchedule
+                    DB.WeatherSchedule newEntry = new()
                     {
                         Time = time,
                         Day = day,
@@ -446,7 +446,7 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
 
             DiscordUser user;
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+            DiscordEmbedBuilder embed = new()
             {
             };
             try

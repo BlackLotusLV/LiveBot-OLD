@@ -58,7 +58,7 @@ namespace LiveBot
         {
             List<TCHubJson.Summit> JSummit;
             DateTime endtime;
-            using WebClient wc = new WebClient();
+            using WebClient wc = new();
             bool Connected = true;
             string JSummitString = string.Empty;
             try
@@ -106,7 +106,7 @@ namespace LiveBot
 
         public static void DownloadHubNews()
         {
-            using WebClient wc = new WebClient();
+            using WebClient wc = new();
             wc.Headers.Add("Ubi-AppId", "dda77324-f9d6-44ea-9ecb-30e57b286f6d");
             wc.Headers.Add("Ubi-localeCode", "us-en");
             string NewsString = string.Empty;

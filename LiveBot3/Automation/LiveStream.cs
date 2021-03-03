@@ -24,7 +24,7 @@ namespace LiveBot.Automation
                     DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(StreamNotification.Channel_ID));
                     if (Program.ServerIdList.Contains(guild.Id))
                     {
-                        LiveStreamer streamer = new LiveStreamer
+                        LiveStreamer streamer = new()
                         {
                             User = e.User,
                             Time = DateTime.Now,
@@ -98,7 +98,7 @@ namespace LiveBot.Automation
                             }
                             if (game && role)
                             {
-                                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                                DiscordEmbedBuilder embed = new()
                                 {
                                     Color = new DiscordColor(0x6441A5),
                                     Author = new DiscordEmbedBuilder.EmbedAuthor

@@ -84,7 +84,7 @@ namespace LiveBot
 
             // TC Hub
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
-            Thread HubThread = new Thread(() => TimerMethod.UpdateHubInfo());
+            Thread HubThread = new(() => TimerMethod.UpdateHubInfo());
             HubThread.Start();
             //
             LogLevel logLevel = LogLevel.Debug;
@@ -165,7 +165,7 @@ namespace LiveBot
                 Client.MessageCreated += ModMail.ModMailDM;
             }
 
-            DiscordActivity BotActivity = new DiscordActivity($"DM /modmail to open chat with mods", ActivityType.Playing);
+            DiscordActivity BotActivity = new($"DM /modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
         }
@@ -245,7 +245,7 @@ namespace LiveBot
             var DBEntry = DB.DBLists.CommandsUsedCount.FirstOrDefault(w => w.Name == CommandName);
             if (DBEntry == null)
             {
-                DB.CommandsUsedCount NewEntry = new DB.CommandsUsedCount()
+                DB.CommandsUsedCount NewEntry = new()
                 {
                     Name = e.Command.Name,
                     Used_Count = 1

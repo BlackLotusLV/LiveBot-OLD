@@ -30,8 +30,8 @@ namespace LiveBot.Commands
                     serverName = "no server!";
                 }
                 var ModMailServers = DB.DBLists.ServerSettings.Where(w => w.ModMailID != 0);
-                Dictionary<DiscordGuild, string> GuildNameDict = new Dictionary<DiscordGuild, string>();
-                StringBuilder GuildNameString = new StringBuilder();
+                Dictionary<DiscordGuild, string> GuildNameDict = new();
+                StringBuilder GuildNameString = new();
                 GuildNameString.AppendLine("The mod-mail is only available on certain servers, here are the server names you can use:");
                 foreach (var item in ModMailServers)
                 {
@@ -59,9 +59,9 @@ namespace LiveBot.Commands
                     }
                     if (serverCheck && DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == ctx.User.Id && w.IsActive) == null)
                     {
-                        Random r = new Random();
+                        Random r = new();
                         string colorID = string.Format("#{0:X6}", r.Next(0x1000000));
-                        DB.ModMail newEntry = new DB.ModMail
+                        DB.ModMail newEntry = new()
                         {
                             Server_ID = Guild.Id,
                             User_ID = ctx.User.Id,
@@ -75,7 +75,7 @@ namespace LiveBot.Commands
                         await ctx.RespondAsync($"**----------------------------------------------------**\n" +
                             $"Modmail entry **open** with `{serverName.ToLower()}`. Continue to write as you would normaly ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
                         DiscordChannel MMChannel = Guild.GetChannel((ulong)ModMailServers.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
-                        DiscordEmbedBuilder ModeratorEmbed = new DiscordEmbedBuilder
+                        DiscordEmbedBuilder ModeratorEmbed = new()
                         {
                             Author = new DiscordEmbedBuilder.EmbedAuthor
                             {
@@ -110,7 +110,7 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            DB.ModMail MMEntry = DBLists.ModMail.FirstOrDefault(w => w.ID == ModMailID && w.Server_ID == ctx.Guild.Id);
+            ModMail MMEntry = DBLists.ModMail.FirstOrDefault(w => w.ID == ModMailID && w.Server_ID == ctx.Guild.Id);
             if (MMEntry == null)
             {
                 await ctx.RespondAsync($"{ctx.User.Mention} Could not find the mod mail entry.");
@@ -119,7 +119,7 @@ namespace LiveBot.Commands
             {
                 if (MMEntry.IsActive)
                 {
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Author = new DiscordEmbedBuilder.EmbedAuthor
                         {
@@ -161,7 +161,7 @@ namespace LiveBot.Commands
         [Description("Closes the opened Mod Mail chat.")]
         public async Task Close(CommandContext ctx)
         {
-            var modMail = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == ctx.User.Id && w.IsActive);
+            var modMail = DBLists.ModMail.FirstOrDefault(w => w.User_ID == ctx.User.Id && w.IsActive);
             if (modMail == null)
             {
                 await ctx.RespondAsync("You don't have active Mod Mail open.");
@@ -222,7 +222,7 @@ namespace LiveBot.Commands
                 if (!ErrorCheck)
                 {
                     DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)SSettings.ModMailID);
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Author = new DiscordEmbedBuilder.EmbedAuthor
                         {
@@ -263,12 +263,12 @@ namespace LiveBot.Commands
             }
             else
             {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 foreach (var entry in ModMailEntries)
                 {
                     sb.AppendLine($"**ID:** {entry.ID}\t **User:** {entry.User_ID}\t**Has Chatted:** {entry.HasChatted}\t**Time Remaining:** {Automation.ModMail.TimeoutMinutes - (DateTime.Now - entry.LastMSGTime).Minutes} Minutes");
                 }
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                DiscordEmbedBuilder embed = new()
                 {
                     Author = new DiscordEmbedBuilder.EmbedAuthor
                     {

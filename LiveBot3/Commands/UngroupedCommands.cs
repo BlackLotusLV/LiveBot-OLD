@@ -49,7 +49,7 @@ namespace LiveBot.Commands
         [Description("Returns the ID of an emote")]
         public async Task GetEmote(CommandContext ctx, params DiscordEmoji[] emotes)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             foreach (DiscordEmoji emoji in emotes)
             {
@@ -167,7 +167,7 @@ namespace LiveBot.Commands
         public async Task IT(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
-            FileStream ITImage = new FileStream("Assets/ITC.jpg", FileMode.Open);
+            FileStream ITImage = new("Assets/ITC.jpg", FileMode.Open);
             var msgBuilder = new DiscordMessageBuilder();
             msgBuilder.WithFile(ITImage);
             if (username == null)
@@ -316,10 +316,10 @@ namespace LiveBot.Commands
                 user = ctx.Member;
             }
             string format = "dddd, MMM dd yyyy HH:mm:ss zzzz";
-            CultureInfo info = new CultureInfo("en-GB");
+            CultureInfo info = new("en-GB");
             string joinedstring = user.JoinedAt.ToString(format, info);
             string createdstring = user.CreationTimestamp.ToString(format, info);
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            DiscordEmbedBuilder embed = new()
             {
                 Color = new DiscordColor(0xFF6600),
                 Author = new DiscordEmbedBuilder.EmbedAuthor
@@ -377,8 +377,8 @@ namespace LiveBot.Commands
         public async Task Private(CommandContext ctx)
         {
             DiscordChannel category = ctx.Guild.GetChannel(477797862965772288);
-            DiscordOverwriteBuilder user = new DiscordOverwriteBuilder();
-            DiscordOverwriteBuilder everyone = new DiscordOverwriteBuilder();
+            DiscordOverwriteBuilder user = new();
+            DiscordOverwriteBuilder everyone = new();
             user.For(ctx.Member);
             user.Allow(Permissions.AccessChannels);
             user.Allow(Permissions.ManageChannels);
@@ -427,9 +427,9 @@ namespace LiveBot.Commands
 
             List<DB.VehicleList> VehicleList = DB.DBLists.VehicleList;
             List<DB.DisciplineList> DisciplineList = DB.DBLists.DisciplineList.Where(w => w.Discipline_Name == disciplinename).ToList();
-            Random r = new Random();
+            Random r = new();
             int row = 0;
-            List<DB.VehicleList> SelectedVehicles = new List<DB.VehicleList>();
+            List<DB.VehicleList> SelectedVehicles = new();
 
             if (disciplinename == "Street Race")
             {
@@ -484,7 +484,7 @@ namespace LiveBot.Commands
 
             DB.DBLists.UpdateVehicleList(SelectedVehicles.Where(w => w.ID_Vehicle.Equals(SelectedVehicles[row].ID_Vehicle)).Select(s => { s.IsSelected = true; return s; }).ToArray());
 
-            DiscordColor embedColour = new DiscordColor();
+            DiscordColor embedColour = new();
 
             switch (SelectedVehicles[row].VehicleTier)
             {
@@ -513,7 +513,7 @@ namespace LiveBot.Commands
                     break;
             }
 
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            DiscordEmbedBuilder embed = new()
             {
                 Color = embedColour,
                 Title = $"{SelectedVehicles[row].Brand} | {SelectedVehicles[row].Model} | {SelectedVehicles[row].Year} ({SelectedVehicles[row].Type})"
@@ -777,7 +777,7 @@ namespace LiveBot.Commands
                         {
                             var idui = UserImg.Max(m => m.ID_User_Images);
                             user.Bucks -= (long)background[0].Price;
-                            DB.UserImages newEntry = new DB.UserImages
+                            DB.UserImages newEntry = new()
                             {
                                 User_ID = ctx.User.Id,
                                 BG_ID = id,
@@ -841,7 +841,7 @@ namespace LiveBot.Commands
                 }
                 else
                 {
-                    Random r = new Random();
+                    Random r = new();
                     money += r.Next(200);
                     user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
                     reciever.Bucks += money;
@@ -929,7 +929,7 @@ namespace LiveBot.Commands
         public async Task Status(CommandContext ctx)
         {
             string HTML;
-            using (WebClient wc = new WebClient())
+            using (WebClient wc = new())
             {
                 HTML = wc.DownloadString("https://ubistatic-a.akamaihd.net/0115/tc2/status.html");
             }

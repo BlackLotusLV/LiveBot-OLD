@@ -17,7 +17,7 @@ namespace LiveBot.Automation
         public readonly static DiscordChannel TC1Photomode = Program.TCGuild.GetChannel(191567033064751104);
         public readonly static DiscordChannel TC2Photomode = Program.TCGuild.GetChannel(447134224349134848);
 #pragma warning disable IDE0044 // Add readonly modifier
-        private static List<DiscordMessage> MessageList = new List<DiscordMessage>();
+        private static List<DiscordMessage> MessageList = new();
 #pragma warning restore IDE0044 // Add readonly modifier
 
         public static async Task Auto_Moderator_Banned_Words(DiscordClient Client, MessageCreateEventArgs e)
@@ -103,7 +103,7 @@ namespace LiveBot.Automation
                                 $"**Contents:** {converteddeletedmsg}";
                             if (Description.Length <= 2000)
                             {
-                                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                                DiscordEmbedBuilder embed = new()
                                 {
                                     Color = new DiscordColor(0xFF6600),
                                     Author = new DiscordEmbedBuilder.EmbedAuthor
@@ -154,7 +154,7 @@ namespace LiveBot.Automation
                 {
                     DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
                     DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = new();
                     foreach (var message in e.Messages)
                     {
                         if (message.Author != null)
@@ -173,7 +173,7 @@ namespace LiveBot.Automation
                     }
                     if (sb.ToString().Length < 2000)
                     {
-                        DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                        DiscordEmbedBuilder embed = new()
                         {
                             Color = new DiscordColor(0xFF6600),
                             Title = "Bulk delete log",
@@ -208,7 +208,7 @@ namespace LiveBot.Automation
                 if (GuildSettings[0].User_Traffic != 0)
                 {
                     DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Title = $"📥{e.Member.Username}({e.Member.Id}) has joined the server",
                         Footer = new DiscordEmbedBuilder.EmbedFooter
@@ -235,7 +235,7 @@ namespace LiveBot.Automation
                 if (GuildSettings[0].User_Traffic != 0)
                 {
                     DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].User_Traffic));
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Title = $"📤{e.Member.Username}({e.Member.Id}) has left the server",
                         Footer = new DiscordEmbedBuilder.EmbedFooter
@@ -268,7 +268,7 @@ namespace LiveBot.Automation
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].WKB_Log));
                     if (logs[0].CreationTimestamp >= beforetime && logs[0].CreationTimestamp <= aftertime)
                     {
-                        DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                        DiscordEmbedBuilder embed = new()
                         {
                             Title = $"👢 {e.Member.Username} ({e.Member.Id}) has been kicked",
                             Description = $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
@@ -311,7 +311,7 @@ namespace LiveBot.Automation
                     await Task.Delay(2000);
                     var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Title = $"❌ {e.Member.Username} ({e.Member.Id}) has been banned",
                         Description = $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
@@ -352,7 +352,7 @@ namespace LiveBot.Automation
                     await Task.Delay(1000);
                     var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Unban);
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Title = $"✓ {e.Member.Username} ({e.Member.Id}) has been unbanned",
                         Description = $"*by {logs[0].UserResponsible.Mention}*",

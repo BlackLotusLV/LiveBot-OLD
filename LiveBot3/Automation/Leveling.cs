@@ -19,7 +19,7 @@ namespace LiveBot.Automation
                 if (!e.Author.IsBot && e.Guild != null)
                 {
                     bool checkglobal = false, checklocal = false;
-                    Random r = new Random();
+                    Random r = new();
                     int
                         MinIntervalA = 10,
                         MaxIntervalA = 30,
@@ -108,7 +108,7 @@ namespace LiveBot.Automation
                             global.Level += 1;
                         }
 
-                        LevelTimer NewToList = new LevelTimer
+                        LevelTimer NewToList = new()
                         {
                             Time = DateTime.Now,
                             User = e.Author
@@ -128,7 +128,7 @@ namespace LiveBot.Automation
                         {
                             local.Followers += points_added;
                         }
-                        ServerLevelTimer NewToList = new ServerLevelTimer
+                        ServerLevelTimer NewToList = new()
                         {
                             Time = DateTime.Now,
                             User = e.Author,
@@ -137,8 +137,8 @@ namespace LiveBot.Automation
                         ServerUserLevelTimer.Add(NewToList);
                         DB.DBLists.UpdateServerRanks(local);
                     }
-                        //*/
-                        var userrank = (from sr in DB.DBLists.ServerRanks.AsParallel()
+                    //*/
+                    var userrank = (from sr in DB.DBLists.ServerRanks.AsParallel()
                                     where sr.Server_ID == e.Guild.Id
                                     where sr.User_ID == e.Author.Id
                                     select sr).FirstOrDefault().Followers;
@@ -147,7 +147,7 @@ namespace LiveBot.Automation
                                        where rr.Server_Rank <= userrank
                                        where rr.Server_ID == e.Guild.Id
                                        select rr).ToList();
-                    List<DiscordRole> roles = new List<DiscordRole>();
+                    List<DiscordRole> roles = new();
                     foreach (var item in rankedroles)
                     {
                         if (item.Server_ID == e.Guild.Id)

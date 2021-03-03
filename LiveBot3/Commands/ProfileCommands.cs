@@ -68,7 +68,7 @@ namespace LiveBot.Commands
                 bucks = UserStats.Bucks.ToString(),
                 bio = Regex.Replace(UserSettings.us.User_Info.ToString(), @"[^\u0000-\u007F]+", "�");
             string[] BioLines = bio.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-            StringBuilder BioWrapper = new StringBuilder();
+            StringBuilder BioWrapper = new();
             foreach (string line in BioLines)
             {
                 if (line.Length < 47)
@@ -77,7 +77,7 @@ namespace LiveBot.Commands
                 }
                 else
                 {
-                    StringBuilder newLine = new StringBuilder();
+                    StringBuilder newLine = new();
                     foreach (string word in line.Split(" "))
                     {
                         if (newLine.Length + word.Length < 47)
@@ -103,12 +103,12 @@ namespace LiveBot.Commands
 
             byte[] ProfilePicture = new WebClient().DownloadData(Member.AvatarUrl);
             using Image<Rgba32>
-                Base = new Image<Rgba32>(580, 580),
+                Base = new(580, 580),
                 pfp = Image.Load<Rgba32>(ProfilePicture),
                 background = Image.Load<Rgba32>(UserSettings.bi.Image)
                 ;
 
-            Image<Rgba32> Badge = new Image<Rgba32>(1, 1);
+            Image<Rgba32> Badge = new(1, 1);
             if (DateTimeOffset.Now - Member.JoinedAt > TimeSpan.FromDays(365.25) || Math.Floor((DateTimeOffset.Now - Member.JoinedAt) / TimeSpan.FromDays(30)) == 12)
             {
                 int years = (int)Math.Floor((DateTimeOffset.Now - Member.JoinedAt) / TimeSpan.FromDays(365.25));

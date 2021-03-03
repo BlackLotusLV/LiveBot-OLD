@@ -58,7 +58,7 @@ namespace LiveBot.DB
 
         public static void LoadVehicleList(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new VehicleListContext();
             VehicleList = (from c in ctx.VehicleList
@@ -77,7 +77,7 @@ namespace LiveBot.DB
 
         public static void LoadDisciplineList(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new DisciplineListContext();
             DisciplineList = (from c in ctx.DisciplineList
@@ -96,7 +96,7 @@ namespace LiveBot.DB
 
         public static void LoadReactionRoles(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new ReactionRolesContext();
             ReactionRoles = (from c in ctx.ReactionRoles
@@ -115,7 +115,7 @@ namespace LiveBot.DB
 
         public static void LoadStreamNotifications(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new StreamNotificationsContext();
             StreamNotifications = (from c in ctx.StreamNotifications
@@ -134,7 +134,7 @@ namespace LiveBot.DB
 
         public static void LoadBackgroundImage(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new BackgroundImageContext();
             BackgroundImage = (from c in ctx.BackgroundImage
@@ -153,7 +153,7 @@ namespace LiveBot.DB
 
         public static void LoadLeaderboard(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new LeaderboardContext();
             Leaderboard = (from c in ctx.Leaderboard
@@ -172,7 +172,7 @@ namespace LiveBot.DB
 
         public static void LoadServerRanks(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new ServerRanksContext();
             ServerRanks = (from c in ctx.ServerRanks
@@ -191,7 +191,7 @@ namespace LiveBot.DB
 
         public static void LoadUserSettings(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new UserSettingsContext();
             UserSettings = (from c in ctx.UserSettings
@@ -210,7 +210,7 @@ namespace LiveBot.DB
 
         public static void LoadUserImages(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new UserImagesContext();
             UserImages = (from c in ctx.UserImages
@@ -229,7 +229,7 @@ namespace LiveBot.DB
 
         public static void LoadWarnings(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new WarningsContext();
             Warnings = (from c in ctx.Warnings
@@ -248,7 +248,7 @@ namespace LiveBot.DB
 
         public static void LoadServerSettings(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new ServerSettingsContext();
             ServerSettings = (from c in ctx.ServerSettings
@@ -267,7 +267,7 @@ namespace LiveBot.DB
 
         public static void LoadRankRoles(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new RankRolesContext();
             RankRoles = (from c in ctx.RankRoles
@@ -286,7 +286,7 @@ namespace LiveBot.DB
 
         public static void LoadCUC(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new CommandsUsedCountContext();
             CommandsUsedCount = (from c in ctx.CommandsUsedCount
@@ -305,7 +305,7 @@ namespace LiveBot.DB
 
         public static void LoadBannedWords(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new AMBannedWordsContext();
             AMBannedWords = (from c in ctx.AMBannedWords
@@ -324,7 +324,7 @@ namespace LiveBot.DB
 
         public static void LoadBotOutputList(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new BotOutputListContext();
             BotOutputList = (from c in ctx.BotOutputList
@@ -343,7 +343,7 @@ namespace LiveBot.DB
 
         public static void LoadWeatherSchedule(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new WeatherScheduleContext();
             WeatherSchedule = (from c in ctx.WeatherSchedule
@@ -362,7 +362,7 @@ namespace LiveBot.DB
 
         public static void LoadModMail(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new ModMailContext();
             ModMail = (from c in ctx.ModMail
@@ -381,7 +381,7 @@ namespace LiveBot.DB
 
         public static void LoadRoleTagSettings(bool progress = false)
         {
-            Stopwatch timer = new Stopwatch();
+            Stopwatch timer = new();
             timer.Start();
             using var ctx = new RoleTagSettingsContext();
             RoleTagSettings = (from c in ctx.RoleTagSettings

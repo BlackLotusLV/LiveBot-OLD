@@ -39,7 +39,7 @@ namespace LiveBot.Commands
 
             int platforms = 4;
 
-            using (WebClient wc = new WebClient())
+            using (WebClient wc = new())
             {
                 List<TCHubJson.Summit> JSummit = Program.JSummit;
                 PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
@@ -86,17 +86,17 @@ namespace LiveBot.Commands
             using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Assets/Summit/PS.jpg"))
             using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Assets/Summit/XB.png"))
             using (Image<Rgba32> StadiaImg = Image.Load<Rgba32>("Assets/Summit/STADIA.png"))
-            using (Image<Rgba32> BaseImg = new Image<Rgba32>(300 * platforms, 643))
+            using (Image<Rgba32> BaseImg = new(300 * platforms, 643))
             {
                 Image<Rgba32>[] PlatformImg = new Image<Rgba32>[4] { PCImg, PSImg, XBImg, StadiaImg };
                 Parallel.For(0, Events.Length, (i, state) =>
                 {
                     using Image<Rgba32> TierImg = Image.Load<Rgba32>("Assets/Summit/SummitBase.png");
                     using Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo);
-                    using Image<Rgba32> FooterImg = new Image<Rgba32>(300, 30);
+                    using Image<Rgba32> FooterImg = new(300, 30);
                     SummitImg.Mutate(ctx => ctx.Crop(300, SummitImg.Height));
                     Color TextColour = Color.WhiteSmoke;
-                    Point SummitLocation = new Point(0 + (300 * i), 0);
+                    Point SummitLocation = new(0 + (300 * i), 0);
                     Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
                     Font FooterFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                     FooterImg.Mutate(ctx => ctx
@@ -145,7 +145,7 @@ namespace LiveBot.Commands
 
             TCHubJson.TceSummit JTCE = CustomMethod.GetTCEInfo(ctx);
 
-            TCHubJson.TceSummitSubs UserInfo = new TCHubJson.TceSummitSubs();
+            TCHubJson.TceSummitSubs UserInfo = new();
 
             if (JTCE.Error != null)
             {
@@ -265,7 +265,7 @@ namespace LiveBot.Commands
             {
                 string SJson;
                 List<TCHubJson.Summit> JSummit = Program.JSummit;
-                using (WebClient wc = new WebClient())
+                using (WebClient wc = new())
                 {
                     SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
 
@@ -387,10 +387,10 @@ namespace LiveBot.Commands
                 }
             };
 
-            using Image<Rgba32> BaseImage = new Image<Rgba32>(1127, 735);
+            using Image<Rgba32> BaseImage = new(1127, 735);
             Parallel.For(0, 9, (i, state) =>
             {
-                using WebClient wc = new WebClient();
+                using WebClient wc = new();
                 var ThisEvent = JSummit[0].Events[i];
                 var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{JSummit[0].Events[i].ID}?page_size=1"));
 
@@ -422,7 +422,7 @@ namespace LiveBot.Commands
 
                     string[] EventTitle = (CustomMethod.HubNameLookup(ThisEventNameID)).Replace("\"", string.Empty).Split(' ');
                     TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}?page_size=1"));
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = new();
                     for (int j = 0; j < EventTitle.Length; j++)
                     {
                         if (j == 3)
@@ -444,8 +444,8 @@ namespace LiveBot.Commands
                     {
                         ActivityResult = $"Distance: {Activity.Entries[0].Score}m";
                     }
-                    using (Image<Rgba32> TitleBar = new Image<Rgba32>(EventImage.Width, 40))
-                    using (Image<Rgba32> ScoreBar = new Image<Rgba32>(EventImage.Width, 40))
+                    using (Image<Rgba32> TitleBar = new(EventImage.Width, 40))
+                    using (Image<Rgba32> ScoreBar = new(EventImage.Width, 40))
                     {
                         ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
                         TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
@@ -464,7 +464,7 @@ namespace LiveBot.Commands
                 }
                 else
                 {
-                    using Image<Rgba32> NotComplete = new Image<Rgba32>(EventImage.Width, EventImage.Height);
+                    using Image<Rgba32> NotComplete = new(EventImage.Width, EventImage.Height);
                     NotComplete.Mutate(ctx => ctx
                         .Fill(Color.Black)
                         .DrawText(AllignCenter, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
@@ -517,16 +517,16 @@ namespace LiveBot.Commands
             int RewardWidth = 412;
             TCHubJson.Reward[] Rewards = Program.JSummit[summit].Rewards;
             Font Font = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 25);
-            using (Image<Rgba32> RewardsImage = new Image<Rgba32>(4 * RewardWidth, 328))
+            using (Image<Rgba32> RewardsImage = new(4 * RewardWidth, 328))
             {
                 Parallel.For(0, Rewards.Length, (i, state) =>
                 {
                     string RewardTitle = string.Empty;
 
                     Image<Rgba32>
-                                affix1 = new Image<Rgba32>(1, 1),
-                                affix2 = new Image<Rgba32>(1, 1),
-                                affixbonus = new Image<Rgba32>(1, 1);
+                                affix1 = new(1, 1),
+                                affix2 = new(1, 1),
+                                affixbonus = new(1, 1);
                     bool isParts = false;
                     switch (Rewards[i].Type)
                     {
@@ -611,11 +611,11 @@ namespace LiveBot.Commands
                     RewardTitle = Regex.Replace(RewardTitle, "((<(\\w||[/=\"'#\\ ]){0,}>)||(&#\\d{0,}; )){0,}", "").ToUpper();
 
                     using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[summit, i]);
-                    using Image<Rgba32> TopBar = new Image<Rgba32>(RewardImage.Width, 20);
+                    using Image<Rgba32> TopBar = new(RewardImage.Width, 20);
                     TopBar.Mutate(ctx => ctx.
                     Fill(RewardColours[i])
                     );
-                    TextGraphicsOptions TextOptions = new TextGraphicsOptions
+                    TextGraphicsOptions TextOptions = new()
                     {
                         TextOptions = new TextOptions
                         {
@@ -641,7 +641,7 @@ namespace LiveBot.Commands
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             var msgBuilder = new DiscordMessageBuilder
             {
-                Content = $"{ctx.User.Mention}, here are {(summit==0?"this week":summit==1?"next week":"future weeks")} summit rewards:"
+                Content = $"{ctx.User.Mention}, here are {(summit == 0 ? "this week" : summit == 1 ? "next week" : "future weeks")} summit rewards:"
             };
             msgBuilder.WithFile(upFile);
             await ctx.RespondAsync(msgBuilder);
@@ -662,7 +662,7 @@ namespace LiveBot.Commands
             string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
             TCHubJson.TceSummit JTCE;
-            using WebClient wc = new WebClient();
+            using WebClient wc = new();
             try
             {
                 string Jdown = wc.DownloadString(link);
@@ -676,7 +676,7 @@ namespace LiveBot.Commands
                 };
             }
 
-            TCHubJson.TceSummitSubs UserInfo = new TCHubJson.TceSummitSubs();
+            TCHubJson.TceSummitSubs UserInfo = new();
 
             if (JTCE.Error != null)
             {
@@ -752,7 +752,7 @@ namespace LiveBot.Commands
         {
             var interactivity = ctx.Client.GetInteractivity();
 
-            StringBuilder Families = new StringBuilder();
+            StringBuilder Families = new();
             Families.AppendLine("```csharp");
             List<TCHubJson.Family> FamilyList = Program.TCHub.Families.OrderBy(w => w.ID).ToList();
             for (int i = 0; i < FamilyList.Count; i++)
@@ -767,7 +767,7 @@ namespace LiveBot.Commands
                 bool isNumber = int.TryParse(FamilyIdMsg.Result.Content, out int familyID);
                 if (isNumber && familyID >= 0 && familyID < FamilyList.Count)
                 {
-                    StringBuilder Disciplines = new StringBuilder();
+                    StringBuilder Disciplines = new();
                     List<TCHubJson.Discipline> DisciplinesList = Program.TCHub.Disciplines.Where(w => w.Family_ID == FamilyList[familyID].ID).OrderBy(w => w.ID).ToList();
                     Disciplines.AppendLine("```csharp");
                     for (int i = 0; i < DisciplinesList.Count; i++)
