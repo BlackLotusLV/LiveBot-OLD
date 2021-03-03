@@ -688,5 +688,26 @@ namespace LiveBot
             }
             return BaseImage;
         }
+        public static TCHubJson.TceSummit GetTCEInfo(CommandContext ctx)
+        {
+            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
+
+            TCHubJson.TceSummit JTCE;
+            using (WebClient wc = new WebClient())
+            {
+                try
+                {
+                    string Jdown = wc.DownloadString(link);
+                    JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
+                }
+                catch (Exception)
+                {
+                    JTCE = new TCHubJson.TceSummit
+                    {
+                        Error = "No Connection."
+                    };
+                }
+            }return JTCE;
+        }
     }
 }

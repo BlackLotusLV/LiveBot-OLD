@@ -142,24 +142,8 @@ namespace LiveBot.Commands
             DateTime endtime;
 
             string search = string.Empty;
-            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
-            TCHubJson.TceSummit JTCE;
-            using (WebClient wc = new WebClient())
-            {
-                try
-                {
-                    string Jdown = wc.DownloadString(link);
-                    JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
-                }
-                catch (Exception)
-                {
-                    JTCE = new TCHubJson.TceSummit
-                    {
-                        Error = "No Connection."
-                    };
-                }
-            }
+            TCHubJson.TceSummit JTCE = CustomMethod.GetTCEInfo(ctx);
 
             TCHubJson.TceSummitSubs UserInfo = new TCHubJson.TceSummitSubs();
 
@@ -237,6 +221,10 @@ namespace LiveBot.Commands
                         await platformMSG.ModifyAsync("Stadia Platform selected.");
                         platform = "stadia";
                     }
+                    else
+                    {
+                        platform = "pc";
+                    }
                     await platformMSG.DeleteAllReactionsAsync();
                 }
                 switch (platform.ToLower())
@@ -289,7 +277,7 @@ namespace LiveBot.Commands
                 {
                     TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
                     CustomMethod.BuildSummitImage(JSummit, Events, UserInfo).Save(imageLoc);
-                    OutMessage = $"{ctx.User.Mention}, Here are your summit event stats for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : search == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+                    OutMessage = $"{ctx.User.Mention}, Here are your summit event stats for {(UserInfo.Platform == "x1" ? "Xbox" : UserInfo.Platform == "ps4" ? "PlayStation" : UserInfo.Platform == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
                     SendImage = true;
                 }
                 else
