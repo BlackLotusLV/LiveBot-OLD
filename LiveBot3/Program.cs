@@ -39,28 +39,25 @@ namespace LiveBot
 
         // Lists
 
-        public static List<ulong> ServerIdList { get; set; } = new List<ulong>();
+        public static List<ulong> ServerIdList { get; set; } = new();
 
         // string
 
         public static readonly string tmpLoc = Path.GetTempPath() + "/livebot-";
 
-        // channels
-        private static DiscordChannel BotErrorLogChannel { get; set; }
-
         // guild
         public static DiscordGuild TCGuild { get; private set; }
 
         // fonts
-        public static FontCollection Fonts { get; set; } = new FontCollection();
+        public static FontCollection Fonts { get; set; } = new();
 
         // Timers
-        private Timer StreamDelayTimer { get; set; } = new Timer(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
+        private Timer StreamDelayTimer { get; set; } = new(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
 
-        private Timer ActiveRoleTimer { get; set; } = new Timer(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer));
-        private Timer HubUpdateTimer { get; set; } = new Timer(e => TimerMethod.UpdateHubInfo());
-        private Timer MessageCacheClearTimer { get; set; } = new Timer(e => AutoMod.ClearMSGCache());
-        private Timer ModMailCloserTimer { get; set; } = new Timer(async e => await ModMail.ModMailCloser());
+        private Timer ActiveRoleTimer { get; set; } = new(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer));
+        private Timer HubUpdateTimer { get; set; } = new(e => TimerMethod.UpdateHubInfo());
+        private Timer MessageCacheClearTimer { get; set; } = new(e => AutoMod.ClearMSGCache());
+        private Timer ModMailCloserTimer { get; set; } = new(async e => await ModMail.ModMailCloser());
 
         private static void Main(string[] args)
         {
@@ -178,8 +175,7 @@ namespace LiveBot
                 // Servers
                 TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
                 DiscordGuild testserver = await Client.GetGuildAsync(282478449539678210);
-                // Channels
-                BotErrorLogChannel = testserver.GetChannel(673105806778040320);
+
                 while (!ServerIdList.Contains(TCGuild.Id))
                 {
                     await Task.Delay(100);
@@ -217,23 +213,9 @@ namespace LiveBot
             return Task.CompletedTask;
         }
 
-        private async Task<Task> Client_ClientError(DiscordClient Client, ClientErrorEventArgs e)
+        private Task Client_ClientError(DiscordClient Client, ClientErrorEventArgs e)
         {
             Client.Logger.LogError(CustomLogEvents.ClientError, e.Exception, "Exception occurred");
-            string errormsg = $"```\n{DateTime.Now} {LogLevel.Error} LiveBot Exception Occured: {e.Exception.GetType()}: {e.Exception.Message}\n" +
-                $"{e.Exception.InnerException}\n" +
-                $"{e.Exception.StackTrace}\n```";
-            if (errormsg.Length <= 1900)
-            {
-                await BotErrorLogChannel.SendMessageAsync(errormsg);
-            }
-            else
-            {
-                File.WriteAllText($"{tmpLoc}{errormsg.Length}-errorFile.txt", errormsg);
-                using var upFile = new FileStream($"{tmpLoc}{errormsg.Length}-errorFile.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
-                var msgBuilder = new DiscordMessageBuilder().WithFile(upFile);
-                await BotErrorLogChannel.SendMessageAsync(msgBuilder);
-            }
             return Task.CompletedTask;
         }
 
