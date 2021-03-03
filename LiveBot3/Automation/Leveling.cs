@@ -34,8 +34,14 @@ namespace LiveBot.Automation
                     }
                     else if (e.Message.Content.Length > CharCountSmall && e.Message.Content.Length <= CharCountBig)
                     {
-                        MinIntervalA += (MinIntervalB - MinIntervalA - 1 / CharCountBig) * e.Message.Content.Length;
-                        MaxIntervalA += (MaxIntervalB - MaxIntervalA - 1 / CharCountBig) * e.Message.Content.Length;
+                        float diff = MinIntervalB - MinIntervalA - 1;
+                        diff /= CharCountBig;
+                        diff *= e.Message.Content.Length;
+                        MinIntervalA += (int)diff;
+                        diff = MaxIntervalB - MaxIntervalA - 1;
+                        diff /= CharCountBig;
+                        diff *= e.Message.Content.Length;
+                        MaxIntervalA += (int)diff;
                     }
                     int MinMoney = 2, MaxMoney = 5;
                     int points_added = r.Next(MinIntervalA, MaxIntervalA);
@@ -75,7 +81,8 @@ namespace LiveBot.Automation
                                              where lb.Server_ID == e.Channel.Guild.Id
                                              select lb).FirstOrDefault();
                                 local.Followers += points_added;
-                                Suser.Time = DateTime.Now; DB.DBLists.UpdateServerRanks(local);
+                                Suser.Time = DateTime.Now;
+                                DB.DBLists.UpdateServerRanks(local);
                             }
                         }
                     });
@@ -130,8 +137,8 @@ namespace LiveBot.Automation
                         ServerUserLevelTimer.Add(NewToList);
                         DB.DBLists.UpdateServerRanks(local);
                     }
-                    //*/
-                    var userrank = (from sr in DB.DBLists.ServerRanks.AsParallel()
+                        //*/
+                        var userrank = (from sr in DB.DBLists.ServerRanks.AsParallel()
                                     where sr.Server_ID == e.Guild.Id
                                     where sr.User_ID == e.Author.Id
                                     select sr).FirstOrDefault().Followers;
