@@ -821,7 +821,7 @@ namespace LiveBot.Commands
                 member = ctx.Member;
             }
             var user = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == ctx.Member.Id);
-            var reciever = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == member.Id);
+            var receiver = DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == member.Id);
             DateTime? dailyused = null;
             if (user.Daily_Used != null)
             {
@@ -844,9 +844,9 @@ namespace LiveBot.Commands
                     Random r = new();
                     money += r.Next(200);
                     user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
-                    reciever.Bucks += money;
+                    receiver.Bucks += money;
                     DB.DBLists.UpdateLeaderboard(user);
-                    DB.DBLists.UpdateLeaderboard(reciever);
+                    DB.DBLists.UpdateLeaderboard(receiver);
                     await new DiscordMessageBuilder()
                         .WithContent($"{member.Mention}, You were given {money} bucks by {ctx.Member.Username}")
                          .WithReply(ctx.Message.Id)
