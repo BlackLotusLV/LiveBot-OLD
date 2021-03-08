@@ -89,6 +89,7 @@ namespace LiveBot.Automation
 
                     if (GuildSettings.Delete_Log != 0)
                     {
+                        bool HasAttachment = e.Message.Attachments.Count > 0;
                         DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings.ID_Server));
                         DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Delete_Log));
                         if (author != null && !author.IsBot)
@@ -96,7 +97,7 @@ namespace LiveBot.Automation
                             string converteddeletedmsg = msg.Content;
                             if (converteddeletedmsg == "")
                             {
-                                converteddeletedmsg = "*message didn't contain any text, probably file*";
+                                converteddeletedmsg = "*message didn't contain any text*";
                             }
 
                             Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
@@ -117,6 +118,7 @@ namespace LiveBot.Automation
                                         Text = $"Time posted: {msg.CreationTimestamp}"
                                     }
                                 };
+                                embed.AddField("Had attachment?", HasAttachment ? "Yes" : "no", false);
                                 await DeleteLog.SendMessageAsync(embed: embed);
                             }
                             else
