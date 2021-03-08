@@ -174,7 +174,6 @@ namespace LiveBot
             {
                 // Servers
                 TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
-                DiscordGuild testserver = await Client.GetGuildAsync(282478449539678210);
 
                 while (!ServerIdList.Contains(TCGuild.Id))
                 {
