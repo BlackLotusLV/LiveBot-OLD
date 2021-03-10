@@ -100,9 +100,8 @@ namespace LiveBot.Automation
                                 converteddeletedmsg = "*message didn't contain any text*";
                             }
 
-                            Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}\n" +
-                                $"**Contents:** {converteddeletedmsg}";
-                            if (Description.Length <= 2000)
+                            Description = $"{author.Mention}'s message was deleted in {e.Channel.Mention}";
+                            if (converteddeletedmsg.Length <= 1800)
                             {
                                 DiscordEmbedBuilder embed = new()
                                 {
@@ -118,12 +117,13 @@ namespace LiveBot.Automation
                                         Text = $"Time posted: {msg.CreationTimestamp}"
                                     }
                                 };
-                                embed.AddField("Had attachment?", HasAttachment ? "Yes" : "no", false);
+                                embed.AddField("Message Content", converteddeletedmsg, false);
+                                embed.AddField("Had attachment?", HasAttachment ? $"{e.Message.Attachments.Count} Attachemnts" : "no", false);
                                 await DeleteLog.SendMessageAsync(embed: embed);
                             }
                             else
                             {
-                                File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", Description);
+                                File.WriteAllText($"{Program.tmpLoc}{e.Message.Id}-DeleteLog.txt", $"{Description}\n**Contents:** {converteddeletedmsg}");
                                 using var upFile = new FileStream($"{Program.tmpLoc}{e.Message.Id}-BulkDeleteLog.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
                                 var msgBuilder = new DiscordMessageBuilder
                                 {
