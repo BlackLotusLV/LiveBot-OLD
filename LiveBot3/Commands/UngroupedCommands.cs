@@ -22,8 +22,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] MySummit command now should always indicate the right platform of which the stats are shown, when defaulting from a platform you have not linked.\n" +
-                "";
+            string changelog = "[Change] Slight improvements to delete-log\n" +
+                "[NEW?] Added the weather schedule as a command\n" +
+                "[FIX] Daily command not pinging the user if daily given to other user instead of self claim";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -850,6 +851,7 @@ namespace LiveBot.Commands
                     await new DiscordMessageBuilder()
                         .WithContent($"{member.Mention}, You were given {money} bucks by {ctx.Member.Username}")
                          .WithReply(ctx.Message.Id)
+                         .WithAllowedMention(new UserMention())
                          .SendAsync(ctx.Channel);
                 }
             }
@@ -859,8 +861,8 @@ namespace LiveBot.Commands
 
                 await new DiscordMessageBuilder()
                     .WithContent($"Time untill you can use daily {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.")
-                     .WithReply(ctx.Message.Id, true)
-                     .SendAsync(ctx.Channel);
+                    .WithReply(ctx.Message.Id, true)
+                    .SendAsync(ctx.Channel);
             }
         }
 
