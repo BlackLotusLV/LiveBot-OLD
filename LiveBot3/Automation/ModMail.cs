@@ -21,7 +21,7 @@ namespace LiveBot.Automation
                 {
                     DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)MMEntry.Server_ID);
                     DiscordChannel ModMailChannel = Guild.GetChannel((ulong)DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Author = new DiscordEmbedBuilder.EmbedAuthor
                         {
@@ -73,7 +73,7 @@ namespace LiveBot.Automation
             string DMNotif = string.Empty;
             DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)ModMail.Server_ID);
             DiscordChannel ModMailChannel = Guild.GetChannel((ulong)DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            DiscordEmbedBuilder embed = new()
             {
                 Title = $"[CLOSED] #{ModMail.ID} {ClosingText}",
                 Color = new DiscordColor(ModMail.ColorHex),

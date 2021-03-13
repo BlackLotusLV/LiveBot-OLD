@@ -63,7 +63,7 @@ namespace LiveBot.Automation
                                 {
                                     await role.ModifyAsync(mentionable: true);
                                     msg = $"{role.Name} ✓";
-                                    ActivateRolesTimer newItem = new ActivateRolesTimer
+                                    ActivateRolesTimer newItem = new()
                                     {
                                         Guild = guild,
                                         Role = role,
