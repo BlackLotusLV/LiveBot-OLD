@@ -118,7 +118,7 @@ namespace LiveBot.Automation
                                     }
                                 };
                                 embed.AddField("Message Content", converteddeletedmsg, false);
-                                embed.AddField("Had attachment?", HasAttachment ? $"{e.Message.Attachments.Count} Attachemnts" : "no", false);
+                                embed.AddField("Had attachment?", HasAttachment ? $"{e.Message.Attachments.Count} Attachments" : "no", false);
                                 await DeleteLog.SendMessageAsync(embed: embed);
                             }
                             else

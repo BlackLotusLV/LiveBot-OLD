@@ -22,9 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[Change] Slight improvements to delete-log\n" +
-                "[NEW?] Added the weather schedule as a command\n" +
-                "[FIX] Daily command not pinging the user if daily given to other user instead of self claim";
+            string changelog = "[fix] typo in delete log\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
