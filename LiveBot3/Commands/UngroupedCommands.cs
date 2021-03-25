@@ -22,7 +22,12 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[fix] typo in delete log\n" +
+            string changelog = "[FIX] typo in delete log\n" +
+                "[INTERNAL] Internal changes to database things.\n" +
+                "[FIX] Media only filter no longer will filter messages with links that have text infront of them (MOF only applies to media chanels)\n" +
+                "[NEW] Video and fanart channels added to media only filter\n" +
+                "[NEW] Added few more affix images to `/h sr` command. Added periodically as not all names in the API match the affix names\n" +
+                "[CHANGE] Random vehicle command now uses unicode to indicate weather the vehicle is summit, mp, or cc only.\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -523,9 +528,9 @@ namespace LiveBot.Commands
             embed.AddField("Year", $"{SelectedVehicles[row].Year}", true);
             embed.AddField("Type", $"{SelectedVehicles[row].Type}", false);
             embed.AddField("Vehicle Tier", $"{SelectedVehicles[row].VehicleTier}", true);
-            embed.AddField("Crew Credits only?", $"{SelectedVehicles[row].IsCCOnly}", true);
-            embed.AddField("Summit exclusive?", $"{SelectedVehicles[row].IsSummitVehicle}", true);
-            embed.AddField("MP exclusive?", $"{SelectedVehicles[row].IsMotorPassExclusive}", true);
+            embed.AddField("Crew Credits only?", $"{(SelectedVehicles[row].IsCCOnly? "✅" : "❌")}", true);
+            embed.AddField("Summit exclusive?", $"{(SelectedVehicles[row].IsSummitVehicle? "✅" : "❌")}", true);
+            embed.AddField("MP exclusive?", $"{(SelectedVehicles[row].IsMotorPassExclusive? "✅" : "❌")}", true);
 
             await ctx.RespondAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", embed);
         }

@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00816" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00816" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00816" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00820" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00820" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00820" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
     <PackageReference Include="Npgsql" Version="5.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
@@ -33,10 +33,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Assets\Affix\air_intake.png">
+    <None Update="Assets\Affix\airintake.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Affix\fame_magnet.png">
+    <None Update="Assets\Affix\airracefigures.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\collector.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\extrapump.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\famemagnet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Affix\frenetic.png">
@@ -45,10 +54,10 @@
     <None Update="Assets\Affix\goldfinder.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Affix\live_reward_sniffer.png">
+    <None Update="Assets\Affix\liverewardniffer.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Affix\loot_digger.png">
+    <None Update="Assets\Affix\lootdigger.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Affix\lucky.png">
@@ -63,16 +72,31 @@
     <None Update="Assets\Affix\pure.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Affix\rear_drag.png">
+    <None Update="Assets\Affix\reardrag.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\resourceful.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Affix\rich.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Affix\score_breaker.png">
+    <None Update="Assets\Affix\scorebreaker.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\sensor.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\skilled.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\tricky.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Affix\unknown.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Affix\ventilated.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Badges\10Month.png">
