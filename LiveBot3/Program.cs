@@ -195,13 +195,11 @@ namespace LiveBot
                         select ss).ToList();
             if (list.Count == 0)
             {
-                string[] arr = new string[] { "0", "0", "0" };
                 var newEntry = new DB.ServerSettings()
                 {
                     ID_Server = e.Guild.Id,
                     Delete_Log = 0,
                     User_Traffic = 0,
-                    Welcome_Settings = arr,
                     WKB_Log = 0,
                     Spam_Exception_Channels = new decimal[] { 0 }
                 };

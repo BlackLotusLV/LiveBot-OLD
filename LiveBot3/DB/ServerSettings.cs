@@ -7,6 +7,7 @@ namespace LiveBot.DB
     internal class ServerSettings
     {
         [Key]
+        [ForeignKey("server_id")]
         [Column("id_server")]
         public decimal ID_Server { get; set; }
 
@@ -23,20 +24,12 @@ namespace LiveBot.DB
         public decimal WKB_Log { get; set; }
 
         [Required]
-        [Column("welcome_cwb")]
-        public string[] Welcome_Settings { get; set; }
-
-        [Required]
         [Column("spam_exception")]
         public decimal[] Spam_Exception_Channels { get; set; }
 
         [Required]
         [Column("mod_mail")]
         public decimal ModMailID { get; set; }
-
-        [Required]
-        [Column("has_screening")]
-        public bool HasScreening { get; set; }
 
         [Required]
         [Column("has_link_protection")]

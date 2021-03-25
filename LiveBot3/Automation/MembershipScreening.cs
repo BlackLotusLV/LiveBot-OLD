@@ -9,31 +9,28 @@ namespace LiveBot.Automation
 {
     internal static class MembershipScreening
     {
-        public static async Task AcceptRules(DiscordClient Client, GuildMemberUpdateEventArgs e)
+        public static async Task AcceptRules(object Client, GuildMemberUpdateEventArgs e)
         {
             _ = Task.Run(async () =>
             {
                 if (e.PendingBefore.Value && !e.PendingAfter.Value)
                 {
-                    var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                         where ss.ID_Server == e.Guild.Id
-                                         select ss).FirstOrDefault();
+                    var WelcomeSettings = DB.DBLists.ServerWelcomeSettings.FirstOrDefault(w => w.Server_ID == e.Guild.Id);
                     var JoinRole = (from rr in DB.DBLists.RankRoles
                                     where rr.Server_ID == e.Guild.Id
                                     where rr.Server_Rank == 0
                                     select rr).FirstOrDefault();
-                    DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings.ID_Server));
-                    if (GuildSettings.Welcome_Settings[0] != "0" && GuildSettings.HasScreening)
+                    if (WelcomeSettings.Channel_ID != 0 && WelcomeSettings.HasScreening)
                     {
-                        DiscordChannel WelcomeChannel = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Welcome_Settings[0]));
-                        if (GuildSettings.Welcome_Settings[1] != "0")
+                        DiscordChannel WelcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(WelcomeSettings.Channel_ID));
+                        if (WelcomeSettings.Welcome_Message!=null)
                         {
-                            string msg = GuildSettings.Welcome_Settings[1];
+                            string msg = WelcomeSettings.Welcome_Message;
                             msg = msg.Replace("$Mention", $"{e.Member.Mention}");
                             await WelcomeChannel.SendMessageAsync(msg);
                             if (JoinRole != null)
                             {
-                                DiscordRole role = Guild.GetRole(Convert.ToUInt64(JoinRole.Role_ID));
+                                DiscordRole role = e.Guild.GetRole(Convert.ToUInt64(JoinRole.Role_ID));
                                 await e.Member.GrantRoleAsync(role);
                             }
                         }

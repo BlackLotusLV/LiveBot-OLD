@@ -9,29 +9,26 @@ namespace LiveBot.Automation
 {
     internal static class MemberFlow
     {
-        public static async Task Welcome_Member(DiscordClient Client, GuildMemberAddEventArgs e)
+        public static async Task Welcome_Member(object Client, GuildMemberAddEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                     where ss.ID_Server == e.Guild.Id
-                                     select ss).FirstOrDefault();
+                var WelcomeSettings = DB.DBLists.ServerWelcomeSettings.FirstOrDefault(w => w.Server_ID == e.Guild.Id);
                 var JoinRole = (from rr in DB.DBLists.RankRoles
                                 where rr.Server_ID == e.Guild.Id
                                 where rr.Server_Rank == 0
                                 select rr).FirstOrDefault();
-                DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings.ID_Server));
-                if (GuildSettings.Welcome_Settings[0] != "0" && !GuildSettings.HasScreening)
+                if (WelcomeSettings.Channel_ID != 0 && !WelcomeSettings.HasScreening)
                 {
-                    DiscordChannel WelcomeChannel = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Welcome_Settings[0]));
-                    if (GuildSettings.Welcome_Settings[1] != "0")
+                    DiscordChannel WelcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(WelcomeSettings.Channel_ID));
+                    if (WelcomeSettings.Welcome_Message != null)
                     {
-                        string msg = GuildSettings.Welcome_Settings[1];
+                        string msg = WelcomeSettings.Welcome_Message;
                         msg = msg.Replace("$Mention", $"{e.Member.Mention}");
                         await WelcomeChannel.SendMessageAsync(msg);
                         if (JoinRole != null)
                         {
-                            DiscordRole role = Guild.GetRole(Convert.ToUInt64(JoinRole.Role_ID));
+                            DiscordRole role = e.Guild.GetRole(Convert.ToUInt64(JoinRole.Role_ID));
                             await e.Member.GrantRoleAsync(role);
                         }
                     }
@@ -44,21 +41,18 @@ namespace LiveBot.Automation
         {
             _ = Task.Run(async () =>
             {
-                var GuildSettings = (from ss in DB.DBLists.ServerSettings
-                                     where ss.ID_Server == e.Guild.Id
-                                     select ss).FirstOrDefault();
-                DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings.ID_Server));
+                var WelcomeSettings = DB.DBLists.ServerWelcomeSettings.FirstOrDefault(w => w.Server_ID == e.Guild.Id);
                 bool pendingcheck = true;
-                if (GuildSettings.HasScreening && e.Member.IsPending == true)
+                if (WelcomeSettings.HasScreening && e.Member.IsPending == true)
                 {
                     pendingcheck = false;
                 }
-                if (GuildSettings.Welcome_Settings[0] != "0" && pendingcheck)
+                if (WelcomeSettings.Channel_ID != 0 && pendingcheck)
                 {
-                    DiscordChannel WelcomeChannel = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Welcome_Settings[0]));
-                    if (GuildSettings.Welcome_Settings[2] != "0")
+                    DiscordChannel WelcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(WelcomeSettings.Channel_ID));
+                    if (WelcomeSettings.Goodbye_Message != null)
                     {
-                        string msg = GuildSettings.Welcome_Settings[2];
+                        string msg = WelcomeSettings.Goodbye_Message;
                         msg = msg.Replace("$Username", $"{e.Member.Username}");
                         await WelcomeChannel.SendMessageAsync(msg);
                     }

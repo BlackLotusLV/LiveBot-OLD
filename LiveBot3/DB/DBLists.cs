@@ -9,33 +9,35 @@ namespace LiveBot.DB
 {
     internal static class DBLists
     {
-        public readonly static int TableCount = 18;
+        public readonly static int TableCount = 19;
         public static int LoadedTableCount { get; set; } = 0;
 
-        public static List<VehicleList> VehicleList { get; set; } = new List<VehicleList>();
-        public static List<DisciplineList> DisciplineList { get; set; } = new List<DisciplineList>();
-        public static List<ReactionRoles> ReactionRoles { get; set; } = new List<ReactionRoles>();
-        public static List<StreamNotifications> StreamNotifications { get; set; } = new List<StreamNotifications>();
-        public static List<BackgroundImage> BackgroundImage { get; set; } = new List<BackgroundImage>();
-        public static List<Leaderboard> Leaderboard { get; set; } = new List<Leaderboard>();
-        public static List<ServerRanks> ServerRanks { get; set; } = new List<ServerRanks>();
-        public static List<UserImages> UserImages { get; set; } = new List<UserImages>();
-        public static List<UserSettings> UserSettings { get; set; } = new List<UserSettings>();
-        public static List<Warnings> Warnings { get; set; } = new List<Warnings>();
-        public static List<ServerSettings> ServerSettings { get; set; } = new List<ServerSettings>();
-        public static List<RankRoles> RankRoles { get; set; } = new List<RankRoles>();
-        public static List<CommandsUsedCount> CommandsUsedCount { get; set; } = new List<CommandsUsedCount>();
-        public static List<BotOutputList> BotOutputList { get; set; } = new List<BotOutputList>();
-        public static List<WeatherSchedule> WeatherSchedule { get; set; } = new List<WeatherSchedule>();
-        public static List<AMBannedWords> AMBannedWords { get; set; } = new List<AMBannedWords>();
-        public static List<ModMail> ModMail { get; set; } = new List<ModMail>();
-        public static List<RoleTagSettings> RoleTagSettings { get; set; } = new List<RoleTagSettings>();
+        public static List<VehicleList> VehicleList { get; set; } = new(); //1
+        public static List<DisciplineList> DisciplineList { get; set; } = new();//2
+        public static List<ReactionRoles> ReactionRoles { get; set; } = new();//3
+        public static List<StreamNotifications> StreamNotifications { get; set; } = new();//4
+        public static List<BackgroundImage> BackgroundImage { get; set; } = new();//5
+        public static List<Leaderboard> Leaderboard { get; set; } = new();//6
+        public static List<ServerRanks> ServerRanks { get; set; } = new();//7
+        public static List<UserImages> UserImages { get; set; } = new();//8
+        public static List<UserSettings> UserSettings { get; set; } = new();//9
+        public static List<Warnings> Warnings { get; set; } = new();//10
+        public static List<ServerSettings> ServerSettings { get; set; } = new();//11
+        public static List<RankRoles> RankRoles { get; set; } = new();//12
+        public static List<CommandsUsedCount> CommandsUsedCount { get; set; } = new();//13
+        public static List<BotOutputList> BotOutputList { get; set; } = new();//14
+        public static List<WeatherSchedule> WeatherSchedule { get; set; } = new();//15
+        public static List<AMBannedWords> AMBannedWords { get; set; } = new();//16
+        public static List<ModMail> ModMail { get; set; } = new();//17
+        public static List<RoleTagSettings> RoleTagSettings { get; set; } = new();//18
+        public static List<ServerWelcomeSettings> ServerWelcomeSettings { get; set; } = new();//19
 
         public static void LoadAllLists()
         {
             CustomMethod.DBProgress(LoadedTableCount, TimeSpan.Zero);
             LoadServerSettings(true);
             LoadWeatherSchedule(true);
+            new Thread(() => LoadServerWelcomeSettings(true)).Start();
             new Thread(() => LoadVehicleList(true)).Start();
             new Thread(() => LoadDisciplineList(true)).Start();
             new Thread(() => LoadReactionRoles(true)).Start();
@@ -262,6 +264,24 @@ namespace LiveBot.DB
             else
             {
                 Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Settings List Loaded");
+            }
+        }
+        public static void LoadServerWelcomeSettings(bool progress = false)
+        {
+            Stopwatch timer = new();
+            timer.Start();
+            using var ctx = new ServerWelcomeSettingsContext();
+            ServerWelcomeSettings = (from c in ctx.ServerWelcomeSettings
+                              select c).ToList();
+            timer.Stop();
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Server Welcome Settings");
+            }
+            else
+            {
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Welcome Settings List Loaded");
             }
         }
 
@@ -503,6 +523,13 @@ namespace LiveBot.DB
         public static void UpdateBackgroundImages(params BackgroundImage[] o)
         {
             using var ctx = new BackgroundImageContext();
+            ctx.UpdateRange(o);
+            ctx.SaveChanges();
+        }
+
+        public static void UpdateServerWelcomeSEttings(params ServerWelcomeSettings[] o)
+        {
+            using ServerWelcomeSettingsContext ctx = new();
             ctx.UpdateRange(o);
             ctx.SaveChanges();
         }
