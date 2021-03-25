@@ -14,8 +14,8 @@ namespace LiveBot.Automation
 {
     internal static class AutoMod
     {
-        public readonly static DiscordChannel TC1Photomode = Program.TCGuild.GetChannel(191567033064751104);
-        public readonly static DiscordChannel TC2Photomode = Program.TCGuild.GetChannel(447134224349134848);
+        private readonly static ulong[] MediaOnlyChannelIDs = new ulong[] { 191567033064751104, 447134224349134848, 404613175024025601, 195095947871518721, 469920292374970369 };
+
 #pragma warning disable IDE0044 // Add readonly modifier
         private static List<DiscordMessage> MessageList = new();
 #pragma warning restore IDE0044 // Add readonly modifier
@@ -58,14 +58,14 @@ namespace LiveBot.Automation
             await Task.Delay(1);
         }
 
-        public static async Task Photomode_Cleanup(DiscordClient Client, MessageCreateEventArgs e)
+        public static async Task Media_Only_Filter(DiscordClient Client, MessageCreateEventArgs e)
         {
             _ = Task.Run(async () =>
                 {
-                    if ((e.Channel == TC1Photomode || e.Channel == TC2Photomode) && !e.Author.IsBot && e.Message.Attachments.Count == 0 && !Uri.TryCreate(e.Message.Content, UriKind.Absolute, out _))
+                    if (MediaOnlyChannelIDs.Any(id=>id == e.Channel.Id) && !e.Author.IsBot && e.Message.Attachments.Count == 0 && !e.Message.Content.Split(' ').Any(a=>Uri.TryCreate(a, UriKind.Absolute, out _)))
                     {
                         await e.Message.DeleteAsync();
-                        DiscordMessage m = await e.Channel.SendMessageAsync("This channel is for sharing images only, please use the content comment channel for discussions. If this is a mistake please contact a moderator.");
+                        DiscordMessage m = await e.Channel.SendMessageAsync("This channel is for sharing media only, please use the content comment channel for discussions. If this is a mistake please contact a moderator.");
                         await Task.Delay(9000);
                         await m.DeleteAsync();
                         Client.Logger.LogInformation(CustomLogEvents.PhotoCleanup, "User tried to send text in photomdoe channel. Message deleted");

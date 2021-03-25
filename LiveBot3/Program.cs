@@ -139,7 +139,7 @@ namespace LiveBot
                 Client.MessageCreated += Leveling.Update_User_Levels;
                 Client.GuildMemberAdded += Leveling.Add_To_Leaderboards;
 
-                Client.MessageCreated += AutoMod.Photomode_Cleanup;
+                Client.MessageCreated += AutoMod.Media_Only_Filter;
                 Client.MessageCreated += AutoMod.Auto_Moderator_Banned_Words;
                 Client.MessageCreated += AutoMod.Spam_Protection;
                 Client.MessageCreated += AutoMod.Link_Spam_Protection;
@@ -160,7 +160,6 @@ namespace LiveBot
 
                 Client.MessageCreated += ModMail.ModMailDM;
             }
-
             DiscordActivity BotActivity = new($"DM /modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
