@@ -429,7 +429,7 @@ namespace LiveBot
             return $"{member.Mention}, {OutputEntry.Command_Text}";
         }
 
-        public static DiscordEmbed GetUserWarnings(DiscordGuild Guild, DiscordUser User)
+        public static DiscordEmbed GetUserWarnings(DiscordGuild Guild, DiscordUser User, bool AdminCommand = false)
         {
             DB.DBLists.LoadServerRanks();
             DB.DBLists.LoadWarnings();
@@ -446,16 +446,35 @@ namespace LiveBot
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
                 var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).ToList();
+                if (!AdminCommand)
+                {
+                    WarningsList.RemoveAll(w => w.Type == "note");
+                }
                 wcount = WarningsList.Count(w => w.Type == "warning");
                 foreach (var item in WarningsList)
                 {
-                    if (item.Active)
+                    switch (item.Type)
                     {
-                        Reason.Append("[✓] ");
-                    }
-                    else
-                    {
-                        Reason.Append("[X] ");
+                        case "ban":
+                            Reason.Append("[🔨]");
+                            break;
+                        case "kick":
+                            Reason.Append("[🥾]");
+                            break;
+                        case "note":
+                            Reason.Append("[❔]");
+                            break;
+                        default: // warning
+                            if (item.Active)
+                            {
+                                Reason.Append("[✅] ");
+                            }
+                            else
+                            {
+
+                                Reason.Append("[❌] ");
+                            }
+                            break;
                     }
                     Reason.AppendLine($"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}");
                 }

@@ -22,7 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "BIG CHANGE - Bot prefix changed to `>` instead of `/` due to discord slash commands coming out of beta. Over time many commands will be moved to slash commands.";
+            string changelog = "[NEW] Added admin command `>@ addnote [id] [note]` to leave a note on a user without warning. Only visible by admins\n" +
+                "[CHANGES] Minor tweaks to infraction viewer command output `>@ getkicks` and `>mywarnings`";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

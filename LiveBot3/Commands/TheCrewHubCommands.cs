@@ -158,6 +158,10 @@ namespace LiveBot.Commands
                     OutMessage = $"{ctx.User.Mention}, the API is down, check <#257513574061178881> and please try again later.\n" +
                         $"<@85017957343694848> Rip API";
                 }
+                else if (JTCE.Error == "TCHub down")
+                {
+                    OutMessage = $"{ctx.User.Mention}, The Crew Hub seems to be down, there might be a maintenance. Please try again later.";
+                }
             }
             else if (JTCE.Subs.Length == 1)
             {

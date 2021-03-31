@@ -135,7 +135,7 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            await ctx.RespondAsync($"{ctx.User.Mention}", embed: CustomMethod.GetUserWarnings(ctx.Guild, User));
+            await ctx.RespondAsync($"{ctx.User.Mention}", embed: CustomMethod.GetUserWarnings(ctx.Guild, User, true));
         }
 
         [Command("vote")]
@@ -461,6 +461,28 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondAsync("Could not find a user by this ID");
             }
+        }
+
+        [Command("addnote")]
+        public async Task AddNote(CommandContext ctx, DiscordUser user, [RemainingText] string note)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+
+            DB.Warnings newEntry = new()
+            {
+                Server_ID = ctx.Guild.Id,
+                Active = false,
+                Admin_ID = ctx.Message.Author.Id,
+                Type = "note",
+                User_ID = user.Id,
+                Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                Reason = note
+            };
+            DB.DBLists.InsertWarnings(newEntry);
+
+            DiscordMessage response = await ctx.RespondAsync($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})");
+            await Task.Delay(10000).ContinueWith(t => response.DeleteAsync());
         }
 
     }
