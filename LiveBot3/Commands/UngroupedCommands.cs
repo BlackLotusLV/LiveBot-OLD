@@ -22,13 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] typo in delete log\n" +
-                "[INTERNAL] Internal changes to database things.\n" +
-                "[FIX] Media only filter no longer will filter messages with links that have text infront of them (MOF only applies to media chanels)\n" +
-                "[NEW] Video and fanart channels added to media only filter\n" +
-                "[NEW] Added few more affix images to `/h sr` command. Added periodically as not all names in the API match the affix names\n" +
-                "[CHANGE] Random vehicle command now uses unicode to indicate weather the vehicle is summit, mp, or cc only.\n" +
-                "";
+            string changelog = "BIG CHANGE - Bot prefix changed to `>` instead of `/` due to discord slash commands coming out of beta. Over time many commands will be moved to slash commands.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

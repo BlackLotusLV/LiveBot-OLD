@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00820" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00820" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00820" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00822" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00822" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00822" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
     <PackageReference Include="Npgsql" Version="5.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
@@ -54,7 +54,7 @@
     <None Update="Assets\Affix\goldfinder.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\Affix\liverewardniffer.png">
+    <None Update="Assets\Affix\liverewardsniffer.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Affix\lootdigger.png">

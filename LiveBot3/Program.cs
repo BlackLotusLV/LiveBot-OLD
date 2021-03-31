@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20210314_A";
+        public readonly static string BotVersion = $"20210326_C";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -160,7 +160,7 @@ namespace LiveBot
 
                 Client.MessageCreated += ModMail.ModMailDM;
             }
-            DiscordActivity BotActivity = new($"DM /modmail to open chat with mods", ActivityType.Playing);
+            DiscordActivity BotActivity = new($"DM {cfgjson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
         }
