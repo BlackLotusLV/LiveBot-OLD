@@ -22,8 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Added admin command `>@ addnote [id] [note]` to leave a note on a user without warning. Only visible by admins\n" +
-                "[CHANGES] Minor tweaks to infraction viewer command output `>@ getkicks` and `>mywarnings`";
+            string changelog = "[FIX] Admin command for getkicks should no longer time out when infraction list character count is over 1024\n";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

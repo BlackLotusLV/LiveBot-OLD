@@ -436,7 +436,11 @@ namespace LiveBot
             List<DB.ServerRanks> ServerRanks = DB.DBLists.ServerRanks;
             List<DB.Warnings> warnings = DB.DBLists.Warnings;
             bool UserCheck = false;
-            int kcount = 0, bcount = 0, wlevel = 0, wcount = 0;
+            int kcount = 0,
+                bcount = 0,
+                wlevel = 0,
+                wcount = 0,
+                splitcount = 1;
             StringBuilder Reason = new();
             var UserStats = ServerRanks.FirstOrDefault(f => User.Id == f.User_ID && Guild.Id == f.Server_ID);
             if (UserStats != null)
@@ -476,7 +480,14 @@ namespace LiveBot
                             }
                             break;
                     }
-                    Reason.AppendLine($"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}");
+                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
+                    
+                    if (Reason.Length+addedInfraction.Length>1023*splitcount)
+                    {
+                        Reason.Append("~split~");
+                        splitcount++;
+                    }
+                    Reason.AppendLine(addedInfraction);
                 }
                 if (WarningsList.Count == 0)
                 {
@@ -502,7 +513,11 @@ namespace LiveBot
             embed.AddField("Times warned: ", $"{wcount}", true);
             embed.AddField("Times kicked: ", $"{kcount}", true);
             embed.AddField("Times banned: ", $"{bcount}", true);
-            embed.AddField("Infractions: ", $"{Reason}", false);
+            string[] SplitReason = Reason.ToString().Split("~split~");
+            for (int i = 0; i < SplitReason.Length; i++)
+            {
+                embed.AddField($"Infraction({i + 1}/{SplitReason.Length})", SplitReason[i], false);
+            }
             if (!UserCheck)
             {
                 return new DiscordEmbedBuilder
