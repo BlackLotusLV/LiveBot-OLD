@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LiveBot.DB
@@ -34,5 +35,9 @@ namespace LiveBot.DB
         [Required]
         [Column("has_link_protection")]
         public bool HasLinkProtection { get; set; }
+
+        [Required]
+        [Column("voice_activity_log")]
+        public decimal VCLog { get; set; }
     }
 }

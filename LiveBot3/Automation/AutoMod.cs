@@ -434,6 +434,57 @@ namespace LiveBot.Automation
             await Task.Delay(1);
         }
 
+        public static async Task Voice_Activity_Log(DiscordClient Client, VoiceStateUpdateEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                DB.ServerSettings SS = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == e.Guild.Id);
+
+                if (SS.VCLog!=0)
+                {
+                    DiscordChannel VCActivityLogChannel = await Client.GetChannelAsync(Convert.ToUInt64(SS.VCLog));
+
+                    DiscordEmbedBuilder embed = new()
+                    {
+                        Author= new DiscordEmbedBuilder.EmbedAuthor
+                        {
+                            IconUrl= e.User.AvatarUrl,
+                            Name = $"{e.User.Username} ({e.User.Id})"
+                        },
+                        Thumbnail=new DiscordEmbedBuilder.EmbedThumbnail
+                        {
+                            Url=e.User.AvatarUrl
+                        }
+                    };
+                    if (e?.After?.Channel!=null && e?.Before?.Channel==null)
+                    {
+                        embed.Title = "➡ [JOINED] ➡";
+                        embed.Color = DiscordColor.Green;
+                        embed.AddField("Channel joined", $"**{e.After.Channel.Name}** *({e.After.Channel.Id})*", false);
+                    }
+                    else if (e?.After?.Channel == null && e?.Before?.Channel != null)
+                    {
+                        embed.Title = "⬅ [LEFT] ⬅";
+                        embed.Color = DiscordColor.Red;
+                        embed.AddField("Channel left", $"**{e.Before.Channel.Name}** *({e.Before.Channel.Id})*", false);
+                    }
+                    else if (e?.After?.Channel !=null && e?.Before?.Channel != null && e?.After?.Channel!=e?.Before?.Channel)
+                    {
+                        embed.Title = "🔄 [SWITCHED] 🔄";
+                        embed.Color = new DiscordColor(0x87CEFF);
+                        embed.AddField("Channel left", $"**{e.Before.Channel.Name}** *({e.Before.Channel.Id})*", false);
+                        embed.AddField("Channel joined", $"**{e.After.Channel.Name}** *({e.After.Channel.Id})*", false);
+                    }
+
+                    if (e?.After?.Channel != e?.Before?.Channel)
+                    {
+                        await VCActivityLogChannel.SendMessageAsync(embed);
+                    }
+                }
+            });
+            await Task.Delay(1);
+        }
+
         public static void ClearMSGCache()
         {
             if (MessageList.Count > 100)

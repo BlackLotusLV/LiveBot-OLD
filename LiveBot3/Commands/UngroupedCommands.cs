@@ -22,7 +22,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Admin command for getkicks should no longer time out when infraction list character count is over 1024\n";
+            string changelog = "[REMOVED] Removed re-dirrect command for the hub commands\n" +
+                "[NEW] Added voice channel log system to allow better moderation\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -993,17 +995,6 @@ namespace LiveBot.Commands
             {
                 await ctx.RespondAsync($"{ctx.Member.Mention}, This emoji does not represent a role in this server.");
             }
-        }
-
-        [Command("mysummit")]
-        public async Task MySummitOld(CommandContext ctx)
-        {
-            await new DiscordMessageBuilder
-            {
-                Content = "The command has moved to `/hub mysummit` or `/hub sinfo`"
-            }
-            .WithReply(ctx.Message.Id, true)
-            .SendAsync(ctx.Channel);
         }
     }
 }

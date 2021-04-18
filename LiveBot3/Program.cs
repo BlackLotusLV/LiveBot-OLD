@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20210331_A";
+        public readonly static string BotVersion = $"20210407_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -150,6 +150,7 @@ namespace LiveBot
                 Client.GuildMemberRemoved += AutoMod.User_Kicked_Log;
                 Client.GuildBanAdded += AutoMod.User_Banned_Log;
                 Client.GuildBanRemoved += AutoMod.User_Unbanned;
+                Client.VoiceStateUpdated += AutoMod.Voice_Activity_Log;
 
                 Client.MessageReactionAdded += Roles.Reaction_Roles;
 
@@ -160,6 +161,7 @@ namespace LiveBot
 
                 Client.MessageCreated += ModMail.ModMailDM;
             }
+            Client.VoiceStateUpdated += AutoMod.Voice_Activity_Log;
             DiscordActivity BotActivity = new($"DM {cfgjson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
