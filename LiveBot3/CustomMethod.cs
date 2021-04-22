@@ -344,7 +344,7 @@ namespace LiveBot
                 }
                 else
                 {
-                    SB.Append("*(This is an automated message, use the `/modmail` feature if you want to report a mistake.)*");
+                    SB.Append($"*(This is an automated message, use the `{Program.CFGJson.CommandPrefix}modmail` feature if you want to report a mistake.)*");
                 }
 
                 try

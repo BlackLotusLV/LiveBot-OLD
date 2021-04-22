@@ -317,10 +317,6 @@ namespace LiveBot.DB
                 LoadedTableCount++;
                 CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Commands Used Count");
             }
-            else
-            {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Commands Used Count List Loaded");
-            }
         }
 
         public static void LoadBannedWords(bool progress = false)

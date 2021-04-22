@@ -22,8 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[REMOVED] Removed re-dirrect command for the hub commands\n" +
-                "[NEW] Added voice channel log system to allow better moderation\n" +
+            string changelog = "[FIX] Cookie command not tagging the correct user\n" +
+                "[FIX] Role tag not tagging roles\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -160,6 +160,11 @@ namespace LiveBot.Commands
                 }
             }
             await ctx.RespondAsync(content);
+
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
             await ctx.Message.DeleteAsync();
         }
 
@@ -902,7 +907,11 @@ namespace LiveBot.Commands
                     output = $"Time untill you can use cookie command again - {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.";
                 }
             }
-            await ctx.RespondAsync(output);
+            await new DiscordMessageBuilder()
+                .WithContent(output)
+                .WithReply(ctx.Message.Id, false)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("cookie")]
@@ -976,24 +985,37 @@ namespace LiveBot.Commands
                     DiscordRole role = ctx.Guild.GetRole((ulong)RT.Role_ID);
                     if (RT.Last_Used < DateTime.Now - TimeSpan.FromMinutes(RT.Cooldown))
                     {
-                        await ctx.RespondAsync($"{role.Mention} - {ctx.Member.Mention}: {RT.Message}");
+                        await new DiscordMessageBuilder()
+                            .WithContent($"{role.Mention} - {ctx.Member.Mention}: {RT.Message}")
+                            .WithReply(ctx.Message.Id, false)
+                            .WithAllowedMention(new RoleMention(role))
+                            .SendAsync(ctx.Channel);
                         RT.Last_Used = DateTime.Now;
                         DB.DBLists.UpdateRoleTagSettings(RT);
                     }
                     else
                     {
                         TimeSpan remainingTime = TimeSpan.FromMinutes(RT.Cooldown) - (DateTime.Now - RT.Last_Used);
-                        await ctx.RespondAsync($"{ctx.Member.Mention}, This role can't be mentioned right now, cooldown has not passed yet. ({remainingTime.Hours} Hours {remainingTime.Minutes} Minutes {remainingTime.Seconds} Seconds left)");
+                        await new DiscordMessageBuilder()
+                            .WithContent($"This role can't be mentioned right now, cooldown has not passed yet. ({remainingTime.Hours} Hours {remainingTime.Minutes} Minutes {remainingTime.Seconds} Seconds left)")
+                            .WithReply(ctx.Message.Id, true)
+                            .SendAsync(ctx.Channel);
                     }
                 }
                 else
                 {
-                    await ctx.RespondAsync($"{ctx.Member.Mention}, This channel does not allow this role to be pinged");
+                    await new DiscordMessageBuilder()
+                        .WithContent($"This channel does not allow this role to be pinged")
+                        .WithReply(ctx.Message.Id, true)
+                        .SendAsync(ctx.Channel);
                 }
             }
             else
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, This emoji does not represent a role in this server.");
+                await new DiscordMessageBuilder()
+                    .WithContent($"This emoji does not represent a role in this server.")
+                    .WithReply(ctx.Message.Id, true)
+                    .SendAsync(ctx.Channel);
             }
         }
     }

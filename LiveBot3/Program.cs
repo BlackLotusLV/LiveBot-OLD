@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20210407_A";
+        public readonly static string BotVersion = $"20210422_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -36,6 +36,7 @@ namespace LiveBot
         public static TCHubJson.TCHub TCHub { get; set; }
         public static List<TCHubJson.Summit> JSummit { get; set; }
         public static ConfigJson.TheCrewExchange TCEJson { get; set; }
+        public static ConfigJson.Bot CFGJson { get; set; }
 
         // Lists
 
@@ -76,7 +77,7 @@ namespace LiveBot
             using (var sr = new StreamReader(File.OpenRead("Config.json"), new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
             TCEJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
-            ConfigJson.Bot cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
+            CFGJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
 
             // TC Hub
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
@@ -86,7 +87,7 @@ namespace LiveBot
             LogLevel logLevel = LogLevel.Debug;
             if (args.Length == 1 && args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
             {
-                cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).LiveBot;
+                CFGJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).LiveBot;
                 Console.WriteLine($"Running live version: {BotVersion}");
 
                 TestBuild = false;
@@ -94,7 +95,7 @@ namespace LiveBot
             }
             var cfg = new DiscordConfiguration
             {
-                Token = cfgjson.Token,
+                Token = CFGJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 ReconnectIndefinitely = false,
@@ -114,7 +115,7 @@ namespace LiveBot
             });
             var ccfg = new CommandsNextConfiguration
             {
-                StringPrefixes = new string[] { cfgjson.CommandPrefix },
+                StringPrefixes = new string[] { CFGJson.CommandPrefix },
                 CaseSensitive = false,
                 IgnoreExtraArguments = true
             };
@@ -161,8 +162,7 @@ namespace LiveBot
 
                 Client.MessageCreated += ModMail.ModMailDM;
             }
-            Client.VoiceStateUpdated += AutoMod.Voice_Activity_Log;
-            DiscordActivity BotActivity = new($"DM {cfgjson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
+            DiscordActivity BotActivity = new($"DM {CFGJson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
         }
