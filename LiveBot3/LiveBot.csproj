@@ -15,12 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.1-nightly-00841" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.1-nightly-00841" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.1-nightly-00841" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
-    <PackageReference Include="Npgsql" Version="5.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
+    <PackageReference Include="DSharpPlus" Version="4.0.1-nightly-00843" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.1-nightly-00843" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.1-nightly-00843" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
+    <PackageReference Include="Npgsql" Version="5.0.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />

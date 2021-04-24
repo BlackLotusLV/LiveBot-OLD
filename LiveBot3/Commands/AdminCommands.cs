@@ -135,7 +135,11 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            await ctx.RespondAsync($"{ctx.User.Mention}", embed: CustomMethod.GetUserWarnings(ctx.Guild, User, true));
+            await new DiscordMessageBuilder()
+                .WithContent($"{ctx.User.Mention}")
+                .WithEmbed(CustomMethod.GetUserWarnings(ctx.Guild, User, true))
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("vote")]
@@ -144,7 +148,9 @@ namespace LiveBot.Commands
         public async Task Vote(CommandContext ctx, [Description("What to vote about?")][RemainingText] string topic)
         {
             await ctx.Message.DeleteAsync();
-            DiscordMessage msg = await ctx.Message.RespondAsync(topic);
+            DiscordMessage msg = await new DiscordMessageBuilder()
+                .WithContent(topic)
+                .SendAsync(ctx.Channel);
             DiscordEmoji up = DiscordEmoji.FromName(ctx.Client, ":thumbsup:");
             DiscordEmoji down = DiscordEmoji.FromName(ctx.Client, ":thumbsdown:");
             await msg.CreateReactionAsync(up);
@@ -168,7 +174,9 @@ namespace LiveBot.Commands
                 final = $"{final}{emotename[i]} {item} \n";
                 i++;
             }
-            DiscordMessage msg = await ctx.Message.RespondAsync(final);
+            DiscordMessage msg = await new DiscordMessageBuilder()
+                .WithContent(final)
+                .SendAsync(ctx.Channel);
             DiscordEmoji zero = DiscordEmoji.FromName(ctx.Client, ":zero:");
             DiscordEmoji one = DiscordEmoji.FromName(ctx.Client, ":one:");
             DiscordEmoji two = DiscordEmoji.FromName(ctx.Client, ":two:");
@@ -246,13 +254,15 @@ namespace LiveBot.Commands
                 .Select(s => new
                 {
                     Admin_ID = s.Key,
-                    Count = s.Count()
+                    WCount = s.Count(w=>w.Type=="warning"),
+                    KCount = s.Count(w=>w.Type=="kick"),
+                    BCount = s.Count(w=>w.Type=="ban")
                 })
-                .OrderByDescending(o => o.Count))
+                .OrderByDescending(o => o.WCount))
             {
                 i++;
                 DiscordUser user = await Program.Client.GetUserAsync(Convert.ToUInt64(item.Admin_ID));
-                sb.AppendLine($"[{i}]\t# {user.Username}\n\tWarnings Given {item.Count}");
+                sb.AppendLine($"[{i}]\t# {user.Username}\n\tWarnings Issued {item.WCount}\t\tKicks Issued {item.KCount}\t\tBans Issued {item.BCount}");
             }
             sb.AppendLine("```");
             await ctx.RespondAsync(sb.ToString());
@@ -349,7 +359,10 @@ namespace LiveBot.Commands
             var BotOutputEntry = DB.DBLists.BotOutputList.FirstOrDefault(w => w.Command.Equals(command) && w.Language.Equals(language));
             if (BotOutputEntry is null)
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, This combination of command and language tag does not exist in the databse.");
+                await new DiscordMessageBuilder()
+                    .WithContent($"{ctx.Member.Mention}, This combination of command and language tag does not exist in the databse.")
+                    .WithAllowedMention(new UserMention())
+                    .SendAsync(ctx.Channel);
             }
             else
             {
@@ -481,7 +494,10 @@ namespace LiveBot.Commands
             };
             DB.DBLists.InsertWarnings(newEntry);
 
-            DiscordMessage response = await ctx.RespondAsync($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})");
+            DiscordMessage response = await new DiscordMessageBuilder()
+                .WithContent($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})")
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
             await Task.Delay(10000).ContinueWith(t => response.DeleteAsync());
         }
 

@@ -22,8 +22,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Cookie command not tagging the correct user\n" +
-                "[FIX] Role tag not tagging roles\n" +
+            string changelog = "[FIX] LFC command double posting\n" +
+                "[FIX] Multiple command outputs not tagging the appropriate user\n" +
+                "[FIX] Warnings count board listing all infractions issued as warnings, not just warnings\n" +
+                "[REMOVED] Quote comand removed\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -43,7 +45,7 @@ namespace LiveBot.Commands
             embed.AddField("LiveBot info", "General purpose bot with a level system, stream notifications, greeting people and various other functions related to The Crew franchise");
             embed.AddField("Patreon:", "You can support the development of Live Bot and The Crew Community Discord here: https://www.patreon.com/BlackLotusLV");
             embed.AddField("Change log:", changelog);
-            await ctx.Message.RespondAsync(embed: embed);
+            await ctx.RespondAsync(embed: embed);
         }
 
         [Command("getemote")]
@@ -68,6 +70,7 @@ namespace LiveBot.Commands
         [Cooldown(1, 10, CooldownBucketType.Channel)]
         public async Task Ping(CommandContext ctx)
         {
+            await ctx.TriggerTypingAsync();
             await ctx.RespondAsync($"Pong! {ctx.Client.Ping}ms");
         }
 
@@ -79,14 +82,20 @@ namespace LiveBot.Commands
             [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             await ctx.Message.DeleteAsync(); //deletes command message
+            await ctx.TriggerTypingAsync();
+            string content;
             if (username is null) //checks if user name is not specified
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "share", language, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "share", language, ctx.Member);
             }
             else // if user name specified
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "share", language, username));
+                content = CustomMethod.GetCommandOutput(ctx, "share", language, username);
             }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("platform")]
@@ -95,14 +104,20 @@ namespace LiveBot.Commands
         public async Task Platform(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string content;
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "platform", language, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "platform", language, ctx.Member);
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "platform", language, username));
+                content = CustomMethod.GetCommandOutput(ctx, "platform", language, username);
             }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("maxlvl")]
@@ -111,14 +126,20 @@ namespace LiveBot.Commands
         public async Task MaxCarlvl(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string content;
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "maxlvl", language, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "maxlvl", language, ctx.Member);
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "maxlvl", language, username));
+                content = CustomMethod.GetCommandOutput(ctx, "maxlvl", language, username);
             }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("tce")] //The Crew Exchange info command
@@ -127,14 +148,20 @@ namespace LiveBot.Commands
         public async Task TCE(CommandContext ctx, [Description("Specifies the user the bot will mention, use ID or mention the user. If left blank, it will mention you.")] DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
         {
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string content;
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "tce", language, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "tce", language, ctx.Member);
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "tce", language, username));
+                content = CustomMethod.GetCommandOutput(ctx, "tce", language, username);
             }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("lfc")]
@@ -142,6 +169,8 @@ namespace LiveBot.Commands
         [Description("Informs the user of using the LFC channels, or to get the platform role if they don't have it.")]
         public async Task LFC(CommandContext ctx, DiscordMember username = null)
         {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
             string content = CustomMethod.GetCommandOutput(ctx, "lfc2", null, username);
             DiscordRole pc = ctx.Guild.GetRole(223867454642716673);
             DiscordRole ps = ctx.Guild.GetRole(223867009484587008);
@@ -159,13 +188,10 @@ namespace LiveBot.Commands
                     check = true;
                 }
             }
-            await ctx.RespondAsync(content);
-
             await new DiscordMessageBuilder()
                 .WithContent(content)
                 .WithAllowedMention(new UserMention())
                 .SendAsync(ctx.Channel);
-            await ctx.Message.DeleteAsync();
         }
 
         [Command("it")]
@@ -173,18 +199,23 @@ namespace LiveBot.Commands
         public async Task IT(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
             FileStream ITImage = new("Assets/ITC.jpg", FileMode.Open);
-            var msgBuilder = new DiscordMessageBuilder();
-            msgBuilder.WithFile(ITImage);
+            string content;
             if (username == null)
             {
-                msgBuilder.Content = $"{ctx.User.Mention}";
+                content = $"{ctx.User.Mention}";
             }
             else
             {
-                msgBuilder.Content = $"{username.Mention}";
+                content = $"{username.Mention}";
             }
-            await ctx.RespondAsync(msgBuilder);
+
+            await new DiscordMessageBuilder()
+                .WithFile(ITImage)
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("supra")]
@@ -192,14 +223,21 @@ namespace LiveBot.Commands
         [Cooldown(1, 60, CooldownBucketType.Channel)]
         public async Task Supra(CommandContext ctx, DiscordMember username = null)
         {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string content;
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "supra", null, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "supra", null, ctx.Member);
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "supra", null, username));
+                content = CustomMethod.GetCommandOutput(ctx, "supra", null, username);
             }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("support")]
@@ -208,14 +246,20 @@ namespace LiveBot.Commands
         public async Task Support(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string content;
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "support", null, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "support", null, ctx.Member);
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "support", null, username));
+                content = CustomMethod.GetCommandOutput(ctx, "support", null, username);
             }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("forums")]
@@ -224,14 +268,20 @@ namespace LiveBot.Commands
         public async Task Forums(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string content;
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "forums", null, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "forums", null, ctx.Member);
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "forums", null, username));
+                content = CustomMethod.GetCommandOutput(ctx, "forums", null, username);
             }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("prosettings")]
@@ -242,73 +292,19 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-
+            string content;
             if (username is null)
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "prosettings", null, ctx.Member));
+                content = CustomMethod.GetCommandOutput(ctx, "prosettings", null, ctx.Member);
             }
             else
             {
-                await ctx.RespondAsync(CustomMethod.GetCommandOutput(ctx, "prosettings", null, username));
+                content = CustomMethod.GetCommandOutput(ctx, "prosettings", null, username);
             }
-        }
-
-        [Command("quote")]
-        [Description("Quotes a message using its ID")]
-        [Priority(10)]
-        public async Task Quote(CommandContext ctx,
-            [Description("message ID")] DiscordMessage QuotedMessage,
-            [RemainingText] string YourMessage)
-        {
-            await ctx.Message.DeleteAsync();
-            string content = $"\"{QuotedMessage.Content}\"";
-            var embed = new DiscordEmbedBuilder
-            {
-                Color = new DiscordColor(0xFF6600)
-            };
-            embed.AddField($"Quoted {QuotedMessage.Author.Username}'s message:", $"{content}\n[go to message]({QuotedMessage.JumpLink})");
-            if (YourMessage == null)
-            {
-                await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
-            }
-            else
-            {
-                embed.AddField($"{ctx.Member.Username} Says:", YourMessage);
-                await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
-            }
-        }
-
-        [Command("quote")]
-        [Description("Cross channel message quoting. (ChannelID-MessageID)")]
-        [Priority(9)]
-        public async Task Quote(CommandContext ctx,
-            [Description("Channel and Message ID seperated by -")] string ChannelMsg,
-            [RemainingText] string YourMessage)
-        {
-            string[] strarr = ChannelMsg.Split("-");
-            if (strarr.Length == 2)
-            {
-                ulong channelid = ulong.Parse(strarr[0]);
-                ulong msgid = ulong.Parse(strarr[1]);
-                await ctx.Message.DeleteAsync();
-                DiscordChannel channel = ctx.Guild.GetChannel(channelid);
-                DiscordMessage QuotedMessage = await channel.GetMessageAsync(msgid);
-                string content = $"\"{QuotedMessage.Content}\"";
-                var embed = new DiscordEmbedBuilder
-                {
-                    Color = new DiscordColor(0xFF6600)
-                };
-                embed.AddField($"Quoted {QuotedMessage.Author.Username}'s message:", $"{content}\n[go to message]({QuotedMessage.JumpLink})");
-                if (YourMessage == null)
-                {
-                    await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
-                }
-                else
-                {
-                    embed.AddField($"{ctx.Member.Username} Says:", YourMessage);
-                    await ctx.RespondAsync($"{ctx.User.Mention} is quoting:", embed: embed);
-                }
-            }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
         }
 
         [Command("info")]
@@ -317,6 +313,7 @@ namespace LiveBot.Commands
         {
             await Task.Delay(5);
             await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
             if (user == null)
             {
                 user = ctx.Member;
@@ -586,7 +583,7 @@ namespace LiveBot.Commands
                 }
             }
             await new DiscordMessageBuilder()
-                .WithContent(output)
+                 .WithContent(output)
                  .WithReply(ctx.Message.Id, true)
                  .SendAsync(ctx.Channel);
         }
@@ -601,10 +598,10 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            var msgBuilder = new DiscordMessageBuilder()
-               .WithContent(CustomMethod.GetGlobalTop(ctx, (int)page))
-                .WithReply(ctx.Message.Id, true);
-            DiscordMessage TopMessage = await ctx.RespondAsync(msgBuilder);
+            DiscordMessage TopMessage = await new DiscordMessageBuilder()
+                .WithContent(CustomMethod.GetGlobalTop(ctx, (int)page))
+                .WithReply(ctx.Message.Id, true)
+                .SendAsync(ctx.Channel);
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
@@ -655,10 +652,10 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            var msgBuilder = new DiscordMessageBuilder()
+            DiscordMessage TopMessage = await new DiscordMessageBuilder()
                 .WithContent(CustomMethod.GetServerTop(ctx, (int)page))
-                 .WithReply(ctx.Message.Id, true);
-            DiscordMessage TopMessage = await ctx.RespondAsync(msgBuilder);
+                .WithReply(ctx.Message.Id, true)
+                .SendAsync(ctx.Channel);
             DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
             DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
 
@@ -967,7 +964,10 @@ namespace LiveBot.Commands
             }
             catch
             {
-                await ctx.RespondAsync($"{ctx.Member.Mention}, Could not contact you through DMs.");
+                await new DiscordMessageBuilder()
+                    .WithContent($"{ctx.Member.Mention}, Could not contact you through DMs.")
+                    .WithAllowedMention(new UserMention())
+                    .SendAsync(ctx.Channel);
             }
         }
 
