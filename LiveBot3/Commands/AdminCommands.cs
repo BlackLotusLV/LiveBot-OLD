@@ -238,7 +238,9 @@ namespace LiveBot.Commands
         public async Task FAQ(CommandContext ctx, [RemainingText] string str1)
         {
             string[] str2 = str1.Split('|');
-            await ctx.RespondAsync($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*");
+            await new DiscordMessageBuilder()
+                .WithContent($"**Q: {str2[0]}**\n*A: {str2[1].TrimEnd()}*")
+                .SendAsync(ctx.Channel);
             await ctx.Message.DeleteAsync();
         }
 

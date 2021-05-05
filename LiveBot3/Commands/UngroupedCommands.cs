@@ -22,11 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] LFC command double posting\n" +
-                "[FIX] Multiple command outputs not tagging the appropriate user\n" +
-                "[FIX] Warnings count board listing all infractions issued as warnings, not just warnings\n" +
-                "[REMOVED] Quote comand removed\n" +
-                "";
+            string changelog = "[FIX] mysummit command not outputing info if the time is faster than 1 second.(stop breaking the game guys!)";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -372,25 +368,6 @@ namespace LiveBot.Commands
                     await ctx.RespondAsync($"{value} Miles = {result} Kilometers");
                     break;
             }
-        }
-
-        [Command("private")]
-        [Description("Creates a private voice chat, where only you can add and remove people from. Only patreons and Moderators can use this.")]
-        [RequireRoles(RoleCheckMode.Any, "Tier 2")]
-        public async Task Private(CommandContext ctx)
-        {
-            DiscordChannel category = ctx.Guild.GetChannel(477797862965772288);
-            DiscordOverwriteBuilder user = new();
-            DiscordOverwriteBuilder everyone = new();
-            user.For(ctx.Member);
-            user.Allow(Permissions.AccessChannels);
-            user.Allow(Permissions.ManageChannels);
-            everyone.For(ctx.Guild.EveryoneRole);
-            everyone.Deny(Permissions.AccessChannels);
-            IEnumerable<DiscordOverwriteBuilder> builder = new DiscordOverwriteBuilder[] { user, everyone };
-            string name = $"{ctx.Member.Username} channel";
-            await ctx.Guild.CreateVoiceChannelAsync(name, category, overwrites: builder);
-            await ctx.RespondAsync($"Private \"{name}\" created.");
         }
 
         [Command("rvehicle")]

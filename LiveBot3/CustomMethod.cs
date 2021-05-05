@@ -104,6 +104,14 @@ namespace LiveBot
                     sTime[1].Append(Time.ToString()[i]);
                 }
             }
+            if (sTime[0].Length == 0)
+            {
+                sTime[0].Append('0');
+            }
+            while (sTime[1].Length < 3)
+            {
+                sTime[1].Insert(0, '0');
+            }
             TimeSpan seconds = TimeSpan.FromSeconds(double.Parse(sTime[0].ToString()));
             if (seconds.Hours == 0)
             {
