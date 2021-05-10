@@ -30,28 +30,28 @@ namespace LiveBot.Automation
                                         where rr.Server_ID == e.Channel.Guild.Id
                                         where rr.Message_ID == sourcemsg.Id
                                         where rr.Reaction_ID == used.Id
-                                        select rr).ToList();
-                        if (RoleInfo.Count == 1)
+                                        select rr).FirstOrDefault();
+                        if (RoleInfo != null)
                         {
-                            DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(RoleInfo[0].Server_ID));
-                            if (RoleInfo[0].Type == "acquire")
+                            DiscordGuild guild = await Client.GetGuildAsync(Convert.ToUInt64(RoleInfo.Server_ID));
+                            if (RoleInfo.Type == "acquire")
                             {
-                                DiscordMember rolemember = await guild.GetMemberAsync(username.Id);
-                                if (rolemember.Roles.Any(w => w.Id == Convert.ToUInt64(RoleInfo[0].Role_ID)))
+                                DiscordMember rolemember = username as DiscordMember;
+                                if (rolemember.Roles.Any(w => w.Id == Convert.ToUInt64(RoleInfo.Role_ID)))
                                 {
-                                    await rolemember.RevokeRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo[0].Role_ID)));
+                                    await rolemember.RevokeRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo.Role_ID)));
                                 }
                                 else
                                 {
-                                    await rolemember.GrantRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo[0].Role_ID)));
+                                    await rolemember.GrantRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo.Role_ID)));
                                 }
 
                                 Thread.Sleep(5000);
                                 await sourcemsg.DeleteReactionAsync(used, e.User, null);
                             }
-                            else if (RoleInfo[0].Type == "activate")
+                            else if (RoleInfo.Type == "activate")
                             {
-                                DiscordRole role = guild.GetRole(Convert.ToUInt64(RoleInfo[0].Role_ID));
+                                DiscordRole role = guild.GetRole(Convert.ToUInt64(RoleInfo.Role_ID));
                                 string msg = $"---";
                                 if (role.IsMentionable)
                                 {
