@@ -20,7 +20,7 @@ namespace LiveBot.Automation
         private static List<DiscordMessage> MessageList = new();
 #pragma warning restore IDE0044 // Add readonly modifier
 
-        public static async Task Auto_Moderator_Banned_Words(DiscordClient Client, MessageCreateEventArgs e)
+        public static async Task Banned_Words(DiscordClient Client, MessageCreateEventArgs e)
         {
             _ = Task.Run(async () =>
             {
@@ -341,7 +341,7 @@ namespace LiveBot.Automation
             await Task.Delay(1);
         }
 
-        public static async Task User_Unbanned(DiscordClient Client, GuildBanRemoveEventArgs e)
+        public static async Task User_Unbanned_Log(DiscordClient Client, GuildBanRemoveEventArgs e)
         {
             _ = Task.Run(async () =>
             {

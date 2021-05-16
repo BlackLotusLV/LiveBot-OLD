@@ -46,7 +46,7 @@ namespace LiveBot.Automation
                                     await rolemember.GrantRoleAsync(guild.GetRole(Convert.ToUInt64(RoleInfo.Role_ID)));
                                 }
 
-                                Thread.Sleep(5000);
+                                Thread.Sleep(20000);
                                 await sourcemsg.DeleteReactionAsync(used, e.User, null);
                             }
                             else if (RoleInfo.Type == "activate")

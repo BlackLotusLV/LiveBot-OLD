@@ -22,7 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Added a get role command as an alternative to role selector, in case issues with that system. `>getrole [emoji representing the role]`";
+            string changelog = "[CHANGE] Role selector will now wait 20 seconds before removing the reaction instead of 5. Hoping this will avoid the discord bug.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

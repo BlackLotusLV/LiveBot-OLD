@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20210505_A";
+        public readonly static string BotVersion = $"20210512_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -141,7 +141,7 @@ namespace LiveBot
                 Client.GuildMemberAdded += Leveling.Add_To_Leaderboards;
 
                 Client.MessageCreated += AutoMod.Media_Only_Filter;
-                Client.MessageCreated += AutoMod.Auto_Moderator_Banned_Words;
+                Client.MessageCreated += AutoMod.Banned_Words;
                 Client.MessageCreated += AutoMod.Spam_Protection;
                 Client.MessageCreated += AutoMod.Link_Spam_Protection;
                 Client.MessageDeleted += AutoMod.Delete_Log;
@@ -150,7 +150,7 @@ namespace LiveBot
                 Client.GuildMemberRemoved += AutoMod.User_Leave_Log;
                 Client.GuildMemberRemoved += AutoMod.User_Kicked_Log;
                 Client.GuildBanAdded += AutoMod.User_Banned_Log;
-                Client.GuildBanRemoved += AutoMod.User_Unbanned;
+                Client.GuildBanRemoved += AutoMod.User_Unbanned_Log;
                 Client.VoiceStateUpdated += AutoMod.Voice_Activity_Log;
 
                 Client.MessageReactionAdded += Roles.Reaction_Roles;
