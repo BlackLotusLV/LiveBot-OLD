@@ -134,29 +134,20 @@ namespace LiveBot.Commands
                 LevelNumberFont = Program.Fonts.CreateFont("Roboto Mono", 50, FontStyle.BoldItalic)
                 ;
 
-            var AlignCenter = new TextGraphicsOptions()
+            var AlignCenter = new TextOptions()
             {
-                TextOptions =
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                }
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
             };
-            var AlignBottomLeft = new TextGraphicsOptions()
+            var AlignBottomLeft = new TextOptions()
             {
-                TextOptions =
-                {
-                    HorizontalAlignment=HorizontalAlignment.Left,
-                    VerticalAlignment=VerticalAlignment.Bottom
-                }
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Bottom
             };
-            var BioGraphics = new TextGraphicsOptions()
+            var BioGraphics = new TextOptions()
             {
-                TextOptions =
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Top
-                }
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top
             };
 
             int
@@ -212,11 +203,11 @@ namespace LiveBot.Commands
             .FillPolygon(TC2Yellow, new PointF[] { new PointF(BioX + StatBoxShift, BioY), new PointF(BioX + StatBoxShift + BioWidth, BioY), new PointF(BioX + BioWidth, BioY + BioHeight), new PointF(BioX, BioY + BioHeight) })
             .DrawImage(Badge, new Point(BadgeX, BadgeY), 1f)
             .DrawLines(TC2Grey, 2f, new PointF[] { new PointF(FollowersBarX, FollowersBarY), new PointF(FollowersBarLenght, FollowersBarY) })
-            .DrawText(AlignCenter, UsersName, UsernameFont, TC2Yellow, new PointF(BGX + StatBoxShift / 2 + background.Width / 2, NameY + NameHeight / 2.3f))
-            .DrawText(AlignBottomLeft, $"Followers: {followers}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, FollowersY + SmallStatBoxHeight / 1.5f))
-            .DrawText(AlignBottomLeft, $"Bucks: {bucks}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, BucksY + SmallStatBoxHeight / 1.5f))
-            .DrawText(AlignCenter, level, LevelNumberFont, TC2Grey, new PointF((LevelBoxX + StatBoxShift + LevelBoxX + LevelBoxSize) / 2, (LevelBoxY * 2 + LevelBoxSize / 1.5f) / 2))
-            .DrawText(BioGraphics, BioWrapper.ToString(), BaseFont, TC2Grey, new PointF(BioX + StatBoxShift + 5, BioY + 7))
+            .DrawText(new DrawingOptions { TextOptions = AlignCenter }, UsersName, UsernameFont, TC2Yellow, new PointF(BGX + StatBoxShift / 2 + background.Width / 2, NameY + NameHeight / 2.3f))
+            .DrawText(new DrawingOptions { TextOptions = AlignBottomLeft }, $"Followers: {followers}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, FollowersY + SmallStatBoxHeight / 1.5f))
+            .DrawText(new DrawingOptions { TextOptions = AlignBottomLeft }, $"Bucks: {bucks}", BaseFont, TC2Grey, new PointF(MarginWidth + StatBoxShift, BucksY + SmallStatBoxHeight / 1.5f))
+            .DrawText(new DrawingOptions { TextOptions = AlignCenter }, level, LevelNumberFont, TC2Grey, new PointF((LevelBoxX + StatBoxShift + LevelBoxX + LevelBoxSize) / 2, (LevelBoxY * 2 + LevelBoxSize / 1.5f) / 2))
+            .DrawText(new DrawingOptions { TextOptions = BioGraphics }, BioWrapper.ToString(), BaseFont, TC2Grey, new PointF(BioX + StatBoxShift + 5, BioY + 7))
             );
 
             string imageLoc = $"{Program.tmpLoc}{Member.Id}-profile.png";

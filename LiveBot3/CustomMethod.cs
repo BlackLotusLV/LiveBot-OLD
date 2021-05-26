@@ -583,29 +583,20 @@ namespace LiveBot
             Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
             Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
 
-            var AllignCenter = new TextGraphicsOptions()
+            var AllignCenter = new TextOptions()
             {
-                TextOptions =
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Top
-                    }
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top
             };
-            var AllignTopLeft = new TextGraphicsOptions()
+            var AllignTopLeft = new TextOptions()
             {
-                TextOptions =
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                        VerticalAlignment = VerticalAlignment.Top
-                    }
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top
             };
-            var AllignTopRight = new TextGraphicsOptions()
+            var AllignTopRight = new TextOptions()
             {
-                TextOptions =
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        VerticalAlignment = VerticalAlignment.Top
-                    }
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top
             };
 
             Image<Rgba32> BaseImage = new(1127, 765);
@@ -673,10 +664,10 @@ namespace LiveBot
                         EventImage.Mutate(ctx => ctx
                         .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
                         .DrawImage(TitleBar, new Point(0, 0), 0.7f)
-                        .DrawText(AllignTopLeft, sb.ToString(), SummitCaps15, Color.White, new PointF(5, 0))
-                        .DrawText(AllignTopLeft, $"Rank: {Activity[0].Rank + 1}", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
-                        .DrawText(AllignTopRight, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
-                        .DrawText(AllignTopRight, $"Points: {Activity[0].Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                        .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, sb.ToString(), SummitCaps15, Color.White, new PointF(5, 0))
+                        .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Rank: {Activity[0].Rank + 1}", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
+                        .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
+                        .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, $"Points: {Activity[0].Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                         );
                     }
                     BaseImage.Mutate(ctx => ctx
@@ -688,7 +679,7 @@ namespace LiveBot
                     using Image<Rgba32> NotComplete = new(EventImage.Width, EventImage.Height);
                     NotComplete.Mutate(ctx => ctx
                         .Fill(Color.Black)
-                        .DrawText(AllignCenter, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
+                        .DrawText(new DrawingOptions { TextOptions = AllignCenter }, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
                         );
                     BaseImage.Mutate(ctx => ctx
                     .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
@@ -715,13 +706,13 @@ namespace LiveBot
                         }
 
                         TierBar.Mutate(ctx => ctx
-                        .DrawText(AllignTopLeft, $"Points Needed: {Events.Tier_entries[i].Points}", SummitCaps12, Color.White, new PointF(TierXPos[i] + 5, 15))
+                        .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Points Needed: {Events.Tier_entries[i].Points}", SummitCaps12, Color.White, new PointF(TierXPos[i] + 5, 15))
                         );
                     }
                 });
 
                 TierBar.Mutate(ctx => ctx
-                        .DrawText(AllignTopLeft, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Color.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
+                        .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Color.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
                         );
 
                 BaseImage.Mutate(ctx => ctx
