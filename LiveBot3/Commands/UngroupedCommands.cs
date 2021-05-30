@@ -22,7 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[CHANGE] Role selector will now wait 20 seconds before removing the reaction instead of 5. Hoping this will avoid the discord bug.\n" +
+            string changelog = "[INTERNAL] Leveling system re-write to be optimised. Might be bugs with roles.\n" +
+                "" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
