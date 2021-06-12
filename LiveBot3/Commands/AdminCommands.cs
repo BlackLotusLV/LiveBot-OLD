@@ -272,7 +272,7 @@ namespace LiveBot.Commands
 
         [Command("prune")]
         [Description("Deletes chat history, up to 100 messages per use")]
-        [Cooldown(1, 180, CooldownBucketType.Channel)]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
         [RequireGuild]
         public async Task Prune(CommandContext ctx, int MessageCount = 1)
         {

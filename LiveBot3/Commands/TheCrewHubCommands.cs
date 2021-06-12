@@ -172,64 +172,47 @@ namespace LiveBot.Commands
             {
                 if (platform == null)
                 {
-                    DiscordMessage platformMSG = await ctx.RespondAsync($"{ctx.User.Mention}, you have multiple platforms stored on TCE, please select platform you want to see the scores for.");
-                    DiscordEmoji X1Emoji = await Program.TCGuild.GetEmojiAsync(445234294915334146);
-                    DiscordEmoji PCEmoji = await Program.TCGuild.GetEmojiAsync(445234293019770900);
-                    DiscordEmoji PSEmoji = await Program.TCGuild.GetEmojiAsync(445234294676258816);
-                    DiscordEmoji STADIAEmoji = await Program.TCGuild.GetEmojiAsync(697798396584656896);
+                    DiscordMessageBuilder platformMSGBuilder = new();
+                    List<DiscordComponent> Buttons = new();
+                    Buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, "ps4", "PlayStation", !JTCE.Subs.Any(w => w.Platform.Contains("ps4")), new DiscordComponentEmoji(445234294676258816)));
+                    Buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, "stadia", "Stadia", !JTCE.Subs.Any(w => w.Platform.Contains("stadia")), new DiscordComponentEmoji(697798396584656896)));
+                    Buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, "x1", "Xbox One", !JTCE.Subs.Any(w => w.Platform.Contains("x1")), new DiscordComponentEmoji(445234294915334146)));
+                    Buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, "pc", "PC", !JTCE.Subs.Any(w => w.Platform.Contains("pc")), new DiscordComponentEmoji(445234293019770900)));
 
-                    foreach (var sub in JTCE.Subs)
-                    {
-                        if (sub.Platform.Contains("ps4"))
-                        {
-                            await platformMSG.CreateReactionAsync(PSEmoji);
-                        }
-                        if (sub.Platform.Contains("stadia"))
-                        {
-                            await platformMSG.CreateReactionAsync(STADIAEmoji);
-                        }
-                        if (sub.Platform.Contains("x1"))
-                        {
-                            await platformMSG.CreateReactionAsync(X1Emoji);
-                        }
-                        if (sub.Platform.Contains("pc"))
-                        {
-                            await platformMSG.CreateReactionAsync(PCEmoji);
-                        }
-                    }
+                    DiscordMessage platformMSG = await platformMSGBuilder
+                        .AddComponents(Buttons)
+                        .WithContent($"{ctx.User.Mention}, you have multiple platforms stored on TCE, please select platform you want to see the scores for.")
+                        .SendAsync(ctx.Channel);
 
-                    var Result = await platformMSG.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
-
+                    var Result = await platformMSG.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(30));
+                    await Result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DefferedMessageUpdate);
                     if (Result.TimedOut)
                     {
                         await platformMSG.ModifyAsync("Nothing selected, defaulting to PC");
                         platform = "pc";
                     }
-                    else if (Result.Result.Emoji == PCEmoji)
-                    {
-                        await platformMSG.ModifyAsync("PC Platform selected.");
-                        platform = "pc";
-                    }
-                    else if (Result.Result.Emoji == PSEmoji)
-                    {
-                        await platformMSG.ModifyAsync("Playstation Platform selected.");
-                        platform = "ps";
-                    }
-                    else if (Result.Result.Emoji == X1Emoji)
-                    {
-                        await platformMSG.ModifyAsync("Xbox Platform selected.");
-                        platform = "x1";
-                    }
-                    else if (Result.Result.Emoji == STADIAEmoji)
-                    {
-                        await platformMSG.ModifyAsync("Stadia Platform selected.");
-                        platform = "stadia";
-                    }
                     else
                     {
-                        platform = "pc";
+                        switch (Result.Result.Id)
+                        {
+                            case "ps4":
+                                await platformMSG.ModifyAsync("Playstation Platform selected.");
+                                platform = "ps";
+                                break;
+                            case "x1":
+                                await platformMSG.ModifyAsync("Xbox Platform selected.");
+                                platform = "x1";
+                                break;
+                            case "stadia":
+                                await platformMSG.ModifyAsync("Stadia Platform selected.");
+                                platform = "stadia";
+                                break;
+                            default:
+                                await platformMSG.ModifyAsync("PC Platform selected.");
+                                platform = "pc";
+                                break;
+                        }
                     }
-                    await platformMSG.DeleteAllReactionsAsync();
                 }
                 switch (platform.ToLower())
                 {

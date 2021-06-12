@@ -22,9 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[INTERNAL] Leveling system re-write to be optimised. Might be bugs with roles.\n" +
-                "" +
-                "";
+            string changelog = "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -374,7 +372,6 @@ namespace LiveBot.Commands
 
         [Command("rvehicle")]
         [Aliases("rv")]
-        [RequireRoles(RoleCheckMode.Any, "Discord-Moderator", "Patreon", "Eldorado King", "Ubisoft", "Event Organizer", "Content Creator")]
         [Description("Gives a random vehicle from a discipline. Street race gives both a bike and a car")]
         public async Task RandomVehicle(CommandContext ctx, DiscordEmoji discipline = null)
         {
@@ -412,38 +409,41 @@ namespace LiveBot.Commands
             Random r = new();
             int row = 0;
             List<DB.VehicleList> SelectedVehicles = new();
+            DiscordMessage ChoiceMsg=null;
 
             if (disciplinename == "Street Race")
             {
-                DiscordMessage CarOrBike = await ctx.RespondAsync($"{ctx.Member.Mention} **Select vehicle type:**\n:one: - Car\n:two: - Bike");
-                DiscordEmoji One = DiscordEmoji.FromName(ctx.Client, ":one:");
-                DiscordEmoji Two = DiscordEmoji.FromName(ctx.Client, ":two:");
+                DiscordButtonComponent carButton = new(ButtonStyle.Primary, "CarButton", "Car", false,new DiscordComponentEmoji("🏎"));
+                DiscordButtonComponent bikeButton = new(ButtonStyle.Primary, "BikeButton", "Bike", false, new DiscordComponentEmoji("🏍"));
+                ChoiceMsg = await new DiscordMessageBuilder()
+                    .WithContent($"{ctx.Member.Mention} **Select vehicle type!**")
+                    .AddComponents(carButton, bikeButton)
+                    .SendAsync(ctx.Channel);
 
-                await CarOrBike.CreateReactionAsync(One);
-                await Task.Delay(300).ContinueWith(t => CarOrBike.CreateReactionAsync(Two));
-
-                var Result = await CarOrBike.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+                var Result = await ChoiceMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(30));
 
                 if (Result.TimedOut)
                 {
                     await ctx.RespondAsync($"{ctx.Member.Mention} You didn't select vehicle type in time.");
                     return;
                 }
-                else if (Result.Result.Emoji == One)
+                else if (Result.Result.Id == "CarButton")
                 {
                     SelectedVehicles = (from vl in VehicleList
                                         join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
                                         where dl.Discipline_Name == disciplinename
                                         where vl.Type == "car"
                                         select vl).ToList();
+                    await Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
-                else if (Result.Result.Emoji == Two)
+                else if (Result.Result.Id == "BikeButton")
                 {
                     SelectedVehicles = (from vl in VehicleList
                                         join dl in DisciplineList on vl.Discipline equals dl.ID_Discipline
                                         where dl.Discipline_Name == disciplinename
                                         where vl.Type == "bike"
                                         select vl).ToList();
+                    await Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
             }
             else
@@ -453,6 +453,7 @@ namespace LiveBot.Commands
                                     where dl.Discipline_Name == disciplinename
                                     select vl).ToList();
             }
+            
 
             if (SelectedVehicles.Count(c => c.IsSelected is true) == SelectedVehicles.Count)
             {
@@ -508,8 +509,14 @@ namespace LiveBot.Commands
             embed.AddField("Crew Credits only?", $"{(SelectedVehicles[row].IsCCOnly? "✅" : "❌")}", true);
             embed.AddField("Summit exclusive?", $"{(SelectedVehicles[row].IsSummitVehicle? "✅" : "❌")}", true);
             embed.AddField("MP exclusive?", $"{(SelectedVehicles[row].IsMotorPassExclusive? "✅" : "❌")}", true);
-
-            await ctx.RespondAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", embed);
+            if (ChoiceMsg!=null)
+            {
+                await ChoiceMsg.ModifyAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", (DiscordEmbed)embed);
+            }
+            else
+            {
+                await ctx.RespondAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", embed);
+            }
         }
 
         [Command("rank")]
