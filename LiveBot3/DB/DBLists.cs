@@ -9,7 +9,7 @@ namespace LiveBot.DB
 {
     internal static class DBLists
     {
-        public readonly static int TableCount = 19;
+        public readonly static int TableCount = 20;
         public static int LoadedTableCount { get; set; } = 0;
 
         public static List<VehicleList> VehicleList { get; set; } = new(); //1
@@ -31,6 +31,7 @@ namespace LiveBot.DB
         public static List<ModMail> ModMail { get; set; } = new();//17
         public static List<RoleTagSettings> RoleTagSettings { get; set; } = new();//18
         public static List<ServerWelcomeSettings> ServerWelcomeSettings { get; set; } = new();//19
+        public static List<ButtonRoles> ButtonRoles { get; set; } = new();//20
 
         public static void LoadAllLists()
         {
@@ -54,6 +55,7 @@ namespace LiveBot.DB
             new Thread(() => LoadBotOutputList(true)).Start();
             new Thread(() => LoadModMail(true)).Start();
             new Thread(() => LoadRoleTagSettings(true)).Start();
+            new Thread(() => LoadButtonRoles(true)).Start();
         }
 
         #region Load Functions
@@ -411,6 +413,24 @@ namespace LiveBot.DB
             else
             {
                 Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "RoleTag Settings Loaded");
+            }
+        }
+
+        public static void LoadButtonRoles(bool progress = false)
+        {
+            Stopwatch timer = new();
+            timer.Start();
+            using ButtonRolesContext ctx = new();
+            ButtonRoles = ctx.ButtonRoles.ToList();
+            timer.Stop();
+            if (progress)
+            {
+                LoadedTableCount++;
+                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "ButtonRoles");
+            }
+            else
+            {
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ButtonRoles Loaded");
             }
         }
 

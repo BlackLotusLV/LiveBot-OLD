@@ -22,7 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "";
+            string changelog = "[NEW] Role selector added support for integrated buttons. Slowly will move to the new system";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

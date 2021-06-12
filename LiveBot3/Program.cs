@@ -27,7 +27,7 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20210609_A";
+        public readonly static string BotVersion = $"20210612_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -154,6 +154,7 @@ namespace LiveBot
                 Client.VoiceStateUpdated += AutoMod.Voice_Activity_Log;
 
                 Client.MessageReactionAdded += Roles.Reaction_Roles;
+                Client.ComponentInteractionCreated += Roles.Button_Roles;
 
                 Client.GuildMemberAdded += MemberFlow.Welcome_Member;
                 Client.GuildMemberRemoved += MemberFlow.Say_Goodbye;

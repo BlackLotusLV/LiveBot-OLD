@@ -29,6 +29,26 @@ namespace LiveBot.Commands
             await ctx.Message.DeleteAsync();
         }
 
+        [Command("buttonmessage")]
+        public async Task ButtonMessage(CommandContext ctx,
+            DiscordChannel channel,
+            [Description("First message content, split by |, then button components split by, and then each button by |\ncustom id, lable, emoji()")][RemainingText]string rawData)
+        {
+            string[] splitData = rawData.Split('|');
+            List<DiscordComponent> buttons = new();
+
+            for (int i = 1; i < splitData.Length; i++)
+            {
+                string[] ButtonComponents = splitData[i].Split(',');
+                buttons.Add(new DiscordButtonComponent(ButtonStyle.Primary, ButtonComponents[0], ButtonComponents[1], false, UInt64.TryParse(ButtonComponents[2], out ulong emojiID) ? new DiscordComponentEmoji(emojiID) : null));
+            }
+            await new DiscordMessageBuilder()
+                .WithContent(splitData[0])
+                .AddComponents(buttons)
+                .SendAsync(channel);
+        }
+
+
         [Command("update")]
         public async Task Update(CommandContext ctx, [Description("Which database to update. (All will update all db)")] string db = null)
         {

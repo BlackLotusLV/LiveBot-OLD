@@ -83,7 +83,28 @@ namespace LiveBot.Automation
             });
             await Task.Delay(1);
         }
+        public static async Task Button_Roles(object Client, InteractionCreateEventArgs e)
+        {
+            if (e.Interaction.Type == InteractionType.Component && !e.Interaction.User.IsBot && e.Interaction.Guild!=null)
+            {
+                var ButtonRoleInfo = DB.DBLists.ButtonRoles.Where(w => w.Server_ID == e.Interaction.GuildId && w.Channel_ID == e.Interaction.ChannelId && e.Interaction.Guild.Roles.Any(f => f.Value.Id == Convert.ToUInt64(w.Button_ID))).ToList();
+                if (ButtonRoleInfo.Count > 0)
+                {
+                    DiscordMember member = e.Interaction.User as DiscordMember;
+                    if (member.Roles.Any(w=>w.Id == Convert.ToUInt64(e.Interaction.Data.CustomId)))
+                    {
+                        await member.RevokeRoleAsync(e.Interaction.Guild.Roles.FirstOrDefault(w => w.Value.Id == Convert.ToUInt64(e.Interaction.Data.CustomId)).Value);
+                    }
+                    else
+                    {
+                        await member.GrantRoleAsync(e.Interaction.Guild.Roles.FirstOrDefault(w => w.Value.Id == Convert.ToUInt64(e.Interaction.Data.CustomId)).Value);
+                    }
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                }
+            }
+        }
     }
+
 
     internal class ActivateRolesTimer
     {
