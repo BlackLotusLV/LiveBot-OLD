@@ -36,7 +36,7 @@ namespace LiveBot.Commands
         [Command("warn")]
         [Description("Warns a user")]
         [RequireGuild]
-        //[Cooldown(1, 5, CooldownBucketType.Guild)]
+        [Cooldown(1, 5, CooldownBucketType.Guild)]
         public async Task Warning(CommandContext ctx, DiscordUser username, [RemainingText] string reason = "Reason not specified")
         {
             await ctx.Message.DeleteAsync();

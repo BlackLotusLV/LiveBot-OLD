@@ -22,7 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Role selector added support for integrated buttons. Slowly will move to the new system";
+            string changelog = "[FIX] global top button error fix\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -584,36 +585,34 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
+
+            List<DiscordButtonComponent> buttons = new() { new DiscordButtonComponent(ButtonStyle.Primary, "left", "Previous Page"), new DiscordButtonComponent(ButtonStyle.Primary, "right", "Next Page") };
+
             DiscordMessage TopMessage = await new DiscordMessageBuilder()
                 .WithContent(CustomMethod.GetGlobalTop(ctx, (int)page))
                 .WithReply(ctx.Message.Id, true)
+                .AddComponents(buttons)
                 .SendAsync(ctx.Channel);
-            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
-            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
-
-            await TopMessage.CreateReactionAsync(left);
-            await Task.Delay(300).ContinueWith(t => TopMessage.CreateReactionAsync(right));
 
             bool end = false;
             do
             {
-                var result = TopMessage.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+                var result = TopMessage.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(30));
                 if (result.Result.TimedOut)
                 {
                     end = result.Result.TimedOut;
                 }
-                else if (result.Result.Result.Emoji == left)
+                else if (result.Result.Result.Id == "left")
                 {
-                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
                     if (page > 1)
                     {
                         page--;
                         await TopMessage.ModifyAsync(CustomMethod.GetGlobalTop(ctx, (int)page));
                     }
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
-                else if (result.Result.Result.Emoji == right)
+                else if (result.Result.Result.Id == "right")
                 {
-                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
                     page++;
                     try
                     {
@@ -623,9 +622,9 @@ namespace LiveBot.Commands
                     {
                         page--;
                     }
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
             } while (!end);
-            await TopMessage.DeleteAllReactionsAsync();
         }
 
         [Command("servertop")]
@@ -638,36 +637,32 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
+            List<DiscordButtonComponent> buttons = new() { new DiscordButtonComponent(ButtonStyle.Primary, "left", "Previous Page"), new DiscordButtonComponent(ButtonStyle.Primary, "right", "Next Page") };
             DiscordMessage TopMessage = await new DiscordMessageBuilder()
                 .WithContent(CustomMethod.GetServerTop(ctx, (int)page))
-                .WithReply(ctx.Message.Id, true)
+                .WithReply(ctx.Message.Id,true)
+                .AddComponents(buttons)
                 .SendAsync(ctx.Channel);
-            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
-            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
-
-            await TopMessage.CreateReactionAsync(left);
-            await Task.Delay(300).ContinueWith(t => TopMessage.CreateReactionAsync(right));
 
             bool end = false;
             do
             {
-                var result = TopMessage.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(30));
+                var result = TopMessage.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(30));
                 if (result.Result.TimedOut)
                 {
                     end = result.Result.TimedOut;
                 }
-                else if (result.Result.Result.Emoji == left)
+                else if (result.Result.Result.Id =="left")
                 {
-                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
                     if (page > 1)
                     {
                         page--;
                         await TopMessage.ModifyAsync(CustomMethod.GetServerTop(ctx, (int)page));
                     }
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
-                else if (result.Result.Result.Emoji == right)
+                else if (result.Result.Result.Id =="right")
                 {
-                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
                     page++;
                     try
                     {
@@ -677,6 +672,7 @@ namespace LiveBot.Commands
                     {
                         page--;
                     }
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
             } while (!end);
             await TopMessage.DeleteAllReactionsAsync();
@@ -691,36 +687,33 @@ namespace LiveBot.Commands
             {
                 page = 1;
             }
-            var msgBuilder = new DiscordMessageBuilder()
+            List<DiscordButtonComponent> buttons = new() { new DiscordButtonComponent(ButtonStyle.Primary, "left", "Previous Page"), new DiscordButtonComponent(ButtonStyle.Primary, "right", "Next Page") };
+            DiscordMessage TopMessage = await new DiscordMessageBuilder()
                 .WithContent(CustomMethod.GetBackgroundList(ctx, (int)page))
-                 .WithReply(ctx.Message.Id, true);
-            DiscordMessage TopMessage = await ctx.RespondAsync(msgBuilder);
-            DiscordEmoji left = DiscordEmoji.FromName(ctx.Client, ":arrow_left:");
-            DiscordEmoji right = DiscordEmoji.FromName(ctx.Client, ":arrow_right:");
-
-            await TopMessage.CreateReactionAsync(left);
-            await Task.Delay(300).ContinueWith(t => TopMessage.CreateReactionAsync(right));
+                .AddComponents(buttons)
+                .WithReply(ctx.Message.Id, true)
+                .SendAsync(ctx.Channel);
 
             bool end = false;
             do
             {
-                var result = TopMessage.WaitForReactionAsync(ctx.User, TimeSpan.FromSeconds(20));
+                var result = TopMessage.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(20));
+
                 if (result.Result.TimedOut)
                 {
                     end = result.Result.TimedOut;
                 }
-                else if (result.Result.Result.Emoji == left)
+                else if (result.Result.Result.Id =="left")
                 {
-                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
                     if (page > 1)
                     {
                         page--;
                         await TopMessage.ModifyAsync(CustomMethod.GetBackgroundList(ctx, (int)page));
                     }
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
-                else if (result.Result.Result.Emoji == right)
+                else if (result.Result.Result.Id == "right")
                 {
-                    await TopMessage.DeleteReactionAsync(result.Result.Result.Emoji, ctx.User);
                     page++;
                     try
                     {
@@ -730,6 +723,7 @@ namespace LiveBot.Commands
                     {
                         page--;
                     }
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
                 }
             } while (!end);
             await TopMessage.DeleteAllReactionsAsync();

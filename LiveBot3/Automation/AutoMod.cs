@@ -34,7 +34,7 @@ namespace LiveBot.Automation
                                         select bw).ToList();
                         foreach (var word in wordlist)
                         {
-                            if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b"))
+                            if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b") || word.Word.Contains(".com") && Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word.Replace(".com", ".ru")}\b"))
                             {
                                 await e.Message.DeleteAsync();
                                 if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
@@ -47,7 +47,7 @@ namespace LiveBot.Automation
                                     else
                                     {
                                         await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
-                                        Client.Logger.LogInformation(CustomLogEvents.AutoMod, $"User {e.Author.Username}({e.Author.Id}) Warned for using a trigger word.");
+                                        Client.Logger.LogInformation(CustomLogEvents.AutoMod, $"User {e.Author.Username}({e.Author.Id}) Warned for using a trigger word.\n\t\tOffense - {word.Offense}\n\t\tContent - {word.Word}");
                                     }
                                 }
                             }
