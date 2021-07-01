@@ -157,7 +157,7 @@ namespace LiveBot.Automation
                     DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(GuildSettings[0].ID_Server));
                     DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].Delete_Log));
                     StringBuilder sb = new();
-                    foreach (var message in e.Messages)
+                    foreach (var message in e.Messages.Reverse())
                     {
                         if (message.Author != null)
                         {
