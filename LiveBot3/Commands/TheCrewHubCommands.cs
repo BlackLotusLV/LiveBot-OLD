@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
@@ -185,7 +186,7 @@ namespace LiveBot.Commands
                         .SendAsync(ctx.Channel);
 
                     var Result = await platformMSG.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(30));
-                    await Result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DefferedMessageUpdate);
+                    await Result.Result.Interaction.CreateResponseAsync(DSharpPlus.InteractionResponseType.DeferredMessageUpdate);
                     if (Result.TimedOut)
                     {
                         await platformMSG.ModifyAsync("Nothing selected, defaulting to PC");

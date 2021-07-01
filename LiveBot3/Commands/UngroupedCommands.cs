@@ -22,8 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] global top button error fix\n" +
-                "";
+            string changelog = "[FIX] Bulk delete showing messages oldest to newest instead of newest to oldest";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -435,7 +434,7 @@ namespace LiveBot.Commands
                                         where dl.Discipline_Name == disciplinename
                                         where vl.Type == "car"
                                         select vl).ToList();
-                    await Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
                 else if (Result.Result.Id == "BikeButton")
                 {
@@ -444,7 +443,7 @@ namespace LiveBot.Commands
                                         where dl.Discipline_Name == disciplinename
                                         where vl.Type == "bike"
                                         select vl).ToList();
-                    await Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
             }
             else
@@ -609,7 +608,7 @@ namespace LiveBot.Commands
                         page--;
                         await TopMessage.ModifyAsync(CustomMethod.GetGlobalTop(ctx, (int)page));
                     }
-                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
                 else if (result.Result.Result.Id == "right")
                 {
@@ -622,7 +621,7 @@ namespace LiveBot.Commands
                     {
                         page--;
                     }
-                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
             } while (!end);
         }
@@ -659,7 +658,7 @@ namespace LiveBot.Commands
                         page--;
                         await TopMessage.ModifyAsync(CustomMethod.GetServerTop(ctx, (int)page));
                     }
-                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
                 else if (result.Result.Result.Id =="right")
                 {
@@ -672,7 +671,7 @@ namespace LiveBot.Commands
                     {
                         page--;
                     }
-                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
             } while (!end);
             await TopMessage.DeleteAllReactionsAsync();
@@ -710,7 +709,7 @@ namespace LiveBot.Commands
                         page--;
                         await TopMessage.ModifyAsync(CustomMethod.GetBackgroundList(ctx, (int)page));
                     }
-                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
                 else if (result.Result.Result.Id == "right")
                 {
@@ -723,7 +722,7 @@ namespace LiveBot.Commands
                     {
                         page--;
                     }
-                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
             } while (!end);
             await TopMessage.DeleteAllReactionsAsync();

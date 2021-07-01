@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Interactivity;
+using DSharpPlus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,7 @@ namespace LiveBot.Commands
             DiscordChannel channel,
             [Description("First message content, split by |, then button components split by, and then each button by |\ncustom id, lable, emoji()")][RemainingText]string rawData)
         {
+            await ctx.TriggerTypingAsync();
             string[] splitData = rawData.Split('|');
             List<DiscordComponent> buttons = new();
 

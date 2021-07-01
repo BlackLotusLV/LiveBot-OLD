@@ -99,7 +99,7 @@ namespace LiveBot.Automation
                     {
                         await member.GrantRoleAsync(e.Interaction.Guild.Roles.FirstOrDefault(w => w.Value.Id == Convert.ToUInt64(e.Interaction.Data.CustomId)).Value);
                     }
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
             }
         }
