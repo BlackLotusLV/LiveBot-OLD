@@ -35,7 +35,9 @@ namespace LiveBot.Commands
             await ctx.TriggerTypingAsync();
             string PCJson = string.Empty, XBJson = string.Empty, PSJson = string.Empty, StadiaJson = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summit.png";
+            float outlineSize = 0.7f;
             byte[] SummitLogo;
+            int[,] TierCutoff = new int[,] { { 4000, 8000, 15000 }, { 11000, 21000, 41000 }, { 2100, 4200, 8500 }, { 100, 200, 400 } };
             DateTime endtime;
 
             int platforms = 4;
@@ -83,6 +85,15 @@ namespace LiveBot.Commands
                     }
                 }
             }
+            DrawingOptions TierCutoffOptions = new()
+            {
+                TextOptions = new TextOptions()
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Top
+                }
+            };
+
             using (Image<Rgba32> PCImg = Image.Load<Rgba32>("Assets/Summit/PC.jpeg"))
             using (Image<Rgba32> PSImg = Image.Load<Rgba32>("Assets/Summit/PS.jpg"))
             using (Image<Rgba32> XBImg = Image.Load<Rgba32>("Assets/Summit/XB.png"))
@@ -95,11 +106,23 @@ namespace LiveBot.Commands
                     using Image<Rgba32> TierImg = Image.Load<Rgba32>("Assets/Summit/SummitBase.png");
                     using Image<Rgba32> SummitImg = Image.Load<Rgba32>(SummitLogo);
                     using Image<Rgba32> FooterImg = new(300, 30);
+
                     SummitImg.Mutate(ctx => ctx.Crop(300, SummitImg.Height));
                     Color TextColour = Color.WhiteSmoke;
+                    Color OutlineColour = Color.DarkSlateGray;
+
                     Point SummitLocation = new(0 + (300 * i), 0);
                     Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 30);
                     Font FooterFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+                    Font CutoffFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 17);
+
+                    TierImg.Mutate(ctx => ctx
+                    .DrawText(TierCutoffOptions, $"Top {TierCutoff[i, 0]}", CutoffFont, Brushes.Solid(TextColour),Pens.Solid(OutlineColour, outlineSize), new PointF(295, 340))
+                    .DrawText(TierCutoffOptions, $"Top {TierCutoff[i, 1]}", CutoffFont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(295, 410))
+                    .DrawText(TierCutoffOptions, $"Top {TierCutoff[i, 2]}", CutoffFont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(295, 480))
+                    .DrawText(TierCutoffOptions, "All Participants", CutoffFont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(295, 550))
+                    .DrawLines(Color.Black, 1.5f, new PointF(0, 0), new PointF(TierImg.Width, 0), new PointF(TierImg.Width, TierImg.Height), new PointF(0, TierImg.Height))
+                    );
                     FooterImg.Mutate(ctx => ctx
                     .Fill(Color.Black)
                     .DrawText($"TOTAL PARTICIPANTS: {Events[i].Player_Count}", FooterFont, TextColour, new PointF(10, 10))
@@ -107,10 +130,10 @@ namespace LiveBot.Commands
                     BaseImg.Mutate(ctx => ctx
                         .DrawImage(SummitImg, SummitLocation, 1)
                         .DrawImage(TierImg, SummitLocation, 1)
-                        .DrawText(pts[i, 3], Basefont, TextColour, new PointF(80 + (300 * i), 365))
-                        .DrawText(pts[i, 2], Basefont, TextColour, new PointF(80 + (300 * i), 435))
-                        .DrawText(pts[i, 1], Basefont, TextColour, new PointF(80 + (300 * i), 505))
-                        .DrawText(pts[i, 0], Basefont, TextColour, new PointF(80 + (300 * i), 575))
+                        .DrawText(pts[i, 3], Basefont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(80 + (300 * i), 365))
+                        .DrawText(pts[i, 2], Basefont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(80 + (300 * i), 435))
+                        .DrawText(pts[i, 1], Basefont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(80 + (300 * i), 505))
+                        .DrawText(pts[i, 0], Basefont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(80 + (300 * i), 575))
                         .DrawImage(FooterImg, new Point(0 + (300 * i), 613), 1)
                         .DrawImage(PlatformImg[i], new Point(0 + (300 * i), 0), 1)
                         );
