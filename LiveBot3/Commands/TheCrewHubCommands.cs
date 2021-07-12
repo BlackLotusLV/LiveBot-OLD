@@ -368,7 +368,8 @@ namespace LiveBot.Commands
 
             endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
 
-            int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
+            //int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
+            int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
 
             Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
             Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
@@ -398,13 +399,13 @@ namespace LiveBot.Commands
 
                 EventLogoBit = TimerMethod.EventLogoBitArr[i];
                 using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
-                if (i == 5)
+                if (i == 8)
                 {
                     EventImage.Mutate(ctx => ctx.
                     Resize(380, 483)
                     );
                 }
-                else if (i >= 0 && i <= 3)
+                else if (i >= 3 && i <= 7)
                 {
                     EventImage.Mutate(ctx => ctx.
                     Resize(368, 239)
@@ -513,7 +514,7 @@ namespace LiveBot.Commands
             }
             summit--;
 
-            Color[] RewardColours = new Color[] { Rgba32.ParseHex("#0060A9"), Rgba32.ParseHex("#D5A45F"), Rgba32.ParseHex("#C2C2C2"), Rgba32.ParseHex("#B07C4D") };
+            Color[] RewardColours = new Color[] { Rgba32.ParseHex("#B07C4D"), Rgba32.ParseHex("#C2C2C2"), Rgba32.ParseHex("#D5A45F"), Rgba32.ParseHex("#0060A9") };
 
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
             int RewardWidth = 412;

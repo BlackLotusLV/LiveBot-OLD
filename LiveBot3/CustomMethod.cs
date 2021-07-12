@@ -578,7 +578,7 @@ namespace LiveBot
 
         public static Image<Rgba32> BuildSummitImage(List<TCHubJson.Summit> JSummit, TCHubJson.Rank Events, TCHubJson.TceSummitSubs UserInfo)
         {
-            int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
+            int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
             Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
             Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
             Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
@@ -607,13 +607,13 @@ namespace LiveBot
 
                 byte[] EventLogoBit = TimerMethod.EventLogoBitArr[i];
                 using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
-                if (i == 5)
+                if (i == 8)
                 {
                     EventImage.Mutate(ctx => ctx.
                     Resize(380, 483)
                     );
                 }
-                else if (i >= 0 && i <= 3)
+                else if (i >= 3 && i <= 7)
                 {
                     EventImage.Mutate(ctx => ctx.
                     Resize(368, 239)

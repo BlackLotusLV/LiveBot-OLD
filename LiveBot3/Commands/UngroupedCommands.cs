@@ -22,8 +22,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Bulk delete showing messages oldest to newest instead of newest to oldest\n" +
-                "[NEW] `/h s` summit command updated to new summit tier cutoffs, as well as minor visual tweaks to the image\n";
+            string changelog = "[FIX] `/hub summitrewards` showing tier colour in the right order.\n" +
+                "[FIX] `/h ms` and `/h ts` command event order fixed.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
