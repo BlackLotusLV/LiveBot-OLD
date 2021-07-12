@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00917" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00917" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00917" />
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00918" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00918" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00918" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0-preview.5.21301.9" />
     <PackageReference Include="Npgsql" Version="6.0.0-preview5" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0-preview5" />
@@ -175,6 +175,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Summit\Gold.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Summit\Modifiers\ic_summit_cloudy.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Summit\Modifiers\ic_summit_sunset.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Summit\Modifiers\ic_summit_wetRoad.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Summit\Platinum.png">

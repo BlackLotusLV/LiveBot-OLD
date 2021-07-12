@@ -368,7 +368,6 @@ namespace LiveBot.Commands
 
             endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
 
-            //int[,] WidthHeight = new int[,] { { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 }, { 0, 0 }, { 249, 0 }, { 498, 0 } };
             int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
 
             Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);

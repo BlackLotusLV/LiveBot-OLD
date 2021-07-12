@@ -77,8 +77,11 @@ namespace LiveBot.Json
             [JsonProperty("id")]
             public ulong ID { get; private set; }
 
+            [JsonProperty("constraint_text_id")]
+            public string[] Constraint_Text_ID { get; set; }
+
             [JsonProperty("debug_constraint")]
-            public string Constraint { get; private set; }
+            public string Debug_Constraint { get; private set; }
 
             [JsonProperty("img_path")]
             public string Img_Path { get; private set; }
