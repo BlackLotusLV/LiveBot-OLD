@@ -289,30 +289,17 @@ namespace LiveBot.Commands
                     TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
 
                     int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
-                    Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
                     Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                     Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
-
-                    var AllignCenter = new TextOptions()
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Top
-                    };
                     var AllignTopLeft = new TextOptions()
                     {
                         HorizontalAlignment = HorizontalAlignment.Left,
-                        VerticalAlignment = VerticalAlignment.Top
-                    };
-                    var AllignTopRight = new TextOptions()
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Right,
                         VerticalAlignment = VerticalAlignment.Top
                     };
 
                     Image<Rgba32> BaseImage = new(1127, 765);
                     Parallel.For(0, 9, (i, state) =>
                     {
-                        var ThisEvent = JSummit[0].Events[i];
                         using WebClient wc = new();
                         byte[] EventLogoBit = HubMethods.EventLogoBitArr[i];
                         BaseImage.Mutate(ctx => ctx
