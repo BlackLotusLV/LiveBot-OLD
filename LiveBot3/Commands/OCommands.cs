@@ -96,7 +96,7 @@ namespace LiveBot.Commands
         [Command("updatehub")]
         public async Task UpdateHub(CommandContext ctx)
         {
-            TimerMethod.UpdateHubInfo(true);
+            HubMethods.UpdateHubInfo(true);
             DiscordMessage msg = await ctx.RespondAsync("TCHub info has been force updated.");
             await Task.Delay(10000).ContinueWith(f => msg.DeleteAsync());
         }

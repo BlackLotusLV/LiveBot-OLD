@@ -156,7 +156,7 @@ namespace LiveBot.Commands
         public async Task MySummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
-            TimerMethod.UpdateHubInfo();
+            HubMethods.UpdateHubInfo();
 
             string OutMessage = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
@@ -287,7 +287,81 @@ namespace LiveBot.Commands
                 if (Events.Points != 0)
                 {
                     TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
-                    CustomMethod.BuildSummitImage(JSummit, Events, UserInfo).Save(imageLoc);
+
+                    int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
+                    Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
+                    Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+                    Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
+
+                    var AllignCenter = new TextOptions()
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+                    var AllignTopLeft = new TextOptions()
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+                    var AllignTopRight = new TextOptions()
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+
+                    Image<Rgba32> BaseImage = new(1127, 765);
+                    Parallel.For(0, 9, (i, state) =>
+                    {
+                        var ThisEvent = JSummit[0].Events[i];
+                        using WebClient wc = new();
+                        byte[] EventLogoBit = HubMethods.EventLogoBitArr[i];
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(
+                            HubMethods.BuildEventImage(
+                                JSummit[0].Events[i],
+                                Events,
+                                new TCHubJson.TceSummitSubs { Platform = UserInfo.Platform, Profile_ID = UserInfo.Profile_ID },
+                                EventLogoBit,
+                                i == 7,
+                                i == 8),
+                        new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
+                        1)
+                    );
+                    });
+                    using (Image<Rgba32> TierBar = Image.Load<Rgba32>("Assets/Summit/TierBar.png"))
+                    {
+                        TierBar.Mutate(ctx => ctx.DrawImage(new Image<Rgba32>(new Configuration(), TierBar.Width, TierBar.Height, backgroundColor: Color.Black), new Point(0, 0), 0.35f));
+                        int[] TierXPos = new int[4] { 845, 563, 281, 0 };
+                        bool[] Tier = new bool[] { false, false, false, false };
+                        Parallel.For(0, Events.Tier_entries.Length, (i, state) =>
+                        {
+                            if (Events.Tier_entries[i].Points == 4294967295)
+                            {
+                                Tier[i] = true;
+                            }
+                            else
+                            {
+                                if (Events.Tier_entries[i].Points <= Events.Points)
+                                {
+                                    Tier[i] = true;
+                                }
+
+                                TierBar.Mutate(ctx => ctx
+                                .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Points Needed: {Events.Tier_entries[i].Points}", SummitCaps12, Color.White, new PointF(TierXPos[i] + 5, 15))
+                                );
+                            }
+                        });
+
+                        TierBar.Mutate(ctx => ctx
+                                .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Summit Rank: {Events.UserRank + 1} Score: {Events.Points}", SummitCaps15, Color.White, new PointF(TierXPos[Tier.Count(c => c) - 1] + 5, 0))
+                                );
+
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(TierBar, new Point(0, BaseImage.Height - 30), 1)
+                        );
+                    }
+                    BaseImage.Save(imageLoc);
+
                     OutMessage = $"{ctx.User.Mention}, Here are your summit event stats for {(UserInfo.Platform == "x1" ? "Xbox" : UserInfo.Platform == "ps4" ? "PlayStation" : UserInfo.Platform == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
                     SendImage = true;
                 }
@@ -321,7 +395,7 @@ namespace LiveBot.Commands
         public async Task TopSummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
-            TimerMethod.UpdateHubInfo();
+            HubMethods.UpdateHubInfo();
 
             int TotalPoints = 0;
 
@@ -370,113 +444,26 @@ namespace LiveBot.Commands
 
             int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
 
-            Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
-            Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
-
-            var AllignCenter = new TextOptions()
-            {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top
-            };
-            var AllignTopLeft = new TextOptions()
-            {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top
-            };
-            var AllignTopRight = new TextOptions()
-            {
-                HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment = VerticalAlignment.Top
-            };
-
             using Image<Rgba32> BaseImage = new(1127, 735);
             Parallel.For(0, 9, (i, state) =>
             {
                 using WebClient wc = new();
-                var ThisEvent = JSummit[0].Events[i];
                 var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{JSummit[0].Events[i].ID}?page_size=1"));
+                var Rank = JsonConvert.DeserializeObject<TCHubJson.Rank>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{platform}/profile/{Activity.Entries[0].Profile_ID}"));
+                EventLogoBit = HubMethods.EventLogoBitArr[i];
 
-                EventLogoBit = TimerMethod.EventLogoBitArr[i];
-                using Image<Rgba32> EventImage = Image.Load<Rgba32>(EventLogoBit);
-                if (i == 8)
-                {
-                    EventImage.Mutate(ctx => ctx.
-                    Resize(380, 483)
-                    );
-                }
-                else if (i >= 3 && i <= 7)
-                {
-                    EventImage.Mutate(ctx => ctx.
-                    Resize(368, 239)
-                    );
-                }
-                if (Activity.Entries.Length > 0)
-                {
-                    string ThisEventNameID = string.Empty;
-                    if (ThisEvent.Is_Mission)
-                    {
-                        ThisEventNameID = Program.TCHub.Missions.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
-                    }
-                    else
-                    {
-                        ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == ThisEvent.ID).Select(s => s.Text_ID).FirstOrDefault();
-                    }
-
-                    string[] EventTitle = (CustomMethod.HubNameLookup(ThisEventNameID)).Replace("\"", string.Empty).Split(' ');
-                    TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{ThisEvent.ID}?page_size=1"));
-                    StringBuilder sb = new();
-                    for (int j = 0; j < EventTitle.Length; j++)
-                    {
-                        if (j == 3)
-                        {
-                            sb.AppendLine();
-                        }
-                        sb.Append(EventTitle[j] + " ");
-                    }
-                    string ActivityResult = $"Score: {Activity.Entries[0].Score}";
-                    if (leaderboard.Score_Format == "time")
-                    {
-                        ActivityResult = $"Time: {CustomMethod.ScoreToTime(Activity.Entries[0].Score)}";
-                    }
-                    else if (sb.ToString().Contains("SPEEDTRAP"))
-                    {
-                        ActivityResult = $"Speed: {Activity.Entries[0].Score.ToString().Insert(3, ".")} km/h";
-                    }
-                    else if (sb.ToString().Contains("ESCAPE"))
-                    {
-                        ActivityResult = $"Distance: {Activity.Entries[0].Score}m";
-                    }
-                    using (Image<Rgba32> TitleBar = new(EventImage.Width, 40))
-                    using (Image<Rgba32> ScoreBar = new(EventImage.Width, 40))
-                    {
-                        ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
-                        TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
-                        EventImage.Mutate(ctx => ctx
-                        .DrawImage(ScoreBar, new Point(0, EventImage.Height - ScoreBar.Height), 0.7f)
-                        .DrawImage(TitleBar, new Point(0, 0), 0.7f)
-                        .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, sb.ToString(), SummitCaps15, Color.White, new PointF(5, 0))
-                        .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Rank: 1", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
-                        .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
-                        .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, $"Points: {Activity.Entries[0].Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
-                        );
-                    }
-                    BaseImage.Mutate(ctx => ctx
-                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                    );
-                }
-                else
-                {
-                    using Image<Rgba32> NotComplete = new(EventImage.Width, EventImage.Height);
-                    NotComplete.Mutate(ctx => ctx
-                        .Fill(Color.Black)
-                        .DrawText(new DrawingOptions { TextOptions = AllignCenter }, "Event not completed!", Basefont, Color.White, new PointF(NotComplete.Width / 2, NotComplete.Height / 2))
-                        );
-                    BaseImage.Mutate(ctx => ctx
-                    .DrawImage(EventImage, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 1)
-                    .DrawImage(NotComplete, new Point(WidthHeight[i, 0], WidthHeight[i, 1]), 0.8f)
-                    );
-                    alleventscompleted = false;
-                }
+                BaseImage.Mutate(ctx => ctx
+                .DrawImage(
+                    HubMethods.BuildEventImage(
+                        JSummit[0].Events[i],
+                        Rank,
+                        new TCHubJson.TceSummitSubs { Platform = platform, Profile_ID = Activity.Entries[0].Profile_ID },
+                        EventLogoBit,
+                        i == 7,
+                        i == 8),
+                    new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
+                    1)
+                );
                 TotalPoints += Activity.Entries[0].Points;
             });
 
@@ -505,7 +492,7 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            TimerMethod.UpdateHubInfo();
+            HubMethods.UpdateHubInfo();
 
             if (summit < 1 || summit > 4)
             {
@@ -566,7 +553,7 @@ namespace LiveBot.Commands
                             {
                                 boosted = "BOOSTED ";
                             }
-                            RewardTitle = $"{boosted}{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)} " +
+                            RewardTitle = $"{boosted}{HubMethods.NameIDLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)} " +
                             $"{affixBonusName} " +
                             $"{Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("type")).Value}" +
                             $"({Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("vcat_icon")).Value ?? "unknown", "\\w{0,}_", string.Empty)})";
@@ -575,7 +562,7 @@ namespace LiveBot.Commands
                             break;
 
                         case "vanity":
-                            RewardTitle = CustomMethod.HubNameLookup(Rewards[i].Title_Text_ID);
+                            RewardTitle = HubMethods.NameIDLookup(Rewards[i].Title_Text_ID);
                             if (RewardTitle is null)
                             {
                                 if (Rewards[i].Img_Path.Contains("emote"))
@@ -598,7 +585,7 @@ namespace LiveBot.Commands
                             break;
 
                         case "vehicle":
-                            RewardTitle = $"{CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("brand_text_id")).Value)} - {CustomMethod.HubNameLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("model_text_id")).Value)}";
+                            RewardTitle = $"{HubMethods.NameIDLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("brand_text_id")).Value)} - {HubMethods.NameIDLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("model_text_id")).Value)}";
                             break;
 
                         default:
@@ -612,7 +599,7 @@ namespace LiveBot.Commands
 
                     RewardTitle = Regex.Replace(RewardTitle, "((<(\\w||[/=\"'#\\ ]){0,}>)||(&#\\d{0,}; )){0,}", "").ToUpper();
 
-                    using Image<Rgba32> RewardImage = Image.Load<Rgba32>(TimerMethod.RewardsImageBitArr[summit, i]);
+                    using Image<Rgba32> RewardImage = Image.Load<Rgba32>(HubMethods.RewardsImageBitArr[summit, i]);
                     using Image<Rgba32> TopBar = new(RewardImage.Width, 20);
                     TopBar.Mutate(ctx => ctx.
                     Fill(RewardColours[i])
@@ -756,7 +743,7 @@ namespace LiveBot.Commands
             List<TCHubJson.Family> FamilyList = Program.TCHub.Families.OrderBy(w => w.ID).ToList();
             for (int i = 0; i < FamilyList.Count; i++)
             {
-                Families.AppendLine($"#{i} - {CustomMethod.HubNameLookup(FamilyList[i].Text_ID)}");
+                Families.AppendLine($"#{i} - {HubMethods.NameIDLookup(FamilyList[i].Text_ID)}");
             }
             Families.AppendLine("```");
             await ctx.RespondAsync(Families.ToString());
@@ -771,7 +758,7 @@ namespace LiveBot.Commands
                     Disciplines.AppendLine("```csharp");
                     for (int i = 0; i < DisciplinesList.Count; i++)
                     {
-                        Disciplines.AppendLine($"#{i} - {CustomMethod.HubNameLookup(DisciplinesList[i].Text_ID)}");
+                        Disciplines.AppendLine($"#{i} - {HubMethods.NameIDLookup(DisciplinesList[i].Text_ID)}");
                     }
                     Disciplines.AppendLine("```");
 

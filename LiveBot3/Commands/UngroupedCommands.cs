@@ -22,8 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/hub summitrewards` showing tier colour in the right order.\n" +
-                "[FIX] `/h ms` and `/h ts` command event order fixed.\n" +
+            string changelog = "[FIX] `/h ms` and `/h ts` Top right corner event image size fix\n" +
+                "[INTERNAL] `/h ms` and `/h ts` code improvements\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

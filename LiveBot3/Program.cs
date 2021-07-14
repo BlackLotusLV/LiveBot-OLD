@@ -55,7 +55,7 @@ namespace LiveBot
         // Timers
         private Timer StreamDelayTimer { get; set; } = new(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
         private Timer ActiveRoleTimer { get; set; } = new(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer));
-        private Timer HubUpdateTimer { get; set; } = new(e => TimerMethod.UpdateHubInfo());
+        private Timer HubUpdateTimer { get; set; } = new(e => HubMethods.UpdateHubInfo());
         private Timer MessageCacheClearTimer { get; set; } = new(e => AutoMod.ClearMSGCache());
         private Timer ModMailCloserTimer { get; set; } = new(async e => await ModMail.ModMailCloser());
 
@@ -81,7 +81,7 @@ namespace LiveBot
 
             // TC Hub
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
-            Thread HubThread = new(() => TimerMethod.UpdateHubInfo());
+            Thread HubThread = new(() => HubMethods.UpdateHubInfo());
             HubThread.Start();
             //
             LogLevel logLevel = LogLevel.Debug;

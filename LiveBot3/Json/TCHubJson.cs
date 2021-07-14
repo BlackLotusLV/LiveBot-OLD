@@ -6,7 +6,7 @@ namespace LiveBot.Json
 {
     internal class TCHubJson
     {
-        public struct TCHub
+        public class TCHub
         {
             [JsonProperty("missions")]
             public Mission[] Missions { get; private set; }
@@ -30,7 +30,7 @@ namespace LiveBot.Json
             public News[] News { get; private set; }
         }
 
-        public struct Summit
+        public class Summit
         {
             [JsonProperty("summit_id")]
             public ulong Summit_ID { get; private set; }
@@ -66,7 +66,7 @@ namespace LiveBot.Json
             public Reward[] Rewards { get; set; }
         }
 
-        public struct Event
+        public class Event
         {
             [JsonProperty("summit_id")]
             public string Summit_ID { get; private set; }
@@ -90,7 +90,7 @@ namespace LiveBot.Json
             public string[] Modifiers { get; private set; }
         }
 
-        public struct Reward
+        public class Reward
         {
             [JsonProperty("summit_id")]
             public ulong Summit_ID { get; private set; }
@@ -120,7 +120,7 @@ namespace LiveBot.Json
             public Dictionary<string, string> Extra { get; private set; }
         }
 
-        public struct Rank
+        public class Rank
         {
             [JsonProperty("points")]
             public ulong Points { get; private set; }
@@ -138,7 +138,7 @@ namespace LiveBot.Json
             public TierEntries[] Tier_entries { get; private set; }
         }
 
-        public struct TierEntries
+        public class TierEntries
         {
             [JsonProperty("points")]
             public ulong Points { get; set; }
@@ -147,7 +147,7 @@ namespace LiveBot.Json
             public ulong Rank { get; set; }
         }
 
-        public struct Activities
+        public class Activities
         {
             [JsonProperty("activity_id")]
             public string Activity_ID { get; private set; }
@@ -162,7 +162,7 @@ namespace LiveBot.Json
             public int Rank { get; private set; }
         }
 
-        public struct TceSummit
+        public class TceSummit
         {
             [JsonProperty("discord_id")]
             public ulong Discord_ID { get; private set; }
@@ -174,16 +174,16 @@ namespace LiveBot.Json
             public string Error { get; set; }
         }
 
-        public struct TceSummitSubs
+        public class TceSummitSubs
         {
             [JsonProperty("platform")]
-            public string Platform { get; private set; }
+            public string Platform { get; set; }
 
             [JsonProperty("profile_id")]
-            public string Profile_ID { get; private set; }
+            public string Profile_ID { get; set; }
         }
 
-        public struct SummitLeaderboardEntries
+        public class SummitLeaderboardEntries
         {
             [JsonProperty("profile_id")]
             public string Profile_ID { get; private set; }
@@ -207,7 +207,7 @@ namespace LiveBot.Json
             public int Vehicle_Level { get; private set; }
         }
 
-        public struct SummitLeaderboard
+        public class SummitLeaderboard
         {
             [JsonProperty("entries")]
             public SummitLeaderboardEntries[] Entries { get; private set; }
@@ -216,7 +216,7 @@ namespace LiveBot.Json
             public string Score_Format { get; private set; }
         }
 
-        public struct Mission
+        public class Mission
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
@@ -237,7 +237,7 @@ namespace LiveBot.Json
             public ulong Discipline_ID { get; private set; }
         }
 
-        public struct Skill
+        public class Skill
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
@@ -258,7 +258,7 @@ namespace LiveBot.Json
             public string IMG_Path { get; private set; }
         }
 
-        public struct Brand
+        public class Brand
         {
             [JsonProperty("id")]
             public string ID { get; private set; }
@@ -270,7 +270,7 @@ namespace LiveBot.Json
             public int Rank { get; private set; }
         }
 
-        public struct Model
+        public class Model
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
@@ -285,7 +285,7 @@ namespace LiveBot.Json
             public string Brand_ID { get; private set; }
         }
 
-        public struct Discipline
+        public class Discipline
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
@@ -300,7 +300,7 @@ namespace LiveBot.Json
             public string IMG_Path { get; private set; }
         }
 
-        public struct Family
+        public class Family
         {
             [JsonProperty("id")]
             public ulong ID { get; private set; }
@@ -310,7 +310,7 @@ namespace LiveBot.Json
         }
 
         //Fame board
-        public struct Fame
+        public class Fame
         {
             [JsonProperty("best")]
             public FameEntity Best { get; private set; }
@@ -322,7 +322,7 @@ namespace LiveBot.Json
             public FameEntity[] Scores { get; private set; }
         }
 
-        public struct FameEntity
+        public class FameEntity
         {
             [JsonProperty("profile_id")]
             public string Profile_ID { get; private set; }
@@ -334,7 +334,7 @@ namespace LiveBot.Json
             public int Rank { get; private set; }
         }
 
-        public struct News
+        public class News
         {
             [JsonProperty("newsId")]
             public string ID { get; private set; }
@@ -379,13 +379,13 @@ namespace LiveBot.Json
             public NewsLinks[] NewsLinks { get; private set; }
         }
 
-        public struct NewsObj
+        public class NewsObj
         {
             [JsonProperty("tag")]
             public string Tag { get; private set; }
         }
 
-        public struct NewsLinks
+        public class NewsLinks
         {
             [JsonProperty("type")]
             public string Type { get; private set; }
