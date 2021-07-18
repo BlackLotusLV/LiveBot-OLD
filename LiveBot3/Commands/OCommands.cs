@@ -1,9 +1,7 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.Interactivity;
-using DSharpPlus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +31,7 @@ namespace LiveBot.Commands
         [Command("buttonmessage")]
         public async Task ButtonMessage(CommandContext ctx,
             DiscordChannel channel,
-            [Description("First message content, split by |, then button components split by, and then each button by |\ncustom id, lable, emoji()")][RemainingText]string rawData)
+            [Description("First message content, split by |, then button components split by, and then each button by |\ncustom id, lable, emoji()")][RemainingText] string rawData)
         {
             await ctx.TriggerTypingAsync();
             string[] splitData = rawData.Split('|');
@@ -49,7 +47,6 @@ namespace LiveBot.Commands
                 .AddComponents(buttons)
                 .SendAsync(channel);
         }
-
 
         [Command("update")]
         public async Task Update(CommandContext ctx, [Description("Which database to update. (All will update all db)")] string db = null)

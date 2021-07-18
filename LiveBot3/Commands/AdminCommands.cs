@@ -256,9 +256,9 @@ namespace LiveBot.Commands
                 .Select(s => new
                 {
                     Admin_ID = s.Key,
-                    WCount = s.Count(w=>w.Type=="warning"),
-                    KCount = s.Count(w=>w.Type=="kick"),
-                    BCount = s.Count(w=>w.Type=="ban")
+                    WCount = s.Count(w => w.Type == "warning"),
+                    KCount = s.Count(w => w.Type == "kick"),
+                    BCount = s.Count(w => w.Type == "ban")
                 })
                 .OrderByDescending(o => o.WCount))
             {
@@ -502,6 +502,5 @@ namespace LiveBot.Commands
                 .SendAsync(ctx.Channel);
             await Task.Delay(10000).ContinueWith(t => response.DeleteAsync());
         }
-
     }
 }

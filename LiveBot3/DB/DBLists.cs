@@ -268,13 +268,14 @@ namespace LiveBot.DB
                 Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Settings List Loaded");
             }
         }
+
         public static void LoadServerWelcomeSettings(bool progress = false)
         {
             Stopwatch timer = new();
             timer.Start();
             using var ctx = new ServerWelcomeSettingsContext();
             ServerWelcomeSettings = (from c in ctx.ServerWelcomeSettings
-                              select c).ToList();
+                                     select c).ToList();
             timer.Stop();
             if (progress)
             {

@@ -62,7 +62,7 @@ namespace LiveBot.Automation
         {
             _ = Task.Run(async () =>
                 {
-                    if (MediaOnlyChannelIDs.Any(id=>id == e.Channel.Id) && !e.Author.IsBot && e.Message.Attachments.Count == 0 && !e.Message.Content.Split(' ').Any(a=>Uri.TryCreate(a, UriKind.Absolute, out _)))
+                    if (MediaOnlyChannelIDs.Any(id => id == e.Channel.Id) && !e.Author.IsBot && e.Message.Attachments.Count == 0 && !e.Message.Content.Split(' ').Any(a => Uri.TryCreate(a, UriKind.Absolute, out _)))
                     {
                         await e.Message.DeleteAsync();
                         DiscordMessage m = await e.Channel.SendMessageAsync("This channel is for sharing media only, please use the content comment channel for discussions. If this is a mistake please contact a moderator.");
@@ -440,23 +440,23 @@ namespace LiveBot.Automation
             {
                 DB.ServerSettings SS = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == e.Guild.Id);
 
-                if (SS.VCLog!=0)
+                if (SS.VCLog != 0)
                 {
                     DiscordChannel VCActivityLogChannel = await Client.GetChannelAsync(Convert.ToUInt64(SS.VCLog));
 
                     DiscordEmbedBuilder embed = new()
                     {
-                        Author= new DiscordEmbedBuilder.EmbedAuthor
+                        Author = new DiscordEmbedBuilder.EmbedAuthor
                         {
-                            IconUrl= e.User.AvatarUrl,
+                            IconUrl = e.User.AvatarUrl,
                             Name = $"{e.User.Username} ({e.User.Id})"
                         },
-                        Thumbnail=new DiscordEmbedBuilder.EmbedThumbnail
+                        Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
                         {
-                            Url=e.User.AvatarUrl
+                            Url = e.User.AvatarUrl
                         }
                     };
-                    if (e?.After?.Channel!=null && e?.Before?.Channel==null)
+                    if (e?.After?.Channel != null && e?.Before?.Channel == null)
                     {
                         embed.Title = "➡ [JOINED] ➡";
                         embed.Color = DiscordColor.Green;
@@ -468,7 +468,7 @@ namespace LiveBot.Automation
                         embed.Color = DiscordColor.Red;
                         embed.AddField("Channel left", $"**{e.Before.Channel.Name}** *({e.Before.Channel.Id})*", false);
                     }
-                    else if (e?.After?.Channel !=null && e?.Before?.Channel != null && e?.After?.Channel!=e?.Before?.Channel)
+                    else if (e?.After?.Channel != null && e?.Before?.Channel != null && e?.After?.Channel != e?.Before?.Channel)
                     {
                         embed.Title = "🔄 [SWITCHED] 🔄";
                         embed.Color = new DiscordColor(0x87CEFF);

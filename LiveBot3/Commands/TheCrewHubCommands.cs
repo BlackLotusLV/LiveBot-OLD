@@ -117,7 +117,7 @@ namespace LiveBot.Commands
                     Font CutoffFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 17);
 
                     TierImg.Mutate(ctx => ctx
-                    .DrawText(TierCutoffOptions, $"Top {TierCutoff[i, 0]}", CutoffFont, Brushes.Solid(TextColour),Pens.Solid(OutlineColour, outlineSize), new PointF(295, 340))
+                    .DrawText(TierCutoffOptions, $"Top {TierCutoff[i, 0]}", CutoffFont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(295, 340))
                     .DrawText(TierCutoffOptions, $"Top {TierCutoff[i, 1]}", CutoffFont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(295, 410))
                     .DrawText(TierCutoffOptions, $"Top {TierCutoff[i, 2]}", CutoffFont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(295, 480))
                     .DrawText(TierCutoffOptions, "All Participants", CutoffFont, Brushes.Solid(TextColour), Pens.Solid(OutlineColour, outlineSize), new PointF(295, 550))
@@ -223,14 +223,17 @@ namespace LiveBot.Commands
                                 await platformMSG.ModifyAsync("Playstation Platform selected.");
                                 platform = "ps";
                                 break;
+
                             case "x1":
                                 await platformMSG.ModifyAsync("Xbox Platform selected.");
                                 platform = "x1";
                                 break;
+
                             case "stadia":
                                 await platformMSG.ModifyAsync("Stadia Platform selected.");
                                 platform = "stadia";
                                 break;
+
                             default:
                                 await platformMSG.ModifyAsync("PC Platform selected.");
                                 platform = "pc";
@@ -863,18 +866,23 @@ namespace LiveBot.Commands
                         case "clear":
                             weathercondition = ":sunny: **Clear**";
                             break;
+
                         case "*":
                             weathercondition = ":fog: **Fog**";
                             break;
+
                         case "rain":
                             weathercondition = ":cloud_rain: **Rain**";
                             break;
+
                         case "rain*":
                             weathercondition = ":fog::cloud_rain: **Fog and Rain**";
                             break;
+
                         case "snow":
                             weathercondition = ":snowflake: **Snow**";
                             break;
+
                         case "snow*":
                             weathercondition = ":fog::snowflake: **Fog and Snow**";
                             break;

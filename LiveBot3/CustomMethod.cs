@@ -4,11 +4,6 @@ using DSharpPlus.Entities;
 using LiveBot.Json;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -470,12 +465,15 @@ namespace LiveBot
                         case "ban":
                             Reason.Append("[🔨]");
                             break;
+
                         case "kick":
                             Reason.Append("[🥾]");
                             break;
+
                         case "note":
                             Reason.Append("[❔]");
                             break;
+
                         default: // warning
                             if (item.Active)
                             {
@@ -483,14 +481,13 @@ namespace LiveBot
                             }
                             else
                             {
-
                                 Reason.Append("[❌] ");
                             }
                             break;
                     }
                     string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
-                    
-                    if (Reason.Length+addedInfraction.Length>1023*splitcount)
+
+                    if (Reason.Length + addedInfraction.Length > 1023 * splitcount)
                     {
                         Reason.Append("~split~");
                         splitcount++;

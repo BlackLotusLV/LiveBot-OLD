@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LiveBot
 {
@@ -20,6 +18,7 @@ namespace LiveBot
         private static DateTime TCHubLastUpdated;
         public static byte[][] EventLogoBitArr { get; set; } = new byte[9][];
         public static byte[,][] RewardsImageBitArr { get; set; } = new byte[4, 4][];
+
         public static void UpdateHubInfo(bool forced = false)
         {
             List<TCHubJson.Summit> JSummit;
@@ -69,6 +68,7 @@ namespace LiveBot
                 }
             }
         }
+
         public static void DownloadHubNews()
         {
             using WebClient wc = new();
@@ -99,7 +99,7 @@ namespace LiveBot
             return HubText;
         }
 
-        public static Image<Rgba32> BuildEventImage(TCHubJson.Event Event, TCHubJson.Rank Rank, TCHubJson.TceSummitSubs UserInfo, byte[] EventImageBytes,bool isCorner=false, bool isSpecial=false)
+        public static Image<Rgba32> BuildEventImage(TCHubJson.Event Event, TCHubJson.Rank Rank, TCHubJson.TceSummitSubs UserInfo, byte[] EventImageBytes, bool isCorner = false, bool isSpecial = false)
         {
             Image<Rgba32> EventImage = Image.Load<Rgba32>(EventImageBytes);
 
@@ -132,7 +132,7 @@ namespace LiveBot
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
                     VerticalAlignment = VerticalAlignment.Top,
-                    WrapTextWidth = EventImage.Width-10,
+                    WrapTextWidth = EventImage.Width - 10,
                     LineSpacing = 0.7f
                 };
                 TextOptions AllignTopLeft = new()
@@ -170,7 +170,7 @@ namespace LiveBot
                 {
                     Brand = null;
                 }
-                if (leaderboard.Score_Format=="time")
+                if (leaderboard.Score_Format == "time")
                 {
                     ActivityResult = $"Time: {CustomMethod.ScoreToTime(Activity.Score)}";
                 }
@@ -196,7 +196,6 @@ namespace LiveBot
                     .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, $"Points: {Activity.Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
                     .DrawText(new DrawingOptions { TextOptions = EventTitleOptions }, $"{NameIDLookup(Brand != null ? Brand.Text_ID : "not found")} - {NameIDLookup(Model != null ? Model.Text_ID : "not found")}", VehicleFont, Color.White, new PointF(5, EventImage.Height - 62))
                     );
-
             }
             else
             {

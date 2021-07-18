@@ -409,11 +409,11 @@ namespace LiveBot.Commands
             Random r = new();
             int row = 0;
             List<DB.VehicleList> SelectedVehicles = new();
-            DiscordMessage ChoiceMsg=null;
+            DiscordMessage ChoiceMsg = null;
 
             if (disciplinename == "Street Race")
             {
-                DiscordButtonComponent carButton = new(ButtonStyle.Primary, "CarButton", "Car", false,new DiscordComponentEmoji("🏎"));
+                DiscordButtonComponent carButton = new(ButtonStyle.Primary, "CarButton", "Car", false, new DiscordComponentEmoji("🏎"));
                 DiscordButtonComponent bikeButton = new(ButtonStyle.Primary, "BikeButton", "Bike", false, new DiscordComponentEmoji("🏍"));
                 ChoiceMsg = await new DiscordMessageBuilder()
                     .WithContent($"{ctx.Member.Mention} **Select vehicle type!**")
@@ -453,7 +453,6 @@ namespace LiveBot.Commands
                                     where dl.Discipline_Name == disciplinename
                                     select vl).ToList();
             }
-            
 
             if (SelectedVehicles.Count(c => c.IsSelected is true) == SelectedVehicles.Count)
             {
@@ -506,10 +505,10 @@ namespace LiveBot.Commands
             embed.AddField("Year", $"{SelectedVehicles[row].Year}", true);
             embed.AddField("Type", $"{SelectedVehicles[row].Type}", false);
             embed.AddField("Vehicle Tier", $"{SelectedVehicles[row].VehicleTier}", true);
-            embed.AddField("Crew Credits only?", $"{(SelectedVehicles[row].IsCCOnly? "✅" : "❌")}", true);
-            embed.AddField("Summit exclusive?", $"{(SelectedVehicles[row].IsSummitVehicle? "✅" : "❌")}", true);
-            embed.AddField("MP exclusive?", $"{(SelectedVehicles[row].IsMotorPassExclusive? "✅" : "❌")}", true);
-            if (ChoiceMsg!=null)
+            embed.AddField("Crew Credits only?", $"{(SelectedVehicles[row].IsCCOnly ? "✅" : "❌")}", true);
+            embed.AddField("Summit exclusive?", $"{(SelectedVehicles[row].IsSummitVehicle ? "✅" : "❌")}", true);
+            embed.AddField("MP exclusive?", $"{(SelectedVehicles[row].IsMotorPassExclusive ? "✅" : "❌")}", true);
+            if (ChoiceMsg != null)
             {
                 await ChoiceMsg.ModifyAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", (DiscordEmbed)embed);
             }
@@ -639,7 +638,7 @@ namespace LiveBot.Commands
             List<DiscordButtonComponent> buttons = new() { new DiscordButtonComponent(ButtonStyle.Primary, "left", "Previous Page"), new DiscordButtonComponent(ButtonStyle.Primary, "right", "Next Page") };
             DiscordMessage TopMessage = await new DiscordMessageBuilder()
                 .WithContent(CustomMethod.GetServerTop(ctx, (int)page))
-                .WithReply(ctx.Message.Id,true)
+                .WithReply(ctx.Message.Id, true)
                 .AddComponents(buttons)
                 .SendAsync(ctx.Channel);
 
@@ -651,7 +650,7 @@ namespace LiveBot.Commands
                 {
                     end = result.Result.TimedOut;
                 }
-                else if (result.Result.Result.Id =="left")
+                else if (result.Result.Result.Id == "left")
                 {
                     if (page > 1)
                     {
@@ -660,7 +659,7 @@ namespace LiveBot.Commands
                     }
                     await result.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                 }
-                else if (result.Result.Result.Id =="right")
+                else if (result.Result.Result.Id == "right")
                 {
                     page++;
                     try
@@ -702,7 +701,7 @@ namespace LiveBot.Commands
                 {
                     end = result.Result.TimedOut;
                 }
-                else if (result.Result.Result.Id =="left")
+                else if (result.Result.Result.Id == "left")
                 {
                     if (page > 1)
                     {

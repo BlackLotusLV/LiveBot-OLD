@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using System;
 using System.Linq;
@@ -23,7 +22,7 @@ namespace LiveBot.Automation
                     if (WelcomeSettings.Channel_ID != 0 && WelcomeSettings.HasScreening)
                     {
                         DiscordChannel WelcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(WelcomeSettings.Channel_ID));
-                        if (WelcomeSettings.Welcome_Message!=null)
+                        if (WelcomeSettings.Welcome_Message != null)
                         {
                             string msg = WelcomeSettings.Welcome_Message;
                             msg = msg.Replace("$Mention", $"{e.Member.Mention}");

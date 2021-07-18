@@ -1,11 +1,8 @@
 ﻿using DSharpPlus.Entities;
 using LiveBot.Automation;
-using LiveBot.Json;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace LiveBot
@@ -48,6 +45,6 @@ namespace LiveBot
             {
                 Console.WriteLine("[System] ActivateRolesTimer list is empty!");
             }
-        }        
+        }
     }
 }
