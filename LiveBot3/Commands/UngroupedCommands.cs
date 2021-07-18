@@ -22,9 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] `/h ms` and `/h ts` Top right corner event image size fix\n" +
-                "[INTERNAL] `/h ms` and `/h ts` code improvements\n" +
-                "";
+            string changelog = "[NEW] `>hub mysummit` and `>hub topsummit` Now showing vehicle used";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

@@ -124,6 +124,7 @@ namespace LiveBot
             }
             Font Basefont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 18);
             Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
+            Font VehicleFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 11.5f);
             if (Activity != null)
             {
                 using WebClient wc = new();
@@ -131,7 +132,8 @@ namespace LiveBot
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
                     VerticalAlignment = VerticalAlignment.Top,
-                    WrapTextWidth = EventImage.Width-10
+                    WrapTextWidth = EventImage.Width-10,
+                    LineSpacing = 0.7f
                 };
                 TextOptions AllignTopLeft = new()
                 {
@@ -153,9 +155,21 @@ namespace LiveBot
                 {
                     ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == Event.ID).Select(s => s.Text_ID).FirstOrDefault();
                 }
-                TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{Program.JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{Event.ID}?page_size=1"));
-                string EventTitle = (NameIDLookup(ThisEventNameID));
-                string ActivityResult = $"Score: {Activity.Score}";
+                TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{Program.JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{Event.ID}?profile={UserInfo.Profile_ID}"));
+                string
+                    EventTitle = (NameIDLookup(ThisEventNameID)),
+                    ActivityResult = $"Score: {Activity.Score}";
+                TCHubJson.SummitLeaderboardEntries Entries = leaderboard.Entries.FirstOrDefault(w => w.Profile_ID == UserInfo.Profile_ID);
+                TCHubJson.Model Model = Program.TCHub.Models.FirstOrDefault(w => w.ID == Entries.Vehicle_ID);
+                TCHubJson.Brand Brand;
+                if (Model != null)
+                {
+                    Brand = Program.TCHub.Brands.FirstOrDefault(w => w.ID == Model.Brand_ID);
+                }
+                else
+                {
+                    Brand = null;
+                }
                 if (leaderboard.Score_Format=="time")
                 {
                     ActivityResult = $"Time: {CustomMethod.ScoreToTime(Activity.Score)}";
@@ -168,8 +182,9 @@ namespace LiveBot
                 {
                     ActivityResult = $"Distance: {Activity.Score}m";
                 }
+
                 using Image<Rgba32> TitleBar = new(EventImage.Width, 40);
-                using Image<Rgba32> ScoreBar = new(EventImage.Width, 40);
+                using Image<Rgba32> ScoreBar = new(EventImage.Width, 60);
                 ScoreBar.Mutate(ctx => ctx.Fill(Color.Black));
                 TitleBar.Mutate(ctx => ctx.Fill(Color.Black));
                 EventImage.Mutate(ctx => ctx
@@ -179,6 +194,7 @@ namespace LiveBot
                     .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Rank: {Activity.Rank + 1}", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
                     .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
                     .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, $"Points: {Activity.Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
+                    .DrawText(new DrawingOptions { TextOptions = EventTitleOptions }, $"{NameIDLookup(Brand != null ? Brand.Text_ID : "not found")} - {NameIDLookup(Model != null ? Model.Text_ID : "not found")}", VehicleFont, Color.White, new PointF(5, EventImage.Height - 62))
                     );
 
             }
