@@ -310,7 +310,7 @@ namespace LiveBot.Automation
                 DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
                 if (wkb_Settings[0].WKB_Log != 0)
                 {
-                    await Task.Delay(2000);
+                    await Task.Delay(4200);
                     var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
                     DiscordEmbedBuilder embed = new()
