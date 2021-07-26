@@ -29,6 +29,7 @@ namespace LiveBot.Commands
         }
 
         [Command("buttonmessage")]
+        [Aliases("buttonmsg")]
         public async Task ButtonMessage(CommandContext ctx,
             DiscordChannel channel,
             [Description("First message content, split by |, then button components split by, and then each button by |\ncustom id, lable, emoji()")][RemainingText] string rawData)
@@ -46,6 +47,14 @@ namespace LiveBot.Commands
                 .WithContent(splitData[0])
                 .AddComponents(buttons)
                 .SendAsync(channel);
+        }
+
+        [Command("editmessage")]
+        [Aliases("editmsg")]
+        public async Task EditMessage(CommandContext ctx, DiscordMessage message, [RemainingText] string text)
+        {
+            await message.ModifyAsync(text.Replace("`",""));
+            await ctx.Message.DeleteAsync();
         }
 
         [Command("update")]
