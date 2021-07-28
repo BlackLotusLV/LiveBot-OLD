@@ -29,15 +29,18 @@ namespace LiveBot.Commands
                 {
                     serverName = "no server!";
                 }
-                var ModMailServers = DB.DBLists.ServerSettings.Where(w => w.ModMailID != 0);
+                var ModMailServers = DBLists.ServerSettings.Where(w => w.ModMailID != 0);
                 Dictionary<DiscordGuild, string> GuildNameDict = new();
                 StringBuilder GuildNameString = new();
                 GuildNameString.AppendLine("The mod-mail is only available on certain servers, here are the server names you can use:");
                 foreach (var item in ModMailServers)
                 {
-                    DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)item.ID_Server);
-                    GuildNameDict.Add(Guild, Guild.Name.Replace(' ', '-').ToLower());
-                    GuildNameString.AppendLine($"`{Guild.Name.Replace(' ', '-').ToLower()}`");
+                    DiscordGuild Guild = ctx.Client.Guilds.FirstOrDefault(w=>w.Key==(ulong)item.ID_Server).Value;
+                    if (Guild != null)
+                    {
+                        GuildNameDict.Add(Guild, Guild.Name.Replace(' ', '-').ToLower());
+                        GuildNameString.AppendLine($"`{Guild.Name.Replace(' ', '-').ToLower()}`");
+                    }
                 }
                 GuildNameString.AppendLine($"To start a modmail write `{Program.CFGJson.CommandPrefix}modmail server-name-here`");
                 if (!GuildNameDict.Values.Contains(serverName.Replace(' ', '-').ToLower()))

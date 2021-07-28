@@ -164,6 +164,7 @@ namespace LiveBot
 
                 Client.MessageCreated += ModMail.ModMailDM;
             }
+            Client.MessageCreated += ModMail.ModMailDM;
             DiscordActivity BotActivity = new($"DM {CFGJson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);

@@ -22,7 +22,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[-] Internal changes";
+            string changelog = "[NEW] Mod Mail will now add a check mark reaction to notify the user that the message has been delivered.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
