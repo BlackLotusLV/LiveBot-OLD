@@ -22,8 +22,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Mod Mail will now add a check mark reaction to notify the user that the message has been delivered.\n" +
-                "";
+            string changelog = "[NEW] LFC command added French translation\n" +
+                "[NEW] New command `>useigc` Pre-written message to instruct users to move the conversation away from LFC channels\n" +
+                "[?] Hiro says hi.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -161,14 +162,35 @@ namespace LiveBot.Commands
                 .SendAsync(ctx.Channel);
         }
 
-        [Command("lfc")]
+        [Command("useigc")]
         [Cooldown(1, 10, CooldownBucketType.Channel)]
-        [Description("Informs the user of using the LFC channels, or to get the platform role if they don't have it.")]
-        public async Task LFC(CommandContext ctx, DiscordMember username = null)
+        public async Task UseIGC(CommandContext ctx, DiscordMember username = null)
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            string content = CustomMethod.GetCommandOutput(ctx, "lfc2", null, username);
+            string content;
+            if (username is null)
+            {
+                content = CustomMethod.GetCommandOutput(ctx, "useigc", null, ctx.Member);
+            }
+            else
+            {
+                content = CustomMethod.GetCommandOutput(ctx, "useigc", null, username);
+            }
+            await new DiscordMessageBuilder()
+                .WithContent(content)
+                .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
+        }
+
+        [Command("lfc")]
+        [Cooldown(1, 10, CooldownBucketType.Channel)]
+        [Description("Informs the user of using the LFC channels, or to get the platform role if they don't have it.")]
+        public async Task LFC(CommandContext ctx, DiscordMember username = null, [Description("Specifies in what language the bot will respond. example, fr-french")] string language = null)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            string content = CustomMethod.GetCommandOutput(ctx, "lfc2", language, username);
             DiscordRole pc = ctx.Guild.GetRole(223867454642716673);
             DiscordRole ps = ctx.Guild.GetRole(223867009484587008);
             DiscordRole xb = ctx.Guild.GetRole(223867264246611970);
@@ -181,7 +203,7 @@ namespace LiveBot.Commands
             {
                 if ((item == pc || item == ps || item == xb) && !check)
                 {
-                    content = CustomMethod.GetCommandOutput(ctx, "lfc1", null, username);
+                    content = CustomMethod.GetCommandOutput(ctx, "lfc1", language, username);
                     check = true;
                 }
             }
