@@ -17,6 +17,7 @@ namespace LiveBot.Commands
     public class UngroupedCommands : BaseCommandModule
     {
         [Command("test")]
+        [Hidden]
         public async Task TestCmd(CommandContext ctx)
         {
             var log = await ctx.Guild.GetAuditLogsAsync(5, null,AuditLogActionType.Ban);

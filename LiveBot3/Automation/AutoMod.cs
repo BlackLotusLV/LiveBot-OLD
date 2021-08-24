@@ -34,7 +34,7 @@ namespace LiveBot.Automation
                                         select bw).ToList();
                         foreach (var word in wordlist)
                         {
-                            if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b") || word.Word.Contains(".com") && Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word.Replace(".com", ".ru")}\b"))
+                            if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b"))
                             {
                                 await e.Message.DeleteAsync();
                                 if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
@@ -304,41 +304,37 @@ namespace LiveBot.Automation
         {
             _ = Task.Run(async () =>
             {
-                var wkb_Settings = (from ss in DB.DBLists.ServerSettings
-                                    where ss.ID_Server == e.Guild.Id
-                                    select ss).ToList();
-                DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
-                if (wkb_Settings[0].WKB_Log != 0)
+                var wkb_Settings = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == e.Guild.Id);
+                DiscordGuild Guild = Client.Guilds.FirstOrDefault(w=>w.Key==(Convert.ToUInt64(wkb_Settings.ID_Server))).Value;
+                if (wkb_Settings.WKB_Log != 0)
                 {
-                    IReadOnlyList<DiscordAuditLogEntry> logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
-                    bool isold = true;
-                    while (isold)
+                    int timesRun = 0;
+                    Console.WriteLine("--Ban triggered--");
+                    IReadOnlyList<DiscordAuditLogEntry> entries = await e.Guild.GetAuditLogsAsync(5, null, AuditLogActionType.Ban);
+                    DiscordAuditLogBanEntry banEntry = entries.Select(entry => entry as DiscordAuditLogBanEntry).FirstOrDefault(entry => entry.Target == e.Member);
+                    while (banEntry == null && timesRun < 15)
                     {
-                        if (logs[0].CreationTimestamp + TimeSpan.FromSeconds(10)>DateTime.UtcNow)
-                        {
-                            await Task.Delay(2000);
-                            logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Ban);
-                        }
-                        else
-                        {
-                            isold = false;
-                        }
+                        await Task.Delay(2000); 
+                        entries = await e.Guild.GetAuditLogsAsync(5, null, AuditLogActionType.Ban);
+                        banEntry = entries.Select(entry => entry as DiscordAuditLogBanEntry).FirstOrDefault(entry => entry.Target == e.Member);
+                        timesRun++;
+                        Console.WriteLine($"--Trying check again {timesRun}. {(banEntry==null?"Empty":"Found")}");
                     }
-                    
-                    DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
+                    Console.WriteLine($"Ban reason search {(banEntry==null?"Failed":"Succeeded")}");
+                    DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings.WKB_Log));
                     DiscordEmbedBuilder embed = new()
                     {
-                        Title = $"❌ {e.Member.Username} ({e.Member.Id}) has been banned",
-                        Description = $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
+                        Title = $"❌ {banEntry.Target.Username} ({banEntry.Target.Id}) has been banned",
+                        Description = $"*by {banEntry.UserResponsible.Mention}*\n**Reason:** {banEntry.Reason}",
                         Footer = new DiscordEmbedBuilder.EmbedFooter
                         {
-                            IconUrl = e.Member.AvatarUrl,
+                            IconUrl = banEntry.Target.AvatarUrl,
                             Text = $"User banned"
                         },
                         Color = new DiscordColor(0xff0000),
                     };
                     await wkbLog.SendMessageAsync(embed: embed);
-                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = logs[0].Reason ?? "No reason specified", Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = logs[0].UserResponsible.Id, User_ID = e.Member.Id, Server_ID = e.Guild.Id, Type = "ban" });
+                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = banEntry.Reason ?? "No reason specified", Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = banEntry.UserResponsible.Id, User_ID = banEntry.Target.Id, Server_ID = e.Guild.Id, Type = "ban" });
                 }
                 var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
                 if (UserSettings == null)
