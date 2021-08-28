@@ -113,7 +113,7 @@ namespace LiveBot.Automation
                 }
 
                 long UserServerFollowers = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id && w.Server_ID == e.Guild.Id).Followers;
-                var RankRolesUnder = DB.DBLists.RankRoles.AsParallel().Where(w => w.Server_ID == e.Guild.Id && w.Server_Rank <= UserServerFollowers).OrderByDescending(w => w.Server_Rank).ToList();
+                var RankRolesUnder = DB.DBLists.RankRoles.AsParallel().Where(w => w.Server_ID == e.Guild.Id && w.Server_Rank <= UserServerFollowers && w.Server_Rank != 0).OrderByDescending(w => w.Server_Rank).ToList();
                 if (RankRolesUnder.Count != 0 && !(e.Author as DiscordMember).Roles.Any(w => w.Id == RankRolesUnder[0].Role_ID))
                 {
                     DiscordMember ServerMember = (e.Author as DiscordMember);

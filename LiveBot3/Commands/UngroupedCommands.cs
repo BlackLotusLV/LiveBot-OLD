@@ -42,9 +42,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] LFC command added French translation\n" +
-                "[NEW] New command `>useigc` Pre-written message to instruct users to move the conversation away from LFC channels\n" +
-                "[?] Hiro says hi.";
+            string changelog = "[FIX] Anon role being removed when user reaches their first rank. A";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {
@@ -184,18 +182,28 @@ namespace LiveBot.Commands
 
         [Command("useigc")]
         [Cooldown(1, 10, CooldownBucketType.Channel)]
-        public async Task UseIGC(CommandContext ctx, DiscordMember username = null)
+        public async Task UseIGC(CommandContext ctx, params DiscordMember[] username)
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
             string content;
-            if (username is null)
+            if (username.Length==0)
             {
                 content = CustomMethod.GetCommandOutput(ctx, "useigc", null, ctx.Member);
             }
+            else if(username.Length==1)
+            {
+                content = CustomMethod.GetCommandOutput(ctx, "useigc", null, username[0]);
+            }
             else
             {
-                content = CustomMethod.GetCommandOutput(ctx, "useigc", null, username);
+                StringBuilder sb = new();
+                foreach (DiscordMember member in username)
+                {
+                    sb.Append($"{member.Mention},");
+                }
+                sb.Append(DB.DBLists.BotOutputList.FirstOrDefault(w => w.Command.Equals("useigc") && w.Language.Equals("gb")).Command_Text);
+                content = sb.ToString();
             }
             await new DiscordMessageBuilder()
                 .WithContent(content)
