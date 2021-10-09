@@ -16,33 +16,15 @@ namespace LiveBot.Commands
 {
     public class UngroupedCommands : BaseCommandModule
     {
-        [Command("test")]
-        [Hidden]
-        public async Task TestCmd(CommandContext ctx)
-        {
-            var log = await ctx.Guild.GetAuditLogsAsync(5, null,AuditLogActionType.Ban);
-            foreach (var item in log)
-            {
-
-                Console.WriteLine($"Category: {item.ActionCategory}\n" +
-                    $"Type: {item.ActionType}\n" +
-                    $"Creation stamp: {item.CreationTimestamp}\n" +
-                    $"id: {item.Id}\n" +
-                    $"Reason: {item.Reason}\n" +
-                    $"User Responisble: {item.UserResponsible}");
-                if (item.CreationTimestamp+TimeSpan.FromSeconds(50)<DateTime.UtcNow)
-                {
-                    Console.WriteLine("entry old!\n\n");
-                }
-            }
-        }
         [Command("bot")]//list of Live bot changes
         [Description("Info about the bot. Latest changes, how to support, how long it has been up.")]
         public async Task Bot(CommandContext ctx)
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Anon role being removed when user reaches their first rank. A";
+            string changelog = "[FIX] Mod mail initialisation text shown in the correct order.\n" +
+                "[FIX] Mod mail user sided close command output string fixed.\n" +
+                "[Discord Error Mitigation] An error on discord side killed any bot that triggers the typing notification. From now on Live bot will not say it is writing something because discord is such a functional app without bugs and... sigh... ihml";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

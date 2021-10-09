@@ -17,7 +17,7 @@ namespace LiveBot.Automation
             _ = Task.Run(async () =>
             {
                 var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Author.Id && w.IsActive);
-                if (e.Guild == null && MMEntry != null)
+                if (e.Guild == null && MMEntry != null &&(e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}modmail")||e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}mm")))
                 {
                     DiscordGuild Guild = Client.Guilds.FirstOrDefault(w=>w.Value.Id == (ulong)MMEntry.Server_ID).Value;
                     DiscordChannel ModMailChannel = Guild.GetChannel((ulong)DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);

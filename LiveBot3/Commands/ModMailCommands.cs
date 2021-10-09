@@ -76,7 +76,7 @@ namespace LiveBot.Commands
 
                         DBLists.InsertModMail(newEntry);
                         await ctx.RespondAsync($"**----------------------------------------------------**\n" +
-                            $"Modmail entry **open** with `{serverName.ToLower()}`. Continue to write as you would normaly ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
+                            $"Modmail entry **open** with `{serverName.ToLower()}`. Continue to write as you would normally ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
                         DiscordChannel MMChannel = Guild.GetChannel((ulong)ModMailServers.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
                         DiscordEmbedBuilder ModeratorEmbed = new()
                         {
@@ -86,7 +86,8 @@ namespace LiveBot.Commands
                                 IconUrl = ctx.User.AvatarUrl
                             },
                             Title = $"[NEW] Mod Mail created by {ctx.User.Username}.",
-                            Color = new DiscordColor(colorID)
+                            Color = new DiscordColor(colorID),
+                            Description = ctx.Message.Content
                         };
                         await MMChannel.SendMessageAsync(embed: ModeratorEmbed);
                         Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"New Mod Mail entry created by {ctx.User.Username}({ctx.User.Id}) for {serverName}");
@@ -171,7 +172,7 @@ namespace LiveBot.Commands
             }
             else
             {
-                await Automation.ModMail.CloseModMail(modMail, ctx.User, "[CLOSED] Mod Mail closed by the user", "**Mod Mail closed!\n----------------------------------------------------**");
+                await Automation.ModMail.CloseModMail(modMail, ctx.User, "Mod Mail closed by the user", "**Mod Mail closed!\n----------------------------------------------------**");
                 Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"Mod mail entry #{modMail.ID} closed by the user");
             }
         }
@@ -212,7 +213,7 @@ namespace LiveBot.Commands
             ServerSettings SSettings = DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id);
             if (SSettings.ModMailID != 0)
             {
-                string DMMessage = $"You are recieveing a Moderator DM from {ctx.Guild.Name} Discord\n{ctx.User.Username} - {text}";
+                string DMMessage = $"You are receiving a Moderator DM from {ctx.Guild.Name} Discord\n{ctx.User.Username} - {text}";
                 bool ErrorCheck = false;
                 try
                 {
