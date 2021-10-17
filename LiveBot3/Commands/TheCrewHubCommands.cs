@@ -167,7 +167,7 @@ namespace LiveBot.Commands
 
             string search = string.Empty;
 
-            TCHubJson.TceSummit JTCE = CustomMethod.GetTCEInfo(ctx);
+            TCHubJson.TceSummit JTCE = CustomMethod.GetTCEInfo(ctx.User.Id);
 
             TCHubJson.TceSummitSubs UserInfo = new();
 

@@ -566,9 +566,9 @@ namespace LiveBot
             }
         }
 
-        public static TCHubJson.TceSummit GetTCEInfo(CommandContext ctx)
+        public static TCHubJson.TceSummit GetTCEInfo(ulong UserID)
         {
-            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
+            string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{UserID}";
 
             TCHubJson.TceSummit JTCE;
             using (WebClient wc = new())

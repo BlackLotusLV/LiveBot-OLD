@@ -22,9 +22,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] Mod mail initialisation text shown in the correct order.\n" +
-                "[FIX] Mod mail user sided close command output string fixed.\n" +
-                "[Discord Error Mitigation] An error on discord side killed any bot that triggers the typing notification. From now on Live bot will not say it is writing something because discord is such a functional app without bugs and... sigh... ihml";
+            string changelog = "[NEW] Added Slash command support for summit, mysummit, topsummit. `/hub summit`";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

@@ -6,6 +6,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
 using LiveBot.Automation;
 using LiveBot.Json;
 using Microsoft.Extensions.Logging;
@@ -25,9 +26,10 @@ namespace LiveBot
     {
         public static DiscordClient Client { get; private set; }
         public InteractivityExtension Interactivity { get; private set; }
+        public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20211004_A";
+        public readonly static string BotVersion = $"20211017_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -73,7 +75,6 @@ namespace LiveBot
             Fonts.Install("Assets/Fonts/RobotoMono-Bold.ttf");
             Fonts.Install("Assets/Fonts/RobotoMono-Italic.ttf");
             Fonts.Install("Assets/Fonts/RobotoMono-Regular.ttf");
-
             var json = string.Empty;
             using (var sr = new StreamReader(File.OpenRead("Config.json"), new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
@@ -120,6 +121,8 @@ namespace LiveBot
                 CaseSensitive = false,
                 IgnoreExtraArguments = true
             };
+
+            this.Slash = Client.UseSlashCommands();
             this.Commands = Client.UseCommandsNext(ccfg);
 
             this.Commands.CommandExecuted += this.Commands_CommandExecuted;
@@ -131,6 +134,7 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.ModMailCommands>();
             this.Commands.RegisterCommands<Commands.ProfileCommands>();
             this.Commands.RegisterCommands<Commands.TheCrewHubCommands>();
+
 
             //*/
 
@@ -163,10 +167,14 @@ namespace LiveBot
                 Client.GuildMemberUpdated += MembershipScreening.AcceptRules;
 
                 Client.MessageCreated += ModMail.ModMailDM;
+                
+                this.Slash.RegisterCommands<SlashCommands.SlashTheCrewHubCommands>(150283740172517376);
             }
             else
             {
                 Console.WriteLine($"Running test build!");
+
+                this.Slash.RegisterCommands<SlashCommands.SlashTheCrewHubCommands>(282478449539678210);
             }
             DiscordActivity BotActivity = new($"DM {CFGJson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
