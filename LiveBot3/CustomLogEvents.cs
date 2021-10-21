@@ -8,6 +8,10 @@ namespace LiveBot
         public static EventId CommandExecuted { get; } = new EventId(201, "CMDExecuted");
         public static EventId CommandError { get; } = new EventId(202, "CMDError");
         public static EventId ClientError { get; } = new EventId(202, "ClientError");
+        public static EventId SlashExecuted { get; } = new EventId(203, "SlashExecuted");
+        public static EventId SlashErrored { get; } = new EventId(204, "SlashErrored");
+        public static EventId ContextMenuExecuted { get; } = new EventId(205, "ContextMenuExecuted");
+        public static EventId ContextMenuErrored { get; } = new EventId(206, "ContextMenuErrored");
         public static EventId POSTGRESQL { get; } = new EventId(300, "PSQL");
         public static EventId TableLoaded { get; } = new EventId(301, "TableLoaded");
         public static EventId TCHub { get; } = new EventId(400, "TCHub");

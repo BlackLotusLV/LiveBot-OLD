@@ -7,6 +7,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.EventArgs;
 using LiveBot.Automation;
 using LiveBot.Json;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace LiveBot
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20211019_A";
+        public readonly static string BotVersion = $"20211020_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -127,6 +128,11 @@ namespace LiveBot
 
             this.Commands.CommandExecuted += this.Commands_CommandExecuted;
             this.Commands.CommandErrored += this.Commands_CommandErrored;
+
+            this.Slash.SlashCommandExecuted += this.Slash_Commands_CommandExecuted;
+            this.Slash.SlashCommandErrored += this.Slash_Commands_CommandErrored;
+            this.Slash.ContextMenuExecuted += this.Context_Menu_Executed;
+            this.Slash.ContextMenuErrored += this.Context_Menu_Errored;
 
             this.Commands.RegisterCommands<Commands.UngroupedCommands>();
             this.Commands.RegisterCommands<Commands.AdminCommands>();
@@ -285,6 +291,29 @@ namespace LiveBot
                 DiscordMessage errorMSG = await e.Context.RespondAsync(string.Empty, embed: embed);
                 await Task.Delay(10000).ContinueWith(t => errorMSG.DeleteAsync());
             }
+        }
+
+        private Task Slash_Commands_CommandExecuted(SlashCommandsExtension ext, SlashCommandExecutedEventArgs e)
+        {
+            Client.Logger.LogInformation(CustomLogEvents.SlashExecuted, $"{e.Context.User.Username} successfully executed '{e.Context.CommandName}' command");
+            return Task.CompletedTask;
+        }
+
+        private Task Slash_Commands_CommandErrored(SlashCommandsExtension ext, SlashCommandErrorEventArgs e)
+        {
+            Client.Logger.LogError(CustomLogEvents.SlashErrored, e.Exception, $"{e.Context.User.Username} tried executing '{e.Context?.CommandName ?? "<unknown command>"}' but it errored");
+            return Task.CompletedTask;
+        }
+
+        private Task Context_Menu_Executed(SlashCommandsExtension ext, ContextMenuExecutedEventArgs e)
+        {
+            Client.Logger.LogInformation(CustomLogEvents.ContextMenuExecuted, $"{e.Context.User.Username} Successfully executed '{e.Context.CommandName}' command");
+            return Task.CompletedTask;
+        }
+        private Task Context_Menu_Errored(SlashCommandsExtension ext, ContextMenuErrorEventArgs e)
+        {
+            Client.Logger.LogError(CustomLogEvents.SlashErrored, e.Exception, $"{e.Context.User.Username} tried executing '{e.Context?.CommandName ?? "<unknown command>"}' but it errored");
+            return Task.CompletedTask;
         }
     }
 }
