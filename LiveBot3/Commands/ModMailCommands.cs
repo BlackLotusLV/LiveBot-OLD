@@ -74,7 +74,7 @@ namespace LiveBot.Commands
                             HasChatted = false
                         };
 
-                        DBLists.InsertModMail(newEntry);
+                        long EntryID = DBLists.InsertModMailGetID(newEntry);
                         await ctx.RespondAsync($"**----------------------------------------------------**\n" +
                             $"Modmail entry **open** with `{serverName.ToLower()}`. Continue to write as you would normally ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
                         DiscordChannel MMChannel = Guild.GetChannel((ulong)ModMailServers.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
@@ -85,11 +85,16 @@ namespace LiveBot.Commands
                                 Name = $"{ctx.User.Username} ({ctx.User.Id})",
                                 IconUrl = ctx.User.AvatarUrl
                             },
-                            Title = $"[NEW] Mod Mail created by {ctx.User.Username}.",
+                            Title = $"[NEW] #{EntryID} Mod Mail created by {ctx.User.Username}.",
                             Color = new DiscordColor(colorID),
                             Description = ctx.Message.Content
                         };
-                        await MMChannel.SendMessageAsync(embed: ModeratorEmbed);
+
+                        DiscordButtonComponent CloseButton = new(ButtonStyle.Danger, $"close{EntryID}", "Close", false, new DiscordComponentEmoji("✖️"));
+                        await new DiscordMessageBuilder()
+                            .AddComponents(CloseButton)
+                            .WithEmbed(ModeratorEmbed)
+                            .SendAsync(MMChannel);
                         Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"New Mod Mail entry created by {ctx.User.Username}({ctx.User.Id}) for {serverName}");
                     }
                     else

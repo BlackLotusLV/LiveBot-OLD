@@ -1,6 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using LiveBot.Json;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -250,7 +251,7 @@ namespace LiveBot
             return Missions.ToString();
         }
 
-        public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg)
+        public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg, InteractionContext ctx = null)
         {
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id == f.Server_ID && user.Id == f.User_ID);
             DB.ServerSettings ServerSettings = DB.DBLists.ServerSettings.FirstOrDefault(f => server.Id == f.ID_Server);
@@ -370,12 +371,27 @@ namespace LiveBot
 
                 await modlog.SendMessageAsync(modinfo, embed: embed);
 
-                DiscordMessage info = await channel.SendMessageAsync($"{user.Username}, Has been warned!");
-                await Task.Delay(10000).ContinueWith(t => info.DeleteAsync());
+                if (ctx == null)
+                {
+                    DiscordMessage info = await channel.SendMessageAsync($"{user.Username}, Has been warned!");
+                    await Task.Delay(10000).ContinueWith(t => info.DeleteAsync());
+                }
+                else
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"{user.Username}, Has been warned!"));
+                    await Task.Delay(10000).ContinueWith(t => ctx.DeleteResponseAsync());
+                }
             }
             else
             {
-                await channel.SendMessageAsync("This server has not set up this feature!");
+                if (ctx == null)
+                {
+                    await channel.SendMessageAsync("This server has not set up this feature!");
+                }
+                else
+                {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("This server has not set up this feature!"));
+                }
             }
         }
 

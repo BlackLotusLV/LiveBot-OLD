@@ -22,7 +22,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Added Slash command support for summit, mysummit, topsummit. `/hub summit`";
+            string changelog = "[NEW] Mod mail created message now shows the ID of the mod mail\n" +
+                "[NEW] Mod Mail on moderator side now has a close button. Don't need to use command.\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

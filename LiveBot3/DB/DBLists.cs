@@ -659,6 +659,15 @@ namespace LiveBot.DB
             LoadModMail();
         }
 
+        public static long InsertModMailGetID(ModMail o)
+        {
+            using var ctx = new ModMailContext();
+            ctx.ModMail.Add(o);
+            ctx.SaveChanges();
+            LoadModMail();
+            return o.ID;
+        }
+
         public static void InsertRoleTagSettings(RoleTagSettings o)
         {
             using var ctx = new RoleTagSettingsContext();

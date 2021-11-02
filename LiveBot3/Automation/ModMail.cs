@@ -42,7 +42,7 @@ namespace LiveBot.Automation
                     }
 
                     await ModMailChannel.SendMessageAsync(embed: embed);
-                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName(Client, ":white_check_mark:"));
+                    //await e.Message.CreateReactionAsync(DiscordEmoji.FromName(Client, ":white_check_mark:"));
 
                     MMEntry.HasChatted = true;
                     MMEntry.LastMSGTime = DateTime.Now;
@@ -95,6 +95,23 @@ namespace LiveBot.Automation
             }
             DB.DBLists.UpdateModMail(ModMail);
             await ModMailChannel.SendMessageAsync(DMNotif, embed: embed);
+        }
+
+        public static async Task ModMailButton(object Client, InteractionCreateEventArgs e)
+        {
+            if (e.Interaction.Type == InteractionType.Component && !e.Interaction.User.IsBot && e.Interaction.Guild != null && e.Interaction.Data.CustomId.Contains("close"))
+            {
+                var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.Server_ID == e.Interaction.Guild.Id && w.IsActive && $"{w.ID}" == e.Interaction.Data.CustomId.Replace("close",""));
+                if (MMEntry !=null)
+                {
+                    await CloseModMail(
+                        MMEntry,
+                        e.Interaction.User,
+                        $" Mod Mail closed by {e.Interaction.User.Username}",
+                        $"**Mod Mail closed by {e.Interaction.User.Username}!\n----------------------------------------------------**");
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                }
+            }
         }
     }
 }

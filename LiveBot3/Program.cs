@@ -30,7 +30,7 @@ namespace LiveBot
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20211020_A";
+        public readonly static string BotVersion = $"20211030_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -173,14 +173,18 @@ namespace LiveBot
                 Client.GuildMemberUpdated += MembershipScreening.AcceptRules;
 
                 Client.MessageCreated += ModMail.ModMailDM;
-                
+                Client.ComponentInteractionCreated += ModMail.ModMailButton;
+
                 this.Slash.RegisterCommands<SlashCommands.SlashTheCrewHubCommands>(150283740172517376);
+                this.Slash.RegisterCommands<SlashCommands.SlashAdminCommands>(150283740172517376);
             }
             else
             {
                 Console.WriteLine($"Running test build!");
-
                 this.Slash.RegisterCommands<SlashCommands.SlashTheCrewHubCommands>(282478449539678210);
+                this.Slash.RegisterCommands<SlashCommands.SlashAdminCommands>(282478449539678210);
+
+                Client.ComponentInteractionCreated += ModMail.ModMailButton;
             }
             DiscordActivity BotActivity = new($"DM {CFGJson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
@@ -199,11 +203,14 @@ namespace LiveBot
                 {
                     await Task.Delay(100);
                 }
-                StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
-                ActiveRoleTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
-                HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
-                MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
-                ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
+                if (!TestBuild)
+                {
+                    StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
+                    ActiveRoleTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+                    HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
+                    MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
+                    ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
+                }
             });
             return Task.CompletedTask;
         }
