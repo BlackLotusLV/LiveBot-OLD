@@ -9,6 +9,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using LiveBot.Json;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -50,7 +51,15 @@ namespace LiveBot.SlashCommands
                     platforms = 3;
                 }
 
-                SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
+                try
+                {
+                    SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
+                }
+                catch (WebException e)
+                {
+                    Program.Client.Logger.LogError(CustomLogEvents.CommandError, e.Message, $"Summit logo download failed, substituting image.");
+                    SummitLogo = File.ReadAllBytes("Assets/Summit/summit_small");
+                }
 
                 endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
