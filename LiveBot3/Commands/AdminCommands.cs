@@ -16,14 +16,6 @@ namespace LiveBot.Commands
     [RequirePermissions(Permissions.KickMembers)]
     public class AdminCommands : BaseCommandModule
     {
-        [Command("testdm")]
-        public async Task TestAltDM(CommandContext ctx, DiscordMember member)
-        {
-            Console.WriteLine(member.Id);
-            Console.WriteLine(member.Username);
-            DiscordChannel channel = await member.CreateDmChannelAsync();
-            await channel.SendMessageAsync("Pong");
-        }
         [Command("uptime")] //uptime command
         [Aliases("live")]
         public async Task Uptime(CommandContext ctx)
