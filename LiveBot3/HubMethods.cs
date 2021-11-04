@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace LiveBot
 {
@@ -158,17 +159,27 @@ namespace LiveBot
                 TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{Program.JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{Event.ID}?profile={UserInfo.Profile_ID}"));
                 string
                     EventTitle = (NameIDLookup(ThisEventNameID)),
-                    ActivityResult = $"Score: {Activity.Score}";
+                    ActivityResult = $"Score: {Activity.Score}",
+                    VehicleInfo = string.Empty;
                 TCHubJson.SummitLeaderboardEntries Entries = leaderboard.Entries.FirstOrDefault(w => w.Profile_ID == UserInfo.Profile_ID);
-                TCHubJson.Model Model = Program.TCHub.Models.FirstOrDefault(w => w.ID == Entries.Vehicle_ID);
-                TCHubJson.Brand Brand;
-                if (Model != null)
+                if (Event.Constraint_Text_ID.Contains("60871"))
                 {
-                    Brand = Program.TCHub.Brands.FirstOrDefault(w => w.ID == Model.Brand_ID);
+                    VehicleInfo = "Forced Vehicle";
                 }
                 else
                 {
-                    Brand = null;
+
+                    TCHubJson.Model Model = Program.TCHub.Models.FirstOrDefault(w => w.ID == Entries.Vehicle_ID);
+                    TCHubJson.Brand Brand;
+                    if (Model != null)
+                    {
+                        Brand = Program.TCHub.Brands.FirstOrDefault(w => w.ID == Model.Brand_ID);
+                    }
+                    else
+                    {
+                        Brand = null;
+                    }
+                    VehicleInfo = $"{NameIDLookup(Brand != null ? Brand.Text_ID : "not found")} - {NameIDLookup(Model != null ? Model.Text_ID : "not found")}";
                 }
                 if (leaderboard.Score_Format == "time")
                 {
@@ -194,8 +205,25 @@ namespace LiveBot
                     .DrawText(new DrawingOptions { TextOptions = AllignTopLeft }, $"Rank: {Activity.Rank + 1}", Basefont, Color.White, new PointF(5, EventImage.Height - 22))
                     .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, ActivityResult, Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 42))
                     .DrawText(new DrawingOptions { TextOptions = AllignTopRight }, $"Points: {Activity.Points}", Basefont, Color.White, new PointF(EventImage.Width - 5, EventImage.Height - 22))
-                    .DrawText(new DrawingOptions { TextOptions = EventTitleOptions }, $"{NameIDLookup(Brand != null ? Brand.Text_ID : "not found")} - {NameIDLookup(Model != null ? Model.Text_ID : "not found")}", VehicleFont, Color.White, new PointF(5, EventImage.Height - 62))
+                    .DrawText(new DrawingOptions { TextOptions = EventTitleOptions }, VehicleInfo, VehicleFont, Color.White, new PointF(5, EventImage.Height - 62))
                     );
+                Parallel.For(0, Event.Modifiers.Length, (i, state) =>
+                {
+                    Image<Rgba32> ModifierImg = new(1, 1);
+                    try
+                    {
+                        ModifierImg = Image.Load<Rgba32>($"Assets/Summit/Modifiers/{Event.Modifiers[i]}.png");
+                    }
+                    catch (Exception)
+                    {
+                        ModifierImg = Image.Load<Rgba32>($"Assets/Summit/Modifiers/unknown.png");
+                    }
+                    Image<Rgba32> ModifierBackground = new(ModifierImg.Width, ModifierImg.Height);
+                    ModifierBackground.Mutate(ctx => ctx.Fill(Color.Black));
+                    EventImage.Mutate(ctx => ctx
+                    .DrawImage(ModifierBackground, new Point(i * ModifierImg.Width + 10, TitleBar.Height + 10), 0.7f)
+                    .DrawImage(ModifierImg, new Point(i * ModifierImg.Width + 10, TitleBar.Height + 10), 1f));
+                });
             }
             else
             {

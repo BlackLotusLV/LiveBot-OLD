@@ -32,13 +32,12 @@ namespace LiveBot.SlashCommands
             float outlineSize = 0.7f;
             byte[] SummitLogo;
             int[,] TierCutoff = new int[,] { { 4000, 8000, 15000 }, { 11000, 21000, 41000 }, { 2100, 4200, 8500 }, { 100, 200, 400 } };
-            DateTime endtime;
+            List<TCHubJson.Summit> JSummit = Program.JSummit;
 
             int platforms = 4;
 
             using (WebClient wc = new())
             {
-                List<TCHubJson.Summit> JSummit = Program.JSummit;
                 PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
@@ -60,8 +59,6 @@ namespace LiveBot.SlashCommands
                     Program.Client.Logger.LogError(CustomLogEvents.CommandError, e.Message, $"Summit logo download failed, substituting image.");
                     SummitLogo = File.ReadAllBytes("Assets/Summit/summit_small");
                 }
-
-                endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
             }
             TCHubJson.Rank[] Events = Array.Empty<TCHubJson.Rank>();
             if (platforms == 4)
@@ -142,11 +139,10 @@ namespace LiveBot.SlashCommands
                 });
                 BaseImg.Save(imageLoc);
             }
-            TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             DiscordFollowupMessageBuilder msgBuilder = new()
             {
-                Content = $"Summit tier lists.\n *Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes.*"
+                Content = $"Summit tier lists.\n *Summit ends on <t:{JSummit[0].End_Date}>.*"
             };
             msgBuilder.AddFile(upFile);
             msgBuilder.AddMention(new UserMention());
@@ -163,8 +159,6 @@ namespace LiveBot.SlashCommands
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
 
             bool SendImage = false;
-
-            DateTime endtime;
 
             string search = string.Empty;
 
@@ -228,14 +222,11 @@ namespace LiveBot.SlashCommands
                 using (WebClient wc = new())
                 {
                     SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
-
-                    endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
                 }
                 TCHubJson.Rank Events = JsonConvert.DeserializeObject<TCHubJson.Rank>(SJson);
 
                 if (Events.Points != 0)
                 {
-                    TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
 
                     int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
                     Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
@@ -298,7 +289,7 @@ namespace LiveBot.SlashCommands
                     }
                     BaseImage.Save(imageLoc);
 
-                    OutMessage = $"{ctx.User.Mention}, Here are your summit event stats for {(UserInfo.Platform == "x1" ? "Xbox" : UserInfo.Platform == "ps4" ? "PlayStation" : UserInfo.Platform == "stadia" ? "Stadia" : "PC")}.\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+                    OutMessage = $"{ctx.User.Mention}, Here are your summit event stats for {(UserInfo.Platform == "x1" ? "Xbox" : UserInfo.Platform == "ps4" ? "PlayStation" : UserInfo.Platform == "stadia" ? "Stadia" : "PC")}.\n*Summit ends on <t:{JSummit[0].End_Date}>. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
                     SendImage = true;
                 }
                 else
@@ -339,8 +330,6 @@ namespace LiveBot.SlashCommands
 
             bool alleventscompleted = true;
 
-            DateTime endtime;
-
             switch (platform)
             {
                 case Platforms.pc:
@@ -359,8 +348,6 @@ namespace LiveBot.SlashCommands
 
             List<TCHubJson.Summit> JSummit = Program.JSummit;
             byte[] EventLogoBit;
-
-            endtime = CustomMethod.EpochConverter(JSummit[0].End_Date * 1000);
 
             int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
 
@@ -391,9 +378,8 @@ namespace LiveBot.SlashCommands
             {
                 TotalPoints += 100000;
             }
-            TimeSpan timeleft = endtime - DateTime.Now.ToUniversalTime();
             BaseImage.Save(imageLoc);
-            OutMessage = $"{ctx.User.Mention}, Here are the top summit scores for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : search == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Ends in {timeleft.Days} days, {timeleft.Hours} hours, {timeleft.Minutes} minutes. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
+            OutMessage = $"{ctx.User.Mention}, Here are the top summit scores for {(search == "x1" ? "Xbox" : search == "ps4" ? "PlayStation" : search == "stadia" ? "Stadia" : "PC")}. Total event points: **{TotalPoints}**\n*Summit ends on <t:{JSummit[0].End_Date}>. Scoreboard powered by The Crew Hub and The Crew Exchange!*";
 
             using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
             var msgBuilder = new DiscordFollowupMessageBuilder

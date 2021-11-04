@@ -22,8 +22,10 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Mod mail created message now shows the ID of the mod mail\n" +
-                "[NEW] Mod Mail on moderator side now has a close button. Don't need to use command.\n" +
+            string changelog = "[FIX] summit board command breaking due to no image provided.\n" +
+                "[FIX] My summit/topsummit will indicate if a vehicle is forced instead of not found\n" +
+                "[NEW] my summit/top summit now shows event modifiers (snow, rain, night, ect.)\n" +
+                "[NEW] my summit/top summit uses built in discord timestamp, shows when event ends in your local time\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

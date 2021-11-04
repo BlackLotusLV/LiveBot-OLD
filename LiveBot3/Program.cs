@@ -30,7 +30,7 @@ namespace LiveBot
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20211030_A";
+        public readonly static string BotVersion = $"20211103_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -183,8 +183,6 @@ namespace LiveBot
                 Console.WriteLine($"Running test build!");
                 this.Slash.RegisterCommands<SlashCommands.SlashTheCrewHubCommands>(282478449539678210);
                 this.Slash.RegisterCommands<SlashCommands.SlashAdminCommands>(282478449539678210);
-
-                Client.ComponentInteractionCreated += ModMail.ModMailButton;
             }
             DiscordActivity BotActivity = new($"DM {CFGJson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
