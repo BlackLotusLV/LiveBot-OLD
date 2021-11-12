@@ -1,13 +1,6 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace LiveBot.Commands
 {
@@ -53,7 +46,7 @@ namespace LiveBot.Commands
         [Aliases("editmsg")]
         public async Task EditMessage(CommandContext ctx, DiscordMessage message, [RemainingText] string text)
         {
-            await message.ModifyAsync(text.Replace("`",""));
+            await message.ModifyAsync(text.Replace("`", ""));
             await ctx.Message.DeleteAsync();
         }
 
@@ -102,7 +95,7 @@ namespace LiveBot.Commands
         [Command("updatehub")]
         public async Task UpdateHub(CommandContext ctx)
         {
-            HubMethods.UpdateHubInfo(true);
+            await HubMethods.UpdateHubInfo(true);
             DiscordMessage msg = await ctx.RespondAsync("TCHub info has been force updated.");
             await Task.Delay(10000).ContinueWith(f => msg.DeleteAsync());
         }
@@ -138,9 +131,9 @@ namespace LiveBot.Commands
             if (ctx.Message.Attachments != null)
             {
                 byte[] bg;
-                using (WebClient client = new())
+                using (HttpClient client = new())
                 {
-                    bg = client.DownloadData(ctx.Message.Attachments[0].Url);
+                    bg = await client.GetByteArrayAsync(ctx.Message.Attachments[0].Url);
                 }
                 DB.DBLists.InsertBackgroundImage(new DB.BackgroundImage { Name = name, Price = price, Image = bg });
                 await ctx.RespondAsync("Image succesfully uploaded!");
@@ -164,9 +157,9 @@ namespace LiveBot.Commands
                 if (ctx.Message.Attachments != null)
                 {
                     byte[] bg;
-                    using (WebClient client = new())
+                    using (HttpClient client = new())
                     {
-                        bg = client.DownloadData(ctx.Message.Attachments[0].Url);
+                        bg = await client.GetByteArrayAsync(ctx.Message.Attachments[0].Url);
                     }
                     imgEntry.Image = bg;
 

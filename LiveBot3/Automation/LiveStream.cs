@@ -11,7 +11,7 @@ namespace LiveBot.Automation
     {
         public static List<LiveStreamer> LiveStreamerList { get; set; } = new List<LiveStreamer>();
 
-        public readonly static int StreamCheckDelay = 5;
+        public static readonly int StreamCheckDelay = 5;
 
         public static async Task Stream_Notification(object Client, PresenceUpdateEventArgs e)
         {

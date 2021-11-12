@@ -1,19 +1,13 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
+using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace LiveBot.Commands
 {
@@ -101,7 +95,7 @@ namespace LiveBot.Commands
                 FBarLenght = 100 - (100 / FollowersBetweenLevels) * FollowersToNextLevel
                 ;
 
-            byte[] ProfilePicture = new WebClient().DownloadData(Member.AvatarUrl);
+            byte[] ProfilePicture = await new HttpClient().GetByteArrayAsync(Member.AvatarUrl);
             using Image<Rgba32>
                 Base = new(580, 580),
                 pfp = Image.Load<Rgba32>(ProfilePicture),

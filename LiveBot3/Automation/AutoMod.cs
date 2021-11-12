@@ -14,7 +14,7 @@ namespace LiveBot.Automation
 {
     internal static class AutoMod
     {
-        private readonly static ulong[] MediaOnlyChannelIDs = new ulong[] { 191567033064751104, 447134224349134848, 404613175024025601, 195095947871518721, 469920292374970369 };
+        private static readonly ulong[] MediaOnlyChannelIDs = new ulong[] { 191567033064751104, 447134224349134848, 404613175024025601, 195095947871518721, 469920292374970369 };
 
 #pragma warning disable IDE0044 // Add readonly modifier
         private static List<DiscordMessage> MessageList = new();
@@ -305,7 +305,7 @@ namespace LiveBot.Automation
             _ = Task.Run(async () =>
             {
                 var wkb_Settings = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == e.Guild.Id);
-                DiscordGuild Guild = Client.Guilds.FirstOrDefault(w=>w.Key==(Convert.ToUInt64(wkb_Settings.ID_Server))).Value;
+                DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Key == (Convert.ToUInt64(wkb_Settings.ID_Server))).Value;
                 if (wkb_Settings.WKB_Log != 0)
                 {
                     int timesRun = 0;
@@ -314,13 +314,13 @@ namespace LiveBot.Automation
                     DiscordAuditLogBanEntry banEntry = entries.Select(entry => entry as DiscordAuditLogBanEntry).FirstOrDefault(entry => entry.Target == e.Member);
                     while (banEntry == null && timesRun < 15)
                     {
-                        await Task.Delay(2000); 
+                        await Task.Delay(2000);
                         entries = await e.Guild.GetAuditLogsAsync(5, null, AuditLogActionType.Ban);
                         banEntry = entries.Select(entry => entry as DiscordAuditLogBanEntry).FirstOrDefault(entry => entry.Target == e.Member);
                         timesRun++;
-                        Console.WriteLine($"--Trying check again {timesRun}. {(banEntry==null?"Empty":"Found")}");
+                        Console.WriteLine($"--Trying check again {timesRun}. {(banEntry == null ? "Empty" : "Found")}");
                     }
-                    Console.WriteLine($"Ban reason search {(banEntry==null?"Failed":"Succeeded")}");
+                    Console.WriteLine($"Ban reason search {(banEntry == null ? "Failed" : "Succeeded")}");
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings.WKB_Log));
                     DiscordEmbedBuilder embed = new()
                     {

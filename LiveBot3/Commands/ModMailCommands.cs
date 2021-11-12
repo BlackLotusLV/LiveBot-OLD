@@ -35,7 +35,7 @@ namespace LiveBot.Commands
                 GuildNameString.AppendLine("The mod-mail is only available on certain servers, here are the server names you can use:");
                 foreach (var item in ModMailServers)
                 {
-                    DiscordGuild Guild = ctx.Client.Guilds.FirstOrDefault(w=>w.Key==(ulong)item.ID_Server).Value;
+                    DiscordGuild Guild = ctx.Client.Guilds.FirstOrDefault(w => w.Key == (ulong)item.ID_Server).Value;
                     if (Guild != null)
                     {
                         GuildNameDict.Add(Guild, Guild.Name.Replace(' ', '-').ToLower());

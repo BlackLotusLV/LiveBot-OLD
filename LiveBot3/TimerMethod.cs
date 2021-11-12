@@ -28,7 +28,7 @@ namespace LiveBot
             }
         }
 
-        public async static Task ActivatedRolesCheck(List<ActivateRolesTimer> list)
+        public static async Task ActivatedRolesCheck(List<ActivateRolesTimer> list)
         {
             try
             {

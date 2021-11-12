@@ -1,17 +1,9 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.SlashCommands;
 using LiveBot.Json;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace LiveBot
 {
@@ -582,16 +574,16 @@ namespace LiveBot
             }
         }
 
-        public static TCHubJson.TceSummit GetTCEInfo(ulong UserID)
+        public static async Task<TCHubJson.TceSummit> GetTCEInfo(ulong UserID)
         {
             string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{UserID}";
 
             TCHubJson.TceSummit JTCE;
-            using (WebClient wc = new())
+            using (HttpClient wc = new())
             {
                 try
                 {
-                    string Jdown = wc.DownloadString(link);
+                    string Jdown = await wc.GetStringAsync(link);
                     JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
                 }
                 catch (Exception)

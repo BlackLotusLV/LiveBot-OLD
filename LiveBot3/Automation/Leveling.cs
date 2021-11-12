@@ -12,7 +12,7 @@ namespace LiveBot.Automation
         private static List<LevelTimer> GlobalLevelTimer { get; set; } = new List<LevelTimer>();
         private static List<ServerLevelTimer> ServerLevelTimer { get; set; } = new List<ServerLevelTimer>();
 
-        private readonly static int
+        private static readonly int
             MinimalSmallInterval = 10,
             MaximalSmallInterval = 30,
             MinimalBigInterval = 55,

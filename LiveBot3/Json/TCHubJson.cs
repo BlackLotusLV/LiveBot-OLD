@@ -88,6 +88,7 @@ namespace LiveBot.Json
 
             [JsonProperty("modifiers")]
             public string[] Modifiers { get; private set; }
+            public byte[] Image_Byte { get; set; }
         }
 
         public class Reward

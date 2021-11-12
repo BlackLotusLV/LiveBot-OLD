@@ -1,16 +1,8 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace LiveBot.Automation
+﻿namespace LiveBot.Automation
 {
     internal static class ModMail
     {
-        public readonly static int TimeoutMinutes = 120;
+        public static readonly int TimeoutMinutes = 120;
 
         public static async Task ModMailDM(DiscordClient Client, MessageCreateEventArgs e)
         {
@@ -42,7 +34,6 @@ namespace LiveBot.Automation
                     }
 
                     await ModMailChannel.SendMessageAsync(embed: embed);
-                    //await e.Message.CreateReactionAsync(DiscordEmoji.FromName(Client, ":white_check_mark:"));
 
                     MMEntry.HasChatted = true;
                     MMEntry.LastMSGTime = DateTime.Now;
@@ -54,7 +45,7 @@ namespace LiveBot.Automation
             await Task.Delay(1);
         }
 
-        public async static Task ModMailCloser()
+        public static async Task ModMailCloser()
         {
             var TimedOutEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.IsActive && (DateTime.Now - w.LastMSGTime) > TimeSpan.FromMinutes(TimeoutMinutes));
             if (TimedOutEntry != null)
@@ -68,7 +59,7 @@ namespace LiveBot.Automation
             }
         }
 
-        public async static Task CloseModMail(DB.ModMail ModMail, DiscordUser Closer, string ClosingText, string ClosingTextToUser)
+        public static async Task CloseModMail(DB.ModMail ModMail, DiscordUser Closer, string ClosingText, string ClosingTextToUser)
         {
             ModMail.IsActive = false;
             string DMNotif = string.Empty;
@@ -101,8 +92,8 @@ namespace LiveBot.Automation
         {
             if (e.Interaction.Type == InteractionType.Component && !e.Interaction.User.IsBot && e.Interaction.Guild != null && e.Interaction.Data.CustomId.Contains("close"))
             {
-                var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.Server_ID == e.Interaction.Guild.Id && w.IsActive && $"{w.ID}" == e.Interaction.Data.CustomId.Replace("close",""));
-                if (MMEntry !=null)
+                var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.Server_ID == e.Interaction.Guild.Id && w.IsActive && $"{w.ID}" == e.Interaction.Data.CustomId.Replace("close", ""));
+                if (MMEntry != null)
                 {
                     await CloseModMail(
                         MMEntry,

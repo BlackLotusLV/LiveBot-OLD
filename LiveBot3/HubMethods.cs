@@ -1,35 +1,30 @@
 ﻿using LiveBot.Json;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace LiveBot
 {
     internal static class HubMethods
     {
         private static DateTime TCHubLastUpdated;
-        public static byte[][] EventLogoBitArr { get; set; } = new byte[9][];
         public static byte[,][] RewardsImageBitArr { get; set; } = new byte[4, 4][];
 
-        public static void UpdateHubInfo(bool forced = false)
+        public static async Task UpdateHubInfo(bool forced = false)
         {
             List<TCHubJson.Summit> JSummit;
             DateTime endtime;
-            using WebClient wc = new();
+            using HttpClient wc = new();
             bool Connected = true;
             string JSummitString = string.Empty;
             try
             {
-                JSummitString = wc.DownloadString(Program.TCHubJson.Summit);
+                JSummitString = await wc.GetStringAsync(Program.TCHubJson.Summit);
             }
             catch (WebException e)
             {
@@ -50,19 +45,18 @@ namespace LiveBot
                 if (endtime != TCHubLastUpdated || forced)
                 {
                     TCHubLastUpdated = endtime;
-                    Program.TCHubDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(wc.DownloadString(Program.TCHubJson.Dictionary));
+                    Program.TCHubDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(await wc.GetStringAsync(Program.TCHubJson.Dictionary));
                     Program.JSummit = JSummit;
-                    Program.TCHub = JsonConvert.DeserializeObject<TCHubJson.TCHub>(wc.DownloadString(Program.TCHubJson.GameData));
-                    for (int i = 0; i < JSummit[0].Events.Length; i++)
+                    Program.TCHub = JsonConvert.DeserializeObject<TCHubJson.TCHub>(await wc.GetStringAsync(Program.TCHubJson.GameData));
+                    await Parallel.ForEachAsync(JSummit[0].Events, new ParallelOptions(), async (Event, Token) =>
                     {
-                        var ThisEvent = JSummit[0].Events[i];
-                        EventLogoBitArr[i] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{ThisEvent.Img_Path}");
-                    }
+                        JSummit[0].Events.FirstOrDefault(w => w.ID == Event.ID).Image_Byte = await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{Event.Img_Path}");
+                    });
                     for (int i = 0; i < 4; i++)
                     {
                         for (int j = 0; j < JSummit[i].Rewards.Length; j++)
                         {
-                            RewardsImageBitArr[i, j] = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[i].Rewards[j].Img_Path}");
+                            RewardsImageBitArr[i, j] = await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[i].Rewards[j].Img_Path}");
                         }
                     }
                     Program.Client.Logger.LogInformation(CustomLogEvents.TCHub, $"Info downloaded for {JSummit[0].Summit_ID} summit.");
@@ -70,17 +64,17 @@ namespace LiveBot
             }
         }
 
-        public static void DownloadHubNews()
+        public static async Task DownloadHubNews()
         {
-            using WebClient wc = new();
-            wc.Headers.Add("Ubi-AppId", "dda77324-f9d6-44ea-9ecb-30e57b286f6d");
-            wc.Headers.Add("Ubi-localeCode", "us-en");
+            using HttpClient wc = new();
+            wc.DefaultRequestHeaders.Add("Ubi-AppId", "dda77324-f9d6-44ea-9ecb-30e57b286f6d");
+            wc.DefaultRequestHeaders.Add("Ubi-localeCode", "us-en");
             string NewsString = string.Empty;
             bool Connected = true;
 
             try
             {
-                NewsString = wc.DownloadString(Program.TCHubJson.News);
+                NewsString = await wc.GetStringAsync(Program.TCHubJson.News);
             }
             catch (WebException e)
             {
@@ -100,7 +94,7 @@ namespace LiveBot
             return HubText;
         }
 
-        public static Image<Rgba32> BuildEventImage(TCHubJson.Event Event, TCHubJson.Rank Rank, TCHubJson.TceSummitSubs UserInfo, byte[] EventImageBytes, bool isCorner = false, bool isSpecial = false)
+        public static async Task<Image<Rgba32>> BuildEventImage(TCHubJson.Event Event, TCHubJson.Rank Rank, TCHubJson.TceSummitSubs UserInfo, byte[] EventImageBytes, bool isCorner = false, bool isSpecial = false)
         {
             Image<Rgba32> EventImage = Image.Load<Rgba32>(EventImageBytes);
 
@@ -128,7 +122,7 @@ namespace LiveBot
             Font VehicleFont = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 11.5f);
             if (Activity != null)
             {
-                using WebClient wc = new();
+                using HttpClient wc = new();
                 TextOptions EventTitleOptions = new()
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -156,7 +150,7 @@ namespace LiveBot
                 {
                     ThisEventNameID = Program.TCHub.Skills.Where(w => w.ID == Event.ID).Select(s => s.Text_ID).FirstOrDefault();
                 }
-                TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{Program.JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{Event.ID}?profile={UserInfo.Profile_ID}"));
+                TCHubJson.SummitLeaderboard leaderboard = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{Program.JSummit[0].ID}/leaderboard/{UserInfo.Platform}/{Event.ID}?profile={UserInfo.Profile_ID}"));
                 string
                     EventTitle = (NameIDLookup(ThisEventNameID)),
                     ActivityResult = $"Score: {Activity.Score}",
@@ -168,7 +162,6 @@ namespace LiveBot
                 }
                 else
                 {
-
                     TCHubJson.Model Model = Program.TCHub.Models.FirstOrDefault(w => w.ID == Entries.Vehicle_ID);
                     TCHubJson.Brand Brand;
                     if (Model != null)
@@ -220,9 +213,10 @@ namespace LiveBot
                     }
                     Image<Rgba32> ModifierBackground = new(ModifierImg.Width, ModifierImg.Height);
                     ModifierBackground.Mutate(ctx => ctx.Fill(Color.Black));
+                    var modifierPoint = new Point(i * ModifierImg.Width + 20, TitleBar.Height + 10);
                     EventImage.Mutate(ctx => ctx
-                    .DrawImage(ModifierBackground, new Point(i * ModifierImg.Width + 10, TitleBar.Height + 10), 0.7f)
-                    .DrawImage(ModifierImg, new Point(i * ModifierImg.Width + 10, TitleBar.Height + 10), 1f));
+                    .DrawImage(ModifierBackground, modifierPoint, 0.7f)
+                    .DrawImage(ModifierImg, modifierPoint, 1f));
                 });
             }
             else

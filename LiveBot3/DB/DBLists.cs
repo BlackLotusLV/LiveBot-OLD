@@ -9,7 +9,7 @@ namespace LiveBot.DB
 {
     internal static class DBLists
     {
-        public readonly static int TableCount = 20;
+        public static readonly int TableCount = 20;
         public static int LoadedTableCount { get; set; } = 0;
 
         public static List<VehicleList> VehicleList { get; set; } = new(); //1

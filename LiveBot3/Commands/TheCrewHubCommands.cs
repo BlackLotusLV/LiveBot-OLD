@@ -1,24 +1,17 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
 using LiveBot.Json;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
+using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace LiveBot.Commands
 {
@@ -43,14 +36,14 @@ namespace LiveBot.Commands
 
             int platforms = 4;
 
-            using (WebClient wc = new())
+            using (HttpClient wc = new())
             {
-                PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                PCJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                XBJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                PSJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 try
                 {
-                    StadiaJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/stadia/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                    StadiaJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/stadia/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 }
                 catch (Exception)
                 {
@@ -59,14 +52,13 @@ namespace LiveBot.Commands
 
                 try
                 {
-                    SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
+                    SummitLogo =await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
                 }
                 catch (WebException e)
                 {
                     Program.Client.Logger.LogError(CustomLogEvents.CommandError, e.Message, $"Summit logo download failed, substituting image.");
                     SummitLogo = File.ReadAllBytes("Assets/Summit/summit_small");
                 }
-
             }
             TCHubJson.Rank[] Events = Array.Empty<TCHubJson.Rank>();
             if (platforms == 4)
@@ -162,17 +154,16 @@ namespace LiveBot.Commands
         public async Task MySummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
-            HubMethods.UpdateHubInfo();
+            await HubMethods.UpdateHubInfo();
 
             string OutMessage = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
 
             bool SendImage = false;
 
-
             string search = string.Empty;
 
-            TCHubJson.TceSummit JTCE = CustomMethod.GetTCEInfo(ctx.User.Id);
+            TCHubJson.TceSummit JTCE = await CustomMethod.GetTCEInfo(ctx.User.Id);
 
             TCHubJson.TceSummitSubs UserInfo = new();
 
@@ -284,15 +275,14 @@ namespace LiveBot.Commands
             {
                 string SJson;
                 List<TCHubJson.Summit> JSummit = Program.JSummit;
-                using (WebClient wc = new())
+                using (HttpClient wc = new())
                 {
-                    SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
+                    SJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
                 }
                 TCHubJson.Rank Events = JsonConvert.DeserializeObject<TCHubJson.Rank>(SJson);
 
                 if (Events.Points != 0)
                 {
-
                     int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
                     Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                     Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
@@ -303,20 +293,21 @@ namespace LiveBot.Commands
                     };
 
                     Image<Rgba32> BaseImage = new(1127, 765);
-                    Parallel.For(0, 9, (i, state) =>
+                    await Parallel.ForEachAsync(JSummit[0].Events, new ParallelOptions(), async (Event, token) =>
                     {
-                        using WebClient wc = new();
-                        byte[] EventLogoBit = HubMethods.EventLogoBitArr[i];
-                        BaseImage.Mutate(ctx => ctx
-                        .DrawImage(
-                            HubMethods.BuildEventImage(
-                                JSummit[0].Events[i],
+                        int i = JSummit[0].Events.Select((element, index) => new { element, index })
+                               .FirstOrDefault(x => x.element.Equals(Event))?.index ?? -1;
+                        Image image = await HubMethods.BuildEventImage(
+                                Event,
                                 Events,
                                 new TCHubJson.TceSummitSubs { Platform = UserInfo.Platform, Profile_ID = UserInfo.Profile_ID },
-                                EventLogoBit,
+                                Event.Image_Byte,
                                 i == 7,
-                                i == 8),
-                        new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
+                                i == 8);
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(
+                            image,
+                            new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
                         1)
                     );
                     });
@@ -387,7 +378,7 @@ namespace LiveBot.Commands
         public async Task TopSummit(CommandContext ctx, string platform = null)
         {
             await ctx.TriggerTypingAsync();
-            HubMethods.UpdateHubInfo();
+            await HubMethods.UpdateHubInfo();
 
             int TotalPoints = 0;
 
@@ -428,27 +419,27 @@ namespace LiveBot.Commands
             }
 
             List<TCHubJson.Summit> JSummit = Program.JSummit;
-            byte[] EventLogoBit;
 
             int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
 
             using Image<Rgba32> BaseImage = new(1127, 735);
-            Parallel.For(0, 9, (i, state) =>
+            await Parallel.ForEachAsync(JSummit[0].Events, new ParallelOptions(), async (Event, token) =>
             {
-                using WebClient wc = new();
-                var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{JSummit[0].Events[i].ID}?page_size=1"));
-                var Rank = JsonConvert.DeserializeObject<TCHubJson.Rank>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{platform}/profile/{Activity.Entries[0].Profile_ID}"));
-                EventLogoBit = HubMethods.EventLogoBitArr[i];
-
-                BaseImage.Mutate(ctx => ctx
-                .DrawImage(
-                    HubMethods.BuildEventImage(
-                        JSummit[0].Events[i],
+                using HttpClient wc = new();
+                int i = JSummit[0].Events.Select((element, index) => new { element, index })
+                       .FirstOrDefault(x => x.element.Equals(Event))?.index ?? -1;
+                TCHubJson.SummitLeaderboard Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{Event.ID}?page_size=1", CancellationToken.None));
+                TCHubJson.Rank Rank = JsonConvert.DeserializeObject<TCHubJson.Rank>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{platform}/profile/{Activity.Entries[0].Profile_ID}", CancellationToken.None));
+                Image image = await HubMethods.BuildEventImage(
+                        Event,
                         Rank,
                         new TCHubJson.TceSummitSubs { Platform = platform, Profile_ID = Activity.Entries[0].Profile_ID },
-                        EventLogoBit,
+                        Event.Image_Byte,
                         i == 7,
-                        i == 8),
+                        i == 8);
+                BaseImage.Mutate(ctx => ctx
+                .DrawImage(
+                    image,
                     new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
                     1)
                 );
@@ -479,7 +470,7 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            HubMethods.UpdateHubInfo();
+            await HubMethods.UpdateHubInfo();
 
             if (summit < 1 || summit > 4)
             {
@@ -635,10 +626,10 @@ namespace LiveBot.Commands
             string link = $"{Program.TCEJson.Link}api/tchub/profileId/{Program.TCEJson.Key}/{ctx.User.Id}";
 
             TCHubJson.TceSummit JTCE;
-            using WebClient wc = new();
+            using HttpClient wc = new();
             try
             {
-                string Jdown = wc.DownloadString(link);
+                string Jdown = await wc.GetStringAsync(link);
                 JTCE = JsonConvert.DeserializeObject<TCHubJson.TceSummit>(Jdown);
             }
             catch (Exception)
@@ -707,7 +698,7 @@ namespace LiveBot.Commands
 
             try
             {
-                TCHubJson.Fame Fame = JsonConvert.DeserializeObject<TCHubJson.Fame>(wc.DownloadString($"https://api.thecrew-hub.com/v1/leaderboard/{UserInfo.Platform}/fame?profile_id={UserInfo.Profile_ID}"));
+                TCHubJson.Fame Fame = JsonConvert.DeserializeObject<TCHubJson.Fame>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/leaderboard/{UserInfo.Platform}/fame?profile_id={UserInfo.Profile_ID}"));
                 var HubUserInfo = Fame.Scores.FirstOrDefault(w => w.Profile_ID.Equals(UserInfo.Profile_ID));
                 OutMessage = $"{ctx.User.Mention}, Your follower count is **{HubUserInfo.Score}**. Your Icon Level is **[WIP]**. You are ranked **{HubUserInfo.Rank} on {search}**";
             }

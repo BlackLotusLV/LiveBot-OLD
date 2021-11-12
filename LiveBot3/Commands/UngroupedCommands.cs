@@ -1,16 +1,8 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace LiveBot.Commands
 {
@@ -950,9 +942,9 @@ namespace LiveBot.Commands
         public async Task Status(CommandContext ctx)
         {
             string HTML;
-            using (WebClient wc = new())
+            using (HttpClient wc = new())
             {
-                HTML = wc.DownloadString("https://ubistatic-a.akamaihd.net/0115/tc2/status.html");
+                HTML = await wc.GetStringAsync($"https://ubistatic-a.akamaihd.net/0115/tc2/status.html");
             }
             if (HTML.Contains("STATUS OK"))
             {

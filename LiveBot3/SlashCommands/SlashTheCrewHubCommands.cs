@@ -1,32 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
+﻿using DSharpPlus.SlashCommands;
 using LiveBot.Json;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 
 namespace LiveBot.SlashCommands
 {
-
     [SlashCommandGroup("Hub", "Commands in relation to the TheCrew-Hub leaderboards.")]
     public class SlashTheCrewHubCommands : ApplicationCommandModule
     {
-        [SlashCommand("Summit","Shows the tiers and current cut offs for the ongoing summit.")]
+        [SlashCommand("Summit", "Shows the tiers and current cut offs for the ongoing summit.")]
         public async Task Summit(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,new DiscordInteractionResponseBuilder(new DiscordMessageBuilder { Content = "Gathering data and building image." }));
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder { Content = "Gathering data and building image." }));
             string PCJson = string.Empty, XBJson = string.Empty, PSJson = string.Empty, StadiaJson = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summit.png";
             float outlineSize = 0.7f;
@@ -36,14 +29,14 @@ namespace LiveBot.SlashCommands
 
             int platforms = 4;
 
-            using (WebClient wc = new())
+            using (HttpClient wc = new())
             {
-                PCJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                XBJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
-                PSJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                PCJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/pc/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                XBJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/x1/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                PSJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/ps4/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 try
                 {
-                    StadiaJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/stadia/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
+                    StadiaJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/stadia/profile/a92d844e-9c57-4b8c-a249-108ef42d4500");
                 }
                 catch (Exception)
                 {
@@ -52,7 +45,7 @@ namespace LiveBot.SlashCommands
 
                 try
                 {
-                    SummitLogo = wc.DownloadData($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
+                    SummitLogo = await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
                 }
                 catch (WebException e)
                 {
@@ -150,10 +143,10 @@ namespace LiveBot.SlashCommands
         }
 
         [SlashCommand("my-summit", "Shows your summit scores.")]
-        public async Task MySummit(InteractionContext ctx, [Option("platform","Which platform leaderboard you want to see")] Platforms platform = Platforms.pc)
+        public async Task MySummit(InteractionContext ctx, [Option("platform", "Which platform leaderboard you want to see")] Platforms platform = Platforms.pc)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder { Content = "Gathering data and building image." }));
-            HubMethods.UpdateHubInfo();
+            await HubMethods.UpdateHubInfo();
 
             string OutMessage = string.Empty;
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-mysummit.png";
@@ -162,7 +155,7 @@ namespace LiveBot.SlashCommands
 
             string search = string.Empty;
 
-            TCHubJson.TceSummit JTCE = CustomMethod.GetTCEInfo(ctx.User.Id);
+            TCHubJson.TceSummit JTCE = await CustomMethod.GetTCEInfo(ctx.User.Id);
 
             TCHubJson.TceSummitSubs UserInfo = new();
 
@@ -189,18 +182,20 @@ namespace LiveBot.SlashCommands
             }
             else if (JTCE.Subs.Length > 1)
             {
-                
                 switch (platform)
                 {
                     case Platforms.pc:
                         search = "pc";
                         break;
+
                     case Platforms.x1:
                         search = "x1";
                         break;
+
                     case Platforms.ps4:
                         search = "ps4";
                         break;
+
                     case Platforms.stadia:
                         search = "stadia";
                         break;
@@ -219,15 +214,14 @@ namespace LiveBot.SlashCommands
             {
                 string SJson;
                 List<TCHubJson.Summit> JSummit = Program.JSummit;
-                using (WebClient wc = new())
+                using (HttpClient wc = new())
                 {
-                    SJson = wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
+                    SJson = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{UserInfo.Platform}/profile/{UserInfo.Profile_ID}");
                 }
                 TCHubJson.Rank Events = JsonConvert.DeserializeObject<TCHubJson.Rank>(SJson);
 
                 if (Events.Points != 0)
                 {
-
                     int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
                     Font SummitCaps15 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 15);
                     Font SummitCaps12 = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 12.5f);
@@ -238,20 +232,22 @@ namespace LiveBot.SlashCommands
                     };
 
                     Image<Rgba32> BaseImage = new(1127, 765);
-                    Parallel.For(0, 9, (i, state) =>
+
+                    await Parallel.ForEachAsync(JSummit[0].Events, new ParallelOptions(), async (Event, token) =>
                     {
-                        using WebClient wc = new();
-                        byte[] EventLogoBit = HubMethods.EventLogoBitArr[i];
-                        BaseImage.Mutate(ctx => ctx
-                        .DrawImage(
-                            HubMethods.BuildEventImage(
-                                JSummit[0].Events[i],
+                        int i = JSummit[0].Events.Select((element, index) => new { element, index })
+                               .FirstOrDefault(x => x.element.Equals(Event))?.index ?? -1;
+                        Image image = await HubMethods.BuildEventImage(
+                                Event,
                                 Events,
                                 new TCHubJson.TceSummitSubs { Platform = UserInfo.Platform, Profile_ID = UserInfo.Profile_ID },
-                                EventLogoBit,
+                                Event.Image_Byte,
                                 i == 7,
-                                i == 8),
-                        new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
+                                i == 8);
+                        BaseImage.Mutate(ctx => ctx
+                        .DrawImage(
+                            image,
+                            new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
                         1)
                     );
                     });
@@ -316,11 +312,11 @@ namespace LiveBot.SlashCommands
             }
         }
 
-        [SlashCommand("Top-Summit","Shows the summit board with all the world record scores.")]
+        [SlashCommand("Top-Summit", "Shows the summit board with all the world record scores.")]
         public async Task TopSummit(InteractionContext ctx, [Option("platform", "Which platform leaderboard you want to see")] Platforms platform = Platforms.pc)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder { Content = "Gathering data and building image." }));
-            HubMethods.UpdateHubInfo();
+            await HubMethods.UpdateHubInfo();
 
             int TotalPoints = 0;
 
@@ -335,39 +331,43 @@ namespace LiveBot.SlashCommands
                 case Platforms.pc:
                     search = "pc";
                     break;
+
                 case Platforms.x1:
                     search = "x1";
                     break;
+
                 case Platforms.ps4:
                     search = "ps4";
                     break;
+
                 case Platforms.stadia:
                     search = "stadia";
                     break;
             }
 
             List<TCHubJson.Summit> JSummit = Program.JSummit;
-            byte[] EventLogoBit;
 
             int[,] WidthHeight = new int[,] { { 0, 0 }, { 249, 0 }, { 498, 0 }, { 0, 249 }, { 373, 249 }, { 0, 493 }, { 373, 493 }, { 747, 0 }, { 747, 249 } };
 
             using Image<Rgba32> BaseImage = new(1127, 735);
-            Parallel.For(0, 9, (i, state) =>
-            {
-                using WebClient wc = new();
-                var Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{search}/{JSummit[0].Events[i].ID}?page_size=1"));
-                var Rank = JsonConvert.DeserializeObject<TCHubJson.Rank>(wc.DownloadString($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{search}/profile/{Activity.Entries[0].Profile_ID}"));
-                EventLogoBit = HubMethods.EventLogoBitArr[i];
 
-                BaseImage.Mutate(ctx => ctx
-                .DrawImage(
-                    HubMethods.BuildEventImage(
-                        JSummit[0].Events[i],
+            await Parallel.ForEachAsync(JSummit[0].Events, new ParallelOptions(), async (Event, token) =>
+            {
+                using HttpClient wc = new();
+                int i = JSummit[0].Events.Select((element, index) => new { element, index })
+                       .FirstOrDefault(x => x.element.Equals(Event))?.index ?? -1;
+                TCHubJson.SummitLeaderboard Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{search}/{Event.ID}?page_size=1", CancellationToken.None));
+                TCHubJson.Rank Rank = JsonConvert.DeserializeObject<TCHubJson.Rank>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{search}/profile/{Activity.Entries[0].Profile_ID}", CancellationToken.None));
+                Image image = await HubMethods.BuildEventImage(
+                        Event,
                         Rank,
                         new TCHubJson.TceSummitSubs { Platform = search, Profile_ID = Activity.Entries[0].Profile_ID },
-                        EventLogoBit,
+                        Event.Image_Byte,
                         i == 7,
-                        i == 8),
+                        i == 8);
+                BaseImage.Mutate(ctx => ctx
+                .DrawImage(
+                    image,
                     new Point(WidthHeight[i, 0], WidthHeight[i, 1]),
                     1)
                 );
@@ -395,10 +395,13 @@ namespace LiveBot.SlashCommands
         {
             [ChoiceName("PC")]
             pc,
+
             [ChoiceName("PlayStation")]
             ps4,
+
             [ChoiceName("Xbox")]
             x1,
+
             [ChoiceName("Stadia")]
             stadia,
         }

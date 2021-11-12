@@ -1,25 +1,12 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using LiveBot.Automation;
 using LiveBot.Json;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SixLabors.Fonts;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LiveBot
 {
@@ -29,8 +16,8 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
-        public readonly static DateTime start = DateTime.Now;
-        public readonly static string BotVersion = $"20211103_A";
+        public static readonly DateTime start = DateTime.Now;
+        public static readonly string BotVersion = $"20211104_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -59,7 +46,7 @@ namespace LiveBot
         private Timer StreamDelayTimer { get; set; } = new(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
 
         private Timer ActiveRoleTimer { get; set; } = new(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer));
-        private Timer HubUpdateTimer { get; set; } = new(e => HubMethods.UpdateHubInfo());
+        private Timer HubUpdateTimer { get; set; } = new(async e => await HubMethods.UpdateHubInfo());
         private Timer MessageCacheClearTimer { get; set; } = new(e => AutoMod.ClearMSGCache());
         private Timer ModMailCloserTimer { get; set; } = new(async e => await ModMail.ModMailCloser());
 
@@ -84,7 +71,7 @@ namespace LiveBot
 
             // TC Hub
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
-            Thread HubThread = new(() => HubMethods.UpdateHubInfo());
+            Thread HubThread = new(async () => await HubMethods.UpdateHubInfo());
             HubThread.Start();
             //
             LogLevel logLevel = LogLevel.Debug;
@@ -140,7 +127,6 @@ namespace LiveBot
             this.Commands.RegisterCommands<Commands.ModMailCommands>();
             this.Commands.RegisterCommands<Commands.ProfileCommands>();
             this.Commands.RegisterCommands<Commands.TheCrewHubCommands>();
-
 
             //*/
 
@@ -315,6 +301,7 @@ namespace LiveBot
             Client.Logger.LogInformation(CustomLogEvents.ContextMenuExecuted, $"{e.Context.User.Username} Successfully executed '{e.Context.CommandName}' command");
             return Task.CompletedTask;
         }
+
         private Task Context_Menu_Errored(SlashCommandsExtension ext, ContextMenuErrorEventArgs e)
         {
             Client.Logger.LogError(CustomLogEvents.SlashErrored, e.Exception, $"{e.Context.User.Username} tried executing '{e.Context?.CommandName ?? "<unknown command>"}' but it errored");
