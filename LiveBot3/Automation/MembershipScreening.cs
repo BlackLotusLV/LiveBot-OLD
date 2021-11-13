@@ -1,10 +1,4 @@
-﻿using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace LiveBot.Automation
+﻿namespace LiveBot.Automation
 {
     internal static class MembershipScreening
     {

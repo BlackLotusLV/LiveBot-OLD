@@ -1,9 +1,4 @@
-﻿using DSharpPlus.Entities;
-using LiveBot.Automation;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LiveBot.Automation;
 
 namespace LiveBot
 {

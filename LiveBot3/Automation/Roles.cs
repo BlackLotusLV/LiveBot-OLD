@@ -1,13 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace LiveBot.Automation
+﻿namespace LiveBot.Automation
 {
     internal static class Roles
     {
@@ -106,10 +97,8 @@ namespace LiveBot.Automation
                     {
                         await member.GrantRoleAsync(role);
                         response.Content = $"{member.Mention} you have been given the {role.Mention}.";
-                        
                     }
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,response);
-                    
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, response);
                 }
             }
         }

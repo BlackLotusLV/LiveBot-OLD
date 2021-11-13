@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 
 namespace LiveBot.Json
 {
@@ -88,6 +86,7 @@ namespace LiveBot.Json
 
             [JsonProperty("modifiers")]
             public string[] Modifiers { get; private set; }
+
             public byte[] Image_Byte { get; set; }
         }
 

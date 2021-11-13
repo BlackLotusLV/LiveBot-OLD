@@ -7,11 +7,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace LiveBot.Commands
 {
@@ -52,7 +50,7 @@ namespace LiveBot.Commands
 
                 try
                 {
-                    SummitLogo =await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
+                    SummitLogo = await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[0].Cover_Small}");
                 }
                 catch (WebException e)
                 {

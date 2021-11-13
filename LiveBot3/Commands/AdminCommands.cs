@@ -1,12 +1,5 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
-using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LiveBot.Commands
 {

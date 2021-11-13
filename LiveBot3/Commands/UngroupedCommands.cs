@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using System.Globalization;
-using System.IO;
 using System.Net.Http;
 
 namespace LiveBot.Commands
@@ -14,10 +13,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] summit board command breaking due to no image provided.\n" +
-                "[FIX] My summit/topsummit will indicate if a vehicle is forced instead of not found\n" +
-                "[NEW] my summit/top summit now shows event modifiers (snow, rain, night, ect.)\n" +
-                "[NEW] my summit/top summit uses built in discord timestamp, shows when event ends in your local time\n" +
+            string changelog = "[NEW] Self role assigning will now send an ephemeral message to reduce confusion of when the role has been added/removed\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -163,11 +159,11 @@ namespace LiveBot.Commands
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
             string content;
-            if (username.Length==0)
+            if (username.Length == 0)
             {
                 content = CustomMethod.GetCommandOutput(ctx, "useigc", null, ctx.Member);
             }
-            else if(username.Length==1)
+            else if (username.Length == 1)
             {
                 content = CustomMethod.GetCommandOutput(ctx, "useigc", null, username[0]);
             }

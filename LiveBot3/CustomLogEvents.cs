@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace LiveBot
+﻿namespace LiveBot
 {
     internal static class CustomLogEvents
     {
