@@ -150,7 +150,6 @@ namespace LiveBot
                 Client.GuildBanRemoved += AutoMod.User_Unbanned_Log;
                 Client.VoiceStateUpdated += AutoMod.Voice_Activity_Log;
 
-                Client.MessageReactionAdded += Roles.Reaction_Roles;
                 Client.ComponentInteractionCreated += Roles.Button_Roles;
 
                 Client.GuildMemberAdded += MemberFlow.Welcome_Member;

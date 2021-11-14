@@ -50,7 +50,7 @@ namespace LiveBot
                     Program.TCHub = JsonConvert.DeserializeObject<TCHubJson.TCHub>(await wc.GetStringAsync(Program.TCHubJson.GameData));
                     await Parallel.ForEachAsync(JSummit[0].Events, new ParallelOptions(), async (Event, Token) =>
                     {
-                        JSummit[0].Events.FirstOrDefault(w => w.ID == Event.ID).Image_Byte = await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{Event.Img_Path}");
+                        JSummit[0].Events.FirstOrDefault(w => w.ID == Event.ID).Image_Byte = await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{Event.Img_Path}", Token);
                     });
                     for (int i = 0; i < 4; i++)
                     {

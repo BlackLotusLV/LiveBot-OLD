@@ -4,29 +4,28 @@ namespace LiveBot.DB
 {
     internal static class DBLists
     {
-        public static readonly int TableCount = 20;
+        public static readonly int TableCount = 19;
         public static int LoadedTableCount { get; set; } = 0;
 
         public static List<VehicleList> VehicleList { get; set; } = new(); //1
         public static List<DisciplineList> DisciplineList { get; set; } = new();//2
-        public static List<ReactionRoles> ReactionRoles { get; set; } = new();//3
-        public static List<StreamNotifications> StreamNotifications { get; set; } = new();//4
-        public static List<BackgroundImage> BackgroundImage { get; set; } = new();//5
-        public static List<Leaderboard> Leaderboard { get; set; } = new();//6
-        public static List<ServerRanks> ServerRanks { get; set; } = new();//7
-        public static List<UserImages> UserImages { get; set; } = new();//8
-        public static List<UserSettings> UserSettings { get; set; } = new();//9
-        public static List<Warnings> Warnings { get; set; } = new();//10
-        public static List<ServerSettings> ServerSettings { get; set; } = new();//11
-        public static List<RankRoles> RankRoles { get; set; } = new();//12
-        public static List<CommandsUsedCount> CommandsUsedCount { get; set; } = new();//13
-        public static List<BotOutputList> BotOutputList { get; set; } = new();//14
-        public static List<WeatherSchedule> WeatherSchedule { get; set; } = new();//15
-        public static List<AMBannedWords> AMBannedWords { get; set; } = new();//16
-        public static List<ModMail> ModMail { get; set; } = new();//17
-        public static List<RoleTagSettings> RoleTagSettings { get; set; } = new();//18
-        public static List<ServerWelcomeSettings> ServerWelcomeSettings { get; set; } = new();//19
-        public static List<ButtonRoles> ButtonRoles { get; set; } = new();//20
+        public static List<StreamNotifications> StreamNotifications { get; set; } = new();//3
+        public static List<BackgroundImage> BackgroundImage { get; set; } = new();//4
+        public static List<Leaderboard> Leaderboard { get; set; } = new();//5
+        public static List<ServerRanks> ServerRanks { get; set; } = new();//6
+        public static List<UserImages> UserImages { get; set; } = new();//7
+        public static List<UserSettings> UserSettings { get; set; } = new();//8
+        public static List<Warnings> Warnings { get; set; } = new();//9
+        public static List<ServerSettings> ServerSettings { get; set; } = new();//10
+        public static List<RankRoles> RankRoles { get; set; } = new();//11
+        public static List<CommandsUsedCount> CommandsUsedCount { get; set; } = new();//12
+        public static List<BotOutputList> BotOutputList { get; set; } = new();//13
+        public static List<WeatherSchedule> WeatherSchedule { get; set; } = new();//14
+        public static List<AMBannedWords> AMBannedWords { get; set; } = new();//15
+        public static List<ModMail> ModMail { get; set; } = new();//16
+        public static List<RoleTagSettings> RoleTagSettings { get; set; } = new();//17
+        public static List<ServerWelcomeSettings> ServerWelcomeSettings { get; set; } = new();//18
+        public static List<ButtonRoles> ButtonRoles { get; set; } = new();//19
 
         public static void LoadAllLists()
         {
@@ -36,7 +35,6 @@ namespace LiveBot.DB
             new Thread(() => LoadServerWelcomeSettings(true)).Start();
             new Thread(() => LoadVehicleList(true)).Start();
             new Thread(() => LoadDisciplineList(true)).Start();
-            new Thread(() => LoadReactionRoles(true)).Start();
             new Thread(() => LoadStreamNotifications(true)).Start();
             new Thread(() => LoadBackgroundImage(true)).Start();
             new Thread(() => LoadLeaderboard(true)).Start();
@@ -90,25 +88,6 @@ namespace LiveBot.DB
             else
             {
                 Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Discipline List Loaded");
-            }
-        }
-
-        public static void LoadReactionRoles(bool progress = false)
-        {
-            Stopwatch timer = new();
-            timer.Start();
-            using var ctx = new ReactionRolesContext();
-            ReactionRoles = (from c in ctx.ReactionRoles
-                             select c).ToList();
-            timer.Stop();
-            if (progress)
-            {
-                LoadedTableCount++;
-                CustomMethod.DBProgress(LoadedTableCount, timer.Elapsed, "Reaction Roles");
-            }
-            else
-            {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Reaction Roles List Loaded");
             }
         }
 

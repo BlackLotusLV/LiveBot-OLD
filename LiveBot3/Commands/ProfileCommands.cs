@@ -50,7 +50,7 @@ namespace LiveBot.Commands
 
             if (UsersName.Length > 16)
             {
-                UsersName = $"{UsersName.Substring(0, UsersName.Length / 2)}\n{UsersName.Substring(UsersName.Length / 2, UsersName.Length / 2 + (UsersName.Length % 2 != 0 ? 1 : 0)) }";
+                UsersName = $"{UsersName[..(UsersName.Length / 2)]}\n{UsersName.Substring(UsersName.Length / 2, UsersName.Length / 2 + (UsersName.Length % 2 != 0 ? 1 : 0)) }";
                 usernameSize = 19;
             }
             UsersName = Regex.Replace(UsersName, @"[^\u0000-\u007F]+", "�");

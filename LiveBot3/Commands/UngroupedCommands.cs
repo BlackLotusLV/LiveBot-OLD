@@ -1019,38 +1019,5 @@ namespace LiveBot.Commands
                     .SendAsync(ctx.Channel);
             }
         }
-
-        [Command("getrole")]
-        [Aliases("gr")]
-        [Description("Alternative for role selector, uses emotes as well")]
-        public async Task GetRole(CommandContext ctx, DiscordEmoji Emoji)
-        {
-            DB.ReactionRoles RR = DB.DBLists.ReactionRoles.FirstOrDefault(w => w.Server_ID == ctx.Guild.Id && w.Reaction_ID == Emoji.Id);
-            if (RR != null && RR.Type == "acquire")
-            {
-                string action = "granted to";
-                DiscordRole role = ctx.Guild.GetRole(System.Convert.ToUInt64(RR.Role_ID));
-                if (ctx.Member.Roles.Any(w => w.Id == System.Convert.ToUInt64(RR.Role_ID)))
-                {
-                    await ctx.Member.RevokeRoleAsync(role);
-                    action = "revoked from";
-                }
-                else
-                {
-                    await ctx.Member.GrantRoleAsync(role);
-                }
-                await new DiscordMessageBuilder()
-                    .WithContent($"The {role.Name} was {action} you.")
-                    .WithReply(ctx.Message.Id, true)
-                    .SendAsync(ctx.Channel);
-            }
-            else
-            {
-                await new DiscordMessageBuilder()
-                    .WithContent($"This emoji does not represent a role in this server.")
-                    .WithReply(ctx.Message.Id, true)
-                    .SendAsync(ctx.Channel);
-            }
-        }
     }
 }
