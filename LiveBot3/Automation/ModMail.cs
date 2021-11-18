@@ -36,7 +36,7 @@
                     await ModMailChannel.SendMessageAsync(embed: embed);
 
                     MMEntry.HasChatted = true;
-                    MMEntry.LastMSGTime = DateTime.Now;
+                    MMEntry.LastMSGTime = DateTime.UtcNow;
                     DB.DBLists.UpdateModMail(MMEntry);
 
                     Client.Logger.LogInformation(CustomLogEvents.ModMail, $"New Mod Mail message sent to {ModMailChannel.Name}({ModMailChannel.Id}) in {ModMailChannel.Guild.Name} from {e.Author.Username}({e.Author.Id})");
@@ -47,7 +47,7 @@
 
         public static async Task ModMailCloser()
         {
-            var TimedOutEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.IsActive && (DateTime.Now - w.LastMSGTime) > TimeSpan.FromMinutes(TimeoutMinutes));
+            var TimedOutEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.IsActive && (DateTime.UtcNow - w.LastMSGTime) > TimeSpan.FromMinutes(TimeoutMinutes));
             if (TimedOutEntry != null)
             {
                 DiscordUser User = await Program.Client.GetUserAsync((ulong)TimedOutEntry.User_ID);

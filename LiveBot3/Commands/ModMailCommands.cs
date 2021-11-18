@@ -35,7 +35,7 @@ namespace LiveBot.Commands
                     }
                 }
                 GuildNameString.AppendLine($"To start a modmail write `{Program.CFGJson.CommandPrefix}modmail server-name-here`");
-                if (!GuildNameDict.Values.Contains(serverName.Replace(' ', '-').ToLower()))
+                if (!GuildNameDict.ContainsValue(serverName.Replace(' ', '-').ToLower()))
                 {
                     await ctx.RespondAsync(GuildNameString.ToString());
                 }
@@ -60,7 +60,7 @@ namespace LiveBot.Commands
                         {
                             Server_ID = Guild.Id,
                             User_ID = ctx.User.Id,
-                            LastMSGTime = DateTime.Now,
+                            LastMSGTime = DateTime.UtcNow,
                             ColorHex = colorID,
                             IsActive = true,
                             HasChatted = false
@@ -141,7 +141,7 @@ namespace LiveBot.Commands
                         embed.Description = $"User has left the server, blocked the bot or closed their DMs. Could not send a response!\nHere is what you said `{reply}`";
                         embed.Title = $"[ERROR] {embed.Title}";
                     }
-                    MMEntry.LastMSGTime = DateTime.Now;
+                    MMEntry.LastMSGTime = DateTime.UtcNow;
                     DBLists.UpdateModMail(MMEntry);
 
                     DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id).ModMailID);
@@ -267,7 +267,7 @@ namespace LiveBot.Commands
                 StringBuilder sb = new();
                 foreach (var entry in ModMailEntries)
                 {
-                    sb.AppendLine($"**ID:** {entry.ID}\t **User:** {entry.User_ID}\t**Has Chatted:** {entry.HasChatted}\t**Time Remaining:** {Automation.ModMail.TimeoutMinutes - (DateTime.Now - entry.LastMSGTime).Minutes} Minutes");
+                    sb.AppendLine($"**ID:** {entry.ID}\t **User:** {entry.User_ID}\t**Has Chatted:** {entry.HasChatted}\t**Time Remaining:** {Automation.ModMail.TimeoutMinutes - (DateTime.UtcNow - entry.LastMSGTime).Minutes} Minutes");
                 }
                 DiscordEmbedBuilder embed = new()
                 {
