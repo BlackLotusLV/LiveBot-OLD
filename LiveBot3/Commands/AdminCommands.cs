@@ -88,16 +88,7 @@ namespace LiveBot.Commands
                     }
                     if (check)
                     {
-                        DiscordEmbedBuilder embed = new()
-                        {
-                            Color = new DiscordColor(0xf90707),
-                            Author = new DiscordEmbedBuilder.EmbedAuthor
-                            {
-                                IconUrl = username.AvatarUrl,
-                                Name = $"{username.Username} ({username.Id})"
-                            },
-                            Description = $"{username.Mention} has been unwarned by {ctx.User.Mention}. Warning level now {WarnedUserStats.Warning_Level}"
-                        };
+                        string Description = $"{username.Mention} has been unwarned by {ctx.User.Mention}. Warning level now {WarnedUserStats.Warning_Level}";
                         try
                         {
                             await member.SendMessageAsync($"Your warning level in **{ctx.Guild.Name}** has been lowered to {WarnedUserStats.Warning_Level} by {ctx.User.Mention}");
@@ -106,7 +97,7 @@ namespace LiveBot.Commands
                         {
                             modmsg = $":exclamation::exclamation:{username.Mention} could not be contacted via DM.";
                         }
-                        await modlog.SendMessageAsync(modmsg, embed: embed);
+                        await CustomMethod.SendModLog(modlog, username, Description, CustomMethod.ModLogType.Unwarn, modmsg);
                     }
                     DiscordMessage msg = await ctx.RespondAsync(MSGOut);
                     await Task.Delay(10000);
@@ -488,6 +479,12 @@ namespace LiveBot.Commands
                 Reason = note
             };
             DB.DBLists.InsertWarnings(newEntry);
+            DB.ServerSettings serverSettings = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id);
+            if (serverSettings.WKB_Log != 0)
+            {
+                DiscordChannel channel = ctx.Guild.GetChannel(Convert.ToUInt64(serverSettings.WKB_Log));
+                await CustomMethod.SendModLog(channel, user, $"**Note added to:**\t{user.Mention}\n**by:**\t{ctx.Member.Username}\n**Note:**\t{note}", CustomMethod.ModLogType.Info);
+            }
 
             DiscordMessage response = await new DiscordMessageBuilder()
                 .WithContent($"{ctx.User.Mention}, a note has been added to {user.Username}({user.Id})")

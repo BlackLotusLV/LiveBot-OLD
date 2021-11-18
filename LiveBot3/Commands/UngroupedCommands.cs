@@ -13,7 +13,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.Now;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Self role assigning will now send an ephemeral message to reduce confusion of when the role has been added/removed\n" +
+            string changelog = "[NEW] Admin tool improvements with unified logging design and note addition logging\n" +
+                "[FIX] EF6.0 changes broke mod mail, now found and fixed\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

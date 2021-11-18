@@ -260,18 +260,7 @@ namespace LiveBot.Automation
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings[0].WKB_Log));
                     if (logs[0].CreationTimestamp >= beforetime && logs[0].CreationTimestamp <= aftertime)
                     {
-                        DiscordEmbedBuilder embed = new()
-                        {
-                            Title = $"👢 {e.Member.Username} ({e.Member.Id}) has been kicked",
-                            Description = $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}",
-                            Footer = new DiscordEmbedBuilder.EmbedFooter
-                            {
-                                IconUrl = e.Member.AvatarUrl,
-                                Text = $"User kicked"
-                            },
-                            Color = new DiscordColor(0xff0000),
-                        };
-                        await wkbLog.SendMessageAsync(embed: embed);
+                        await CustomMethod.SendModLog(wkbLog, e.Member, $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}", CustomMethod.ModLogType.Kick);
 
                         var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID);
                         if (UserSettings is null)
@@ -312,19 +301,8 @@ namespace LiveBot.Automation
                     }
                     Console.WriteLine($"Ban reason search {(banEntry == null ? "Failed" : "Succeeded")}");
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings.WKB_Log));
-                    DiscordEmbedBuilder embed = new()
-                    {
-                        Title = $"❌ {banEntry.Target.Username} ({banEntry.Target.Id}) has been banned",
-                        Description = $"*by {banEntry.UserResponsible.Mention}*\n**Reason:** {banEntry.Reason}",
-                        Footer = new DiscordEmbedBuilder.EmbedFooter
-                        {
-                            IconUrl = banEntry.Target.AvatarUrl,
-                            Text = $"User banned"
-                        },
-                        Color = new DiscordColor(0xff0000),
-                    };
-                    await wkbLog.SendMessageAsync(embed: embed);
-                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = banEntry.Reason ?? "No reason specified", Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = banEntry.UserResponsible.Id, User_ID = banEntry.Target.Id, Server_ID = e.Guild.Id, Type = "ban" });
+                    await CustomMethod.SendModLog(wkbLog, banEntry?.Target, $"**User Banned:**\t{banEntry?.Target.Mention}\n*by {banEntry?.UserResponsible.Mention}*\n**Reason:** {banEntry?.Reason}", CustomMethod.ModLogType.Ban);
+                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = banEntry?.Reason ?? "No reason specified", Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = Convert.ToDecimal(banEntry?.UserResponsible.Id), User_ID = Convert.ToDecimal(banEntry?.Target.Id), Server_ID = e.Guild.Id, Type = "ban" });
                 }
                 var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
                 if (UserSettings == null)
@@ -353,18 +331,7 @@ namespace LiveBot.Automation
                     await Task.Delay(1000);
                     var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Unban);
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
-                    DiscordEmbedBuilder embed = new()
-                    {
-                        Title = $"✓ {e.Member.Username} ({e.Member.Id}) has been unbanned",
-                        Description = $"*by {logs[0].UserResponsible.Mention}*",
-                        Footer = new DiscordEmbedBuilder.EmbedFooter
-                        {
-                            IconUrl = e.Member.AvatarUrl,
-                            Text = $"User unbanned"
-                        },
-                        Color = new DiscordColor(0x606060),
-                    };
-                    await wkbLog.SendMessageAsync(embed: embed);
+                    await CustomMethod.SendModLog(wkbLog, e.Member, $"**User Unbanned:**\t{e.Member.Mention}\n*by {logs[0].UserResponsible.Mention}*", CustomMethod.ModLogType.Unban);
                 }
             });
             await Task.Delay(1);

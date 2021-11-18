@@ -17,7 +17,7 @@ namespace LiveBot
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public static readonly DateTime start = DateTime.Now;
-        public static readonly string BotVersion = $"20211104_A";
+        public static readonly string BotVersion = $"20211114_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 

@@ -242,6 +242,60 @@ namespace LiveBot
             return Missions.ToString();
         }
 
+        public static async Task SendModLog(DiscordChannel ModLogChannel, DiscordUser TargetUser, string Description, ModLogType type, string Content=null)
+        {
+            DiscordColor color = DiscordColor.NotQuiteBlack;
+            string FooterText = string.Empty;
+            switch (type)
+            {
+                case ModLogType.Kick:
+                    color = new DiscordColor(0xf90707);
+                    FooterText = "User Kicked";
+                    break;
+                case ModLogType.Ban:
+                    color = new DiscordColor(0xf90707);
+                    FooterText = "User Banned";
+                    break;
+                case ModLogType.Info:
+                    color = new DiscordColor(0x59bfff);
+                    FooterText = "Info";
+                    break;
+                case ModLogType.Warning:
+                    color = new DiscordColor(0xFFBA01);
+                    FooterText = "User Warned";
+                    break;
+                case ModLogType.Unwarn:
+                    FooterText = "User Unwarned";
+                    break;
+                case ModLogType.Unban:
+                    FooterText = "User Unbanned";
+                    break;
+                default:
+                    break;
+            }
+            DiscordMessageBuilder discordMessageBuilder = new();
+            DiscordEmbedBuilder discordEmbedBuilder = new()
+            {
+                Color = color,
+                Description = Description,
+                Author = new DiscordEmbedBuilder.EmbedAuthor
+                {
+                    IconUrl=TargetUser.AvatarUrl,
+                    Name=$"{TargetUser.Username} ({TargetUser.Id})"
+                },
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                    IconUrl=TargetUser.AvatarUrl,
+                    Text=FooterText
+                }
+            };
+
+            discordMessageBuilder.AddEmbed(discordEmbedBuilder);
+            discordMessageBuilder.Content = Content;
+
+            await ModLogChannel.SendMessageAsync(discordMessageBuilder);
+        }
+
         public static async Task WarnUserAsync(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg, InteractionContext ctx = null)
         {
             DB.ServerRanks WarnedUserStats = DB.DBLists.ServerRanks.FirstOrDefault(f => server.Id == f.Server_ID && user.Id == f.User_ID);
@@ -266,7 +320,6 @@ namespace LiveBot
             StringBuilder SB = new();
             decimal uid = user.Id, aid = admin.Id;
             bool kick = false, ban = false;
-            DiscordEmbedBuilder embed;
             if (ServerSettings.WKB_Log != 0)
             {
                 DiscordChannel modlog = server.GetChannel(Convert.ToUInt64(ServerSettings.WKB_Log));
@@ -312,16 +365,9 @@ namespace LiveBot
                 int warning_count = DB.DBLists.Warnings.Count(w => w.User_ID == user.Id && w.Server_ID == server.Id && w.Type == "warning");
 
                 SB.AppendLine($"You have been warned by <@{admin.Id}>.\n**Warning Reason:**\t{reason}\n**Warning Level:** {WarnedUserStats.Warning_Level}\n**Server:** {server.Name}");
-                embed = new DiscordEmbedBuilder
-                {
-                    Color = new DiscordColor(0xf90707),
-                    Author = new DiscordEmbedBuilder.EmbedAuthor
-                    {
-                        IconUrl = user.AvatarUrl,
-                        Name = $"{user.Username} ({user.Id})"
-                    },
-                    Description = $"**Warned user:**\t{user.Mention}\n**Warning level:**\t {WarnedUserStats.Warning_Level}\t**Warning count:**\t {warning_count}\n**Warned by**\t{admin.Username}\n**Reason:** {reason}"
-                };
+
+                string warningDescription = $"**Warned user:**\t{user.Mention}\n**Warning level:**\t {WarnedUserStats.Warning_Level}\t**Warning count:**\t {warning_count}\n**Warned by**\t{admin.Username}\n**Reason:** {reason}";
+
                 if (WarnedUserStats.Warning_Level > 4)
                 {
                     SB.AppendLine($"You have been banned from **{server.Name}** by {admin.Mention} for exceeding the warning level threshold(4).");
@@ -360,7 +406,7 @@ namespace LiveBot
                     await server.BanMemberAsync(user.Id, 0, "Exceeded warning limit!");
                 }
 
-                await modlog.SendMessageAsync(modinfo, embed: embed);
+                await SendModLog(modlog, user, warningDescription, ModLogType.Warning, modinfo);
 
                 if (ctx == null)
                 {
@@ -594,6 +640,16 @@ namespace LiveBot
                 }
             }
             return JTCE;
+        }
+
+        public enum ModLogType
+        {
+            Kick,
+            Ban,
+            Info,
+            Warning,
+            Unwarn,
+            Unban
         }
     }
 }
