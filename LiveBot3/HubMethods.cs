@@ -59,7 +59,7 @@ namespace LiveBot
                             RewardsImageBitArr[i, j] = await wc.GetByteArrayAsync($"https://www.thecrew-hub.com/gen/assets/summits/{JSummit[i].Rewards[j].Img_Path}");
                         }
                     }
-                    Program.Client.Logger.LogInformation(CustomLogEvents.TCHub, $"Info downloaded for {JSummit[0].Summit_ID} summit.");
+                    Program.Client.Logger.LogInformation(CustomLogEvents.TCHub, "Info downloaded for {SummitId} summit.", JSummit[0].Summit_ID);
                 }
             }
         }

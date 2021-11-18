@@ -87,7 +87,7 @@ namespace LiveBot.Commands
                             .AddComponents(CloseButton)
                             .WithEmbed(ModeratorEmbed)
                             .SendAsync(MMChannel);
-                        Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"New Mod Mail entry created by {ctx.User.Username}({ctx.User.Id}) for {serverName}");
+                        Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail entry created by {UserName}({UserId}) for {GuildName}", ctx.User.Username, ctx.User.Id,serverName);
                     }
                     else
                     {
@@ -136,10 +136,11 @@ namespace LiveBot.Commands
                         DiscordMember member = await ctx.Guild.GetMemberAsync((ulong)MMEntry.User_ID);
                         await member.SendMessageAsync($"{ctx.Member.Username} - {reply}");
                     }
-                    catch
+                    catch (Exception e)
                     {
                         embed.Description = $"User has left the server, blocked the bot or closed their DMs. Could not send a response!\nHere is what you said `{reply}`";
                         embed.Title = $"[ERROR] {embed.Title}";
+                        Console.WriteLine(e.InnerException);
                     }
                     MMEntry.LastMSGTime = DateTime.UtcNow;
                     DBLists.UpdateModMail(MMEntry);
@@ -147,7 +148,7 @@ namespace LiveBot.Commands
                     DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id).ModMailID);
                     await MMChannel.SendMessageAsync(embed: embed);
 
-                    Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"An admin has responded to Mod Mail entry #{MMEntry.ID}");
+                    Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "An admin has responded to Mod Mail entry #{EntryId}", MMEntry.ID);
                 }
                 else
                 {
@@ -170,7 +171,7 @@ namespace LiveBot.Commands
             else
             {
                 await Automation.ModMail.CloseModMail(modMail, ctx.User, "Mod Mail closed by the user", "**Mod Mail closed!\n----------------------------------------------------**");
-                Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"Mod mail entry #{modMail.ID} closed by the user");
+                Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "Mod mail entry #{EntryId} closed by the user", modMail.ID);
             }
         }
 
@@ -194,7 +195,7 @@ namespace LiveBot.Commands
                     ctx.User,
                     $" Mod Mail closed by {ctx.User.Username}",
                     $"**Mod Mail closed by {ctx.User.Username}!\n----------------------------------------------------**");
-                Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"Mod mail entry #{modMail.ID} closed by an admin/moderator");
+                Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "Mod mail entry #{EntryId} closed by an admin/moderator", modMail.ID);
             }
         }
 
@@ -234,13 +235,13 @@ namespace LiveBot.Commands
                         Description = DMMessage
                     };
                     await MMChannel.SendMessageAsync(embed: embed);
-                    Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, $"A Dirrect message was sent to {member.Username}({member.Id}) from {ctx.Member.Username}({ctx.Member.Id}) through Mod Mail system.");
+                    Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "A Dirrect message was sent to {Username}({UserId}) from {User2Name}({User2Id}) through Mod Mail system.", member.Username, member.Id, ctx.Member.Username, ctx.Member.Id);
                 }
                 else
                 {
                     await ctx.RespondAsync($"{ctx.User.Mention}, The user could not be contacted. Either their DMs are closed, they have blocked the bot or they have left the server.\n" +
                         $"Here is what you said `{text}`");
-                    Program.Client.Logger.LogError(CustomLogEvents.ModMail, $"Failed to contact user {member.Username}({member.Id}) via mod mail.");
+                    Program.Client.Logger.LogError(CustomLogEvents.ModMail, "Failed to contact user {Username}({UserId}) via mod mail.", member.Username, member.Id);
                 }
             }
             else

@@ -20,7 +20,7 @@
                         LiveStreamer streamer = new()
                         {
                             User = e.User,
-                            Time = DateTime.Now,
+                            Time = DateTime.UtcNow,
                             Guild = guild
                         };
                         int ItemIndex;
@@ -37,7 +37,7 @@
                             && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == null)
                         {
                             //removes user from list
-                            if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.Now
+                            if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.UtcNow
                                 && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == LiveStreamerList[ItemIndex].User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube"))
                             {
                                 LiveStreamerList.RemoveAt(ItemIndex);

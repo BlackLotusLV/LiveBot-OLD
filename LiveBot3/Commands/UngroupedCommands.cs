@@ -11,10 +11,9 @@ namespace LiveBot.Commands
         [Description("Info about the bot. Latest changes, how to support, how long it has been up.")]
         public async Task Bot(CommandContext ctx)
         {
-            DateTime current = DateTime.Now;
+            DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Admin tool improvements with unified logging design and note addition logging\n" +
-                "[FIX] EF6.0 changes broke mod mail, now found and fixed\n" +
+            string changelog = "[FIX] Role tag internal issues\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -832,11 +831,11 @@ namespace LiveBot.Commands
             {
                 dailyused = DateTime.ParseExact(user.Daily_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
             }
-            if (dailyused == null || dailyused < DateTime.Now.Date)
+            if (dailyused == null || dailyused < DateTime.UtcNow.Date)
             {
                 if (member.Id == ctx.Member.Id)
                 {
-                    user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
+                    user.Daily_Used = DateTime.UtcNow.ToString("ddMMyyyy");
                     user.Bucks += money;
                     DB.DBLists.UpdateLeaderboard(user);
                     await new DiscordMessageBuilder()
@@ -848,7 +847,7 @@ namespace LiveBot.Commands
                 {
                     Random r = new();
                     money += r.Next(200);
-                    user.Daily_Used = DateTime.Now.ToString("ddMMyyyy");
+                    user.Daily_Used = DateTime.UtcNow.ToString("ddMMyyyy");
                     receiver.Bucks += money;
                     DB.DBLists.UpdateLeaderboard(user);
                     DB.DBLists.UpdateLeaderboard(receiver);
@@ -861,7 +860,7 @@ namespace LiveBot.Commands
             }
             else
             {
-                DateTime now = DateTime.Now;
+                DateTime now = DateTime.UtcNow;
 
                 await new DiscordMessageBuilder()
                     .WithContent($"Time untill you can use daily {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.")
@@ -890,9 +889,9 @@ namespace LiveBot.Commands
                 {
                     dailyused = DateTime.ParseExact(giver.Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
                 }
-                if (dailyused == null || dailyused < DateTime.Now.Date)
+                if (dailyused == null || dailyused < DateTime.UtcNow.Date)
                 {
-                    giver.Cookies_Used = DateTime.Now.ToString("ddMMyyyy");
+                    giver.Cookies_Used = DateTime.UtcNow.ToString("ddMMyyyy");
                     giver.Cookies_Given += 1;
                     reciever.Cookies_Taken += 1;
                     output = $"{member.Mention}, {ctx.Member.Username} has given you a :cookie:";
@@ -901,7 +900,7 @@ namespace LiveBot.Commands
                 }
                 else
                 {
-                    DateTime now = DateTime.Now;
+                    DateTime now = DateTime.UtcNow;
 
                     output = $"Time untill you can use cookie command again - {(24 - now.Hour) - 1}:{(60 - now.Minute) - 1}:{(60 - now.Second) - 1}.";
                 }
@@ -925,7 +924,7 @@ namespace LiveBot.Commands
             {
                 dailyused = DateTime.ParseExact(user.Cookies_Used, "ddMMyyyy", CultureInfo.InvariantCulture);
             }
-            if (dailyused == null || dailyused < DateTime.Now.Date)
+            if (dailyused == null || dailyused < DateTime.UtcNow.Date)
             {
                 cookiecheck = true;
             }
@@ -985,19 +984,19 @@ namespace LiveBot.Commands
                 if (RT != null)
                 {
                     DiscordRole role = ctx.Guild.GetRole((ulong)RT.Role_ID);
-                    if (RT.Last_Used < DateTime.Now - TimeSpan.FromMinutes(RT.Cooldown))
+                    if (RT.Last_Used < DateTime.UtcNow - TimeSpan.FromMinutes(RT.Cooldown))
                     {
                         await new DiscordMessageBuilder()
                             .WithContent($"{role.Mention} - {ctx.Member.Mention}: {RT.Message}")
                             .WithReply(ctx.Message.Id, false)
                             .WithAllowedMention(new RoleMention(role))
                             .SendAsync(ctx.Channel);
-                        RT.Last_Used = DateTime.Now;
+                        RT.Last_Used = DateTime.UtcNow;
                         DB.DBLists.UpdateRoleTagSettings(RT);
                     }
                     else
                     {
-                        TimeSpan remainingTime = TimeSpan.FromMinutes(RT.Cooldown) - (DateTime.Now - RT.Last_Used);
+                        TimeSpan remainingTime = TimeSpan.FromMinutes(RT.Cooldown) - (DateTime.UtcNow - RT.Last_Used);
                         await new DiscordMessageBuilder()
                             .WithContent($"This role can't be mentioned right now, cooldown has not passed yet. ({remainingTime.Hours} Hours {remainingTime.Minutes} Minutes {remainingTime.Seconds} Seconds left)")
                             .WithReply(ctx.Message.Id, true)

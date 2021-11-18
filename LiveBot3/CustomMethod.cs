@@ -354,7 +354,7 @@ namespace LiveBot
                 {
                     Reason = reason,
                     Active = true,
-                    Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                    Date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
                     Admin_ID = aid,
                     User_ID = uid,
                     Server_ID = server.Id,
@@ -611,8 +611,8 @@ namespace LiveBot
                 }
             }
             sb.Append(((float)LoadedTableCount / (float)DB.DBLists.TableCount).ToString($"] - [0.00%] [{time.Seconds}:{time.Milliseconds}]"));
-            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, DataTableName is null ? "Starting to load Data Base" : $"{DataTableName} List Loaded");
-            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, sb.ToString());
+            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, "{DataBase}",DataTableName is null ? "Starting to load Data Base" : $"{DataTableName} List Loaded");
+            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, "{LoadBar}",sb.ToString());
             if (LoadedTableCount == DB.DBLists.TableCount)
             {
                 DB.DBLists.LoadedTableCount = 0;

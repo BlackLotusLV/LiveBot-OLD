@@ -42,7 +42,7 @@
                 int FollowersAdded = r.Next(FollowersMin, FollowersMax);
                 int MoneyAdded = r.Next(MinimalMoney, MaximalMoney);
                 LevelTimer GlobalUser = GlobalLevelTimer.FirstOrDefault(w => w.User.Id == e.Author.Id);
-                if (GlobalUser != null && GlobalUser.Time.AddMinutes(MSGCooldown) <= DateTime.Now)
+                if (GlobalUser != null && GlobalUser.Time.AddMinutes(MSGCooldown) <= DateTime.UtcNow)
                 {
                     var dbEntry = DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(w => w.ID_User == e.Author.Id);
                     dbEntry.Followers += FollowersAdded;
@@ -51,7 +51,7 @@
                     {
                         dbEntry.Level += 1;
                     }
-                    GlobalUser.Time = DateTime.Now;
+                    GlobalUser.Time = DateTime.UtcNow;
                     DB.DBLists.UpdateLeaderboard(dbEntry);
                 }
                 else
@@ -70,7 +70,7 @@
 
                     LevelTimer NewToList = new()
                     {
-                        Time = DateTime.Now,
+                        Time = DateTime.UtcNow,
                         User = e.Author
                     };
                     GlobalLevelTimer.Add(NewToList);
@@ -78,11 +78,11 @@
                     DB.DBLists.UpdateLeaderboard(dbEntry);
                 }
                 ServerLevelTimer ServerUser = ServerLevelTimer.FirstOrDefault(w => w.User.Id == e.Author.Id);
-                if (ServerUser != null && ServerUser.Time.AddMinutes(MSGCooldown) <= DateTime.Now)
+                if (ServerUser != null && ServerUser.Time.AddMinutes(MSGCooldown) <= DateTime.UtcNow)
                 {
                     var dbEntry = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id);
                     dbEntry.Followers += FollowersAdded;
-                    ServerUser.Time = DateTime.Now;
+                    ServerUser.Time = DateTime.UtcNow;
                     DB.DBLists.UpdateServerRanks(dbEntry);
                 }
                 else
@@ -96,7 +96,7 @@
 
                     ServerLevelTimer NewToList = new()
                     {
-                        Time = DateTime.Now,
+                        Time = DateTime.UtcNow,
                         Guild = e.Guild,
                         User = e.Author
                     };

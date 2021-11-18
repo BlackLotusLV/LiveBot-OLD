@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace LiveBot.Automation
 {
@@ -22,23 +23,22 @@ namespace LiveBot.Automation
                         var wordlist = (from bw in DB.DBLists.AMBannedWords
                                         where bw.Server_ID == e.Guild.Id
                                         select bw).ToList();
-                        foreach (var word in wordlist)
+                        foreach (var word in from word in wordlist
+                                             where Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b")
+                                             select word)
                         {
-                            if (Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b"))
+                            await e.Message.DeleteAsync();
+                            if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
                             {
-                                await e.Message.DeleteAsync();
-                                if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
+                                if (word.Offense.Contains("ASCII"))
                                 {
-                                    if (word.Offense.Contains("ASCII"))
-                                    {
-                                        await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense}", true);
-                                        Client.Logger.LogInformation(CustomLogEvents.AutoMod, $"User {e.Author.Username}({e.Author.Id}) Warned for ASCII spam");
-                                    }
-                                    else
-                                    {
-                                        await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
-                                        Client.Logger.LogInformation(CustomLogEvents.AutoMod, $"User {e.Author.Username}({e.Author.Id}) Warned for using a trigger word.\n\t\tOffense - {word.Offense}\n\t\tContent - {word.Word}");
-                                    }
+                                    await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense}", true);
+                                    Client.Logger.LogInformation(CustomLogEvents.AutoMod, "User {Username}({UserId}) Warned for ASCII spam", e.Author.Username, e.Author.Id);
+                                }
+                                else
+                                {
+                                    await CustomMethod.WarnUserAsync(e.Author, Program.Client.CurrentUser, e.Guild, e.Channel, $"{word.Offense} - Trigger word: `{word.Word}`", true);
+                                    Client.Logger.LogInformation(CustomLogEvents.AutoMod, "User {Username}({UserId}) Warned for using a trigger word.\n\t\tOffense - {Offense}\n\t\tContent - {TriggerWord}", e.Author.Username, e.Author.Id, word.Offense, word.Word);
                                 }
                             }
                         }
@@ -247,7 +247,7 @@ namespace LiveBot.Automation
         {
             _ = Task.Run(async () =>
             {
-                DateTimeOffset time = DateTimeOffset.Now.UtcDateTime;
+                DateTimeOffset time = DateTimeOffset.UtcNow;
                 DateTimeOffset beforetime = time.AddSeconds(-5);
                 DateTimeOffset aftertime = time.AddSeconds(10);
                 var GuildSettings = (from ss in DB.DBLists.ServerSettings
@@ -272,7 +272,7 @@ namespace LiveBot.Automation
                         UserSettings.Kick_Count++;
                         UserSettings.Followers /= 2;
                         DB.DBLists.UpdateServerRanks(UserSettings);
-                        DB.DBLists.InsertWarnings(new DB.Warnings { Reason = logs[0].Reason, Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = logs[0].UserResponsible.Id, User_ID = e.Member.Id, Server_ID = e.Guild.Id, Type = "kick" });
+                        DB.DBLists.InsertWarnings(new DB.Warnings { Reason = logs[0].Reason, Active = false, Date = DateTime.UtcNow.ToString("yyyy-MM-dd"), Admin_ID = logs[0].UserResponsible.Id, User_ID = e.Member.Id, Server_ID = e.Guild.Id, Type = "kick" });
                     }
                 }
             });
@@ -302,7 +302,7 @@ namespace LiveBot.Automation
                     Console.WriteLine($"Ban reason search {(banEntry == null ? "Failed" : "Succeeded")}");
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings.WKB_Log));
                     await CustomMethod.SendModLog(wkbLog, banEntry?.Target, $"**User Banned:**\t{banEntry?.Target.Mention}\n*by {banEntry?.UserResponsible.Mention}*\n**Reason:** {banEntry?.Reason}", CustomMethod.ModLogType.Ban);
-                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = banEntry?.Reason ?? "No reason specified", Active = false, Date = DateTime.Now.ToString("yyyy-MM-dd"), Admin_ID = Convert.ToDecimal(banEntry?.UserResponsible.Id), User_ID = Convert.ToDecimal(banEntry?.Target.Id), Server_ID = e.Guild.Id, Type = "ban" });
+                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = banEntry?.Reason ?? "No reason specified", Active = false, Date = DateTime.UtcNow.ToString("yyyy-MM-dd"), Admin_ID = Convert.ToDecimal(banEntry?.UserResponsible.Id), User_ID = Convert.ToDecimal(banEntry?.Target.Id), Server_ID = e.Guild.Id, Type = "ban" });
                 }
                 var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
                 if (UserSettings == null)

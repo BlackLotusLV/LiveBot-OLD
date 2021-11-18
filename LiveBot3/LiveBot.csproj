@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01043" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01043" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01043" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01043" />
+    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01044" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01044" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01044" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01044" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0" />
     <PackageReference Include="Npgsql" Version="6.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0" />

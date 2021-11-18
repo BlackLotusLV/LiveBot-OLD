@@ -13,7 +13,7 @@ namespace LiveBot.Commands
         [Aliases("live")]
         public async Task Uptime(CommandContext ctx)
         {
-            DateTime current = DateTime.Now;
+            DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
             await ctx.Message.RespondAsync($"{time.Days} Days {time.Hours}:{time.Minutes}.{time.Seconds}");
         }
@@ -475,7 +475,7 @@ namespace LiveBot.Commands
                 Admin_ID = ctx.Message.Author.Id,
                 Type = "note",
                 User_ID = user.Id,
-                Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                Date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
                 Reason = note
             };
             DB.DBLists.InsertWarnings(newEntry);

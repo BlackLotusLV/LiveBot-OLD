@@ -10,9 +10,9 @@ namespace LiveBot
             {
                 foreach (var item in list)
                 {
-                    if (item.Time.AddHours(StreamCheckDelay) < DateTime.Now && item.User.Presence.Activity.ActivityType != ActivityType.Streaming)
+                    if (item.Time.AddHours(StreamCheckDelay) < DateTime.UtcNow && item.User.Presence.Activity.ActivityType != ActivityType.Streaming)
                     {
-                        Program.Client.Logger.LogInformation(CustomLogEvents.LiveStream, $"User {item.User.Username} removed from Live Stream List - {LiveStream.StreamCheckDelay} hours passed.");
+                        Program.Client.Logger.LogInformation(CustomLogEvents.LiveStream, "User {UserName} removed from Live Stream List - {CheckDelay} hours passed.", item.User.Username, LiveStream.StreamCheckDelay);
                         list.Remove(item);
                     }
                 }
@@ -29,7 +29,7 @@ namespace LiveBot
             {
                 foreach (var item in list)
                 {
-                    if (item.Time.AddMinutes(5) < DateTime.Now)
+                    if (item.Time.AddMinutes(5) < DateTime.UtcNow)
                     {
                         await item.Role.ModifyAsync(mentionable: false);
                         list.Remove(item);

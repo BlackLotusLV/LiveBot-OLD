@@ -54,7 +54,7 @@ namespace LiveBot.Commands
                 }
                 catch (WebException e)
                 {
-                    Program.Client.Logger.LogError(CustomLogEvents.CommandError, e.Message, $"Summit logo download failed, substituting image.");
+                    Program.Client.Logger.LogError(CustomLogEvents.CommandError, e, $"Summit logo download failed, substituting image.");
                     SummitLogo = File.ReadAllBytes("Assets/Summit/summit_small");
                 }
             }

@@ -39,7 +39,7 @@
                     MMEntry.LastMSGTime = DateTime.UtcNow;
                     DB.DBLists.UpdateModMail(MMEntry);
 
-                    Client.Logger.LogInformation(CustomLogEvents.ModMail, $"New Mod Mail message sent to {ModMailChannel.Name}({ModMailChannel.Id}) in {ModMailChannel.Guild.Name} from {e.Author.Username}({e.Author.Id})");
+                    Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail message sent to {ChannelName}({ChannelId}) in {GuildName} from {Username}({UserId})", ModMailChannel.Name, ModMailChannel.Id, ModMailChannel.Guild.Name, e.Author.Username,e.Author.Id);
                 }
             });
             await Task.Delay(1);

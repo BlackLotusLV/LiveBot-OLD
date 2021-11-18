@@ -111,9 +111,9 @@ namespace LiveBot.Commands
         public async Task GetGuilds(CommandContext ctx)
         {
             StringBuilder sb = new();
-            foreach (var guild in Program.Client.Guilds)
+            foreach (var guild in Program.Client.Guilds.Values)
             {
-                sb.AppendLine($"{guild.Value.Name} ({guild.Value.Id})");
+                sb.AppendLine($"{guild.Name} ({guild.Id})");
             }
             await ctx.RespondAsync(sb.ToString());
         }

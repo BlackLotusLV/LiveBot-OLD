@@ -16,8 +16,8 @@ namespace LiveBot
         public InteractivityExtension Interactivity { get; private set; }
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
-        public static readonly DateTime start = DateTime.Now;
-        public static readonly string BotVersion = $"20211114_A";
+        public static readonly DateTime start = DateTime.UtcNow;
+        public static readonly string BotVersion = $"20211118_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -216,7 +216,7 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }
-            Client.Logger.LogInformation(CustomLogEvents.LiveBot, $"Guild available: {e.Guild.Name}");
+            Client.Logger.LogInformation(CustomLogEvents.LiveBot, "Guild available: {GuildName}", e.Guild.Name);
             return Task.CompletedTask;
         }
 
@@ -228,7 +228,7 @@ namespace LiveBot
 
         private Task Commands_CommandExecuted(CommandsNextExtension ext, CommandExecutionEventArgs e)
         {
-            Client.Logger.LogInformation(CustomLogEvents.CommandExecuted, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}' command");
+            Client.Logger.LogInformation(CustomLogEvents.CommandExecuted, "{Username} successfully executed '{CommandName}' command", e.Context.User.Username, e.Command.QualifiedName);
             DB.DBLists.LoadCUC();
             string CommandName = e.Command.Name;
             var DBEntry = DB.DBLists.CommandsUsedCount.FirstOrDefault(w => w.Name == CommandName);
@@ -251,7 +251,7 @@ namespace LiveBot
 
         private async Task Commands_CommandErrored(CommandsNextExtension ext, CommandErrorEventArgs e)
         {
-            Client.Logger.LogError(CustomLogEvents.CommandError, e.Exception, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored");
+            Client.Logger.LogError(CustomLogEvents.CommandError, e.Exception, "{Username} tried executing '{CommandName}' but it errored", e.Context.User.Username, e.Command?.QualifiedName ?? "<unknown command>");
             if (e.Exception is ChecksFailedException ex)
             {
                 var no_entry = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -285,25 +285,25 @@ namespace LiveBot
 
         private Task Slash_Commands_CommandExecuted(SlashCommandsExtension ext, SlashCommandExecutedEventArgs e)
         {
-            Client.Logger.LogInformation(CustomLogEvents.SlashExecuted, $"{e.Context.User.Username} successfully executed '{e.Context.CommandName}' command");
+            Client.Logger.LogInformation(CustomLogEvents.SlashExecuted, "{Username} successfully executed '{CommandName}' command", e.Context.User.Username, e.Context.CommandName);
             return Task.CompletedTask;
         }
 
         private Task Slash_Commands_CommandErrored(SlashCommandsExtension ext, SlashCommandErrorEventArgs e)
         {
-            Client.Logger.LogError(CustomLogEvents.SlashErrored, e.Exception, $"{e.Context.User.Username} tried executing '{e.Context?.CommandName ?? "<unknown command>"}' but it errored");
+            Client.Logger.LogError(CustomLogEvents.SlashErrored, e.Exception, "{Username} tried executing '{CommandName}' but it errored", e.Context.User.Username, e.Context?.CommandName ?? "<unknown command>");
             return Task.CompletedTask;
         }
 
         private Task Context_Menu_Executed(SlashCommandsExtension ext, ContextMenuExecutedEventArgs e)
         {
-            Client.Logger.LogInformation(CustomLogEvents.ContextMenuExecuted, $"{e.Context.User.Username} Successfully executed '{e.Context.CommandName}' command");
+            Client.Logger.LogInformation(CustomLogEvents.ContextMenuExecuted, "{Username} Successfully executed '{CommandName}' command", e.Context.User.Username, e.Context.CommandName);
             return Task.CompletedTask;
         }
 
         private Task Context_Menu_Errored(SlashCommandsExtension ext, ContextMenuErrorEventArgs e)
         {
-            Client.Logger.LogError(CustomLogEvents.SlashErrored, e.Exception, $"{e.Context.User.Username} tried executing '{e.Context?.CommandName ?? "<unknown command>"}' but it errored");
+            Client.Logger.LogError(CustomLogEvents.SlashErrored, e.Exception, "{Username} tried executing '{CommandName}' but it errored", e.Context.User.Username, e.Context?.CommandName ?? "<unknown command>");
             return Task.CompletedTask;
         }
     }
