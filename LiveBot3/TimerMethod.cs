@@ -22,24 +22,5 @@ namespace LiveBot
                 Program.Client.Logger.LogInformation(CustomLogEvents.LiveStream, "Live Stream list is empty. No-one to remove or check.");
             }
         }
-
-        public static async Task ActivatedRolesCheck(List<ActivateRolesTimer> list)
-        {
-            try
-            {
-                foreach (var item in list)
-                {
-                    if (item.Time.AddMinutes(5) < DateTime.UtcNow)
-                    {
-                        await item.Role.ModifyAsync(mentionable: false);
-                        list.Remove(item);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("[System] ActivateRolesTimer list is empty!");
-            }
-        }
     }
 }

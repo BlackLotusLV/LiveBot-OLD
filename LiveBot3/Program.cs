@@ -45,7 +45,6 @@ namespace LiveBot
         // Timers
         private Timer StreamDelayTimer { get; set; } = new(e => TimerMethod.StreamListCheck(LiveStream.LiveStreamerList, LiveStream.StreamCheckDelay));
 
-        private Timer ActiveRoleTimer { get; set; } = new(async e => await TimerMethod.ActivatedRolesCheck(Roles.ActivateRolesTimer));
         private Timer HubUpdateTimer { get; set; } = new(async e => await HubMethods.UpdateHubInfo());
         private Timer MessageCacheClearTimer { get; set; } = new(e => AutoMod.ClearMSGCache());
         private Timer ModMailCloserTimer { get; set; } = new(async e => await ModMail.ModMailCloser());
@@ -189,7 +188,6 @@ namespace LiveBot
                 if (!TestBuild)
                 {
                     StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
-                    ActiveRoleTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
                     HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
                     MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
                     ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
