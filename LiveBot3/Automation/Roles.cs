@@ -20,12 +20,12 @@
                     if (member.Roles.Any(w => w.Id == Convert.ToUInt64(e.Interaction.Data.CustomId)))
                     {
                         await member.RevokeRoleAsync(role);
-                        response.Content = $"{member.Mention} the role {role.Mention} has been removed.";
+                        response.Content = $"{member.Mention} the {role.Mention} role has been removed.";
                     }
                     else
                     {
                         await member.GrantRoleAsync(role);
-                        response.Content = $"{member.Mention} you have been given the {role.Mention}.";
+                        response.Content = $"{member.Mention} you have been given the {role.Mention} role.";
                     }
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, response);
                 }

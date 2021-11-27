@@ -8,6 +8,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace LiveBot.SlashCommands
 {
@@ -47,7 +48,7 @@ namespace LiveBot.SlashCommands
                 }
                 catch (WebException e)
                 {
-                    Program.Client.Logger.LogError(CustomLogEvents.CommandError, e.Message, $"Summit logo download failed, substituting image.");
+                    Program.Client.Logger.LogError(CustomLogEvents.CommandError, "Summit logo download failed, substituting image.\n{ExceptionMessage}", e.Message);
                     SummitLogo = File.ReadAllBytes("Assets/Summit/summit_small");
                 }
             }
@@ -387,6 +388,168 @@ namespace LiveBot.SlashCommands
             msgBuilder.AddFile(upFile);
             msgBuilder.AddMention(new UserMention());
             await ctx.FollowUpAsync(msgBuilder);
+        }
+
+        [SlashCommand("Rewards","Summit rewards for selected date")]
+        public async Task Rewards(InteractionContext ctx, [Option("Week","Which week do you want to see the rewards for? Defaults to current")] Week Week=Week.ThisWeek)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder { Content = "Gathering data and building image." }));
+            await HubMethods.UpdateHubInfo();
+
+            Color[] RewardColours = new Color[] { Rgba32.ParseHex("#B07C4D"), Rgba32.ParseHex("#C2C2C2"), Rgba32.ParseHex("#D5A45F"), Rgba32.ParseHex("#0060A9") };
+
+            string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
+            int RewardWidth = 412;
+            TCHubJson.Reward[] Rewards = Program.JSummit[(int)Week].Rewards;
+            Font Font = Program.Fonts.CreateFont("HurmeGeometricSans3W03-Blk", 25);
+            using (Image<Rgba32> RewardsImage = new(4 * RewardWidth, 328))
+            {
+                Parallel.For(0, Rewards.Length, (i, state) =>
+                {
+                    string RewardTitle = string.Empty;
+
+                    Image<Rgba32>
+                                affix1 = new(1, 1),
+                                affix2 = new(1, 1),
+                                affixbonus = new(1, 1),
+                                DisciplineForPart = new(1, 1);
+                    bool isParts = false;
+                    switch (Rewards[i].Type)
+                    {
+                        case "phys_part":
+                            string
+                                   affix1name = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("affix1")).Value ?? "unknown", "\\w{0,}_", string.Empty),
+                                   affix2name = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("affix2")).Value ?? "unknown", "\\w{0,}_", string.Empty),
+                                   affixBonusName = Regex.Replace(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("bonus_icon")).Value ?? "unknown", "\\w{0,}_", string.Empty);
+                            try
+                            {
+                                affix1 = Image.Load<Rgba32>($"Assets/Affix/{affix1name.ToLower()}.png");
+                            }
+                            catch
+                            {
+                                affix1 = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
+                            }
+                            try
+                            {
+                                affix2 = Image.Load<Rgba32>($"Assets/Affix/{affix2name.ToLower()}.png");
+                            }
+                            catch
+                            {
+                                affix2 = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
+                            }
+                            try
+                            {
+                                affixbonus = Image.Load<Rgba32>($"Assets/Affix/{affixBonusName.ToLower()}.png");
+                            }
+                            catch
+                            {
+                                affixbonus = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
+                            }
+                            try
+                            {
+                                DisciplineForPart = Image.Load<Rgba32>($"Assets/Disciplines/{Rewards[i].Extra.FirstOrDefault(w=>w.Key.Equals("vcat_icon")).Value}.png");
+                                DisciplineForPart.Mutate(ctx => ctx.Resize((int)(affix1.Width * 1.2f), (int)(affix1.Height * 1.2f),false));
+                            }
+                            catch
+                            {
+                                DisciplineForPart = Image.Load<Rgba32>($"Assets/Affix/unknown.png");
+                            }
+                            string boosted = string.Empty;
+                            if (Rewards[i].Debug_Subtitle == "BOOSTED")
+                            {
+                                boosted = "BOOSTED ";
+                            }
+                            RewardTitle = $"{boosted}{HubMethods.NameIDLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("quality_text_id")).Value)} " +
+                            $"{affixBonusName} " +
+                            $"{Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("type")).Value}";
+
+                            isParts = true;
+                            break;
+
+                        case "vanity":
+                            RewardTitle = HubMethods.NameIDLookup(Rewards[i].Title_Text_ID);
+                            if (RewardTitle is null)
+                            {
+                                if (Rewards[i].Img_Path.Contains("emote"))
+                                {
+                                    RewardTitle = "Emote";
+                                }
+                                else
+                                {
+                                    RewardTitle = "[unknown]";
+                                }
+                            }
+                            break;
+
+                        case "generic":
+                            RewardTitle = Rewards[i].Debug_Title;
+                            break;
+
+                        case "currency":
+                            RewardTitle = $"{Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("currency_type")).Value} - {Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("currency_amount")).Value}";
+                            break;
+
+                        case "vehicle":
+                            RewardTitle = $"{HubMethods.NameIDLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("brand_text_id")).Value)} - {HubMethods.NameIDLookup(Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("model_text_id")).Value)}";
+                            break;
+
+                        default:
+                            RewardTitle = "LiveBot needs to be updated to view this reward!";
+                            break;
+                    }
+                    if (RewardTitle is null)
+                    {
+                        RewardTitle = "LiveBot needs to be updated to view this reward!";
+                    }
+
+                    RewardTitle = Regex.Replace(RewardTitle, "((<(\\w||[/=\"'#\\ ]){0,}>)||(&#\\d{0,}; )){0,}", "").ToUpper();
+
+                    using Image<Rgba32> RewardImage = Image.Load<Rgba32>(HubMethods.RewardsImageBitArr[(int)Week, i]);
+                    using Image<Rgba32> TopBar = new(RewardImage.Width, 20);
+                    TopBar.Mutate(ctx => ctx.
+                    Fill(RewardColours[i])
+                    );
+                    TextOptions TextOptions = new()
+                    {
+                        WrapTextWidth = RewardWidth
+                    };
+                    RewardsImage.Mutate(ctx => ctx
+                    .DrawImage(RewardImage, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
+                    .DrawImage(TopBar, new Point((4 - Rewards[i].Level) * RewardWidth, 0), 1)
+                    .DrawText(new DrawingOptions { TextOptions = TextOptions }, RewardTitle, Font, Brushes.Solid(Color.White), Pens.Solid(Color.Black, 1f), new PointF(((4 - Rewards[i].Level) * RewardWidth) + 5, 15))
+                    );
+                    if (isParts)
+                    {
+                        RewardsImage.Mutate(ctx => ctx
+                        .DrawImage(affix1, new Point((4 - Rewards[i].Level) * RewardWidth, RewardImage.Height - affix1.Height), 1)
+                        .DrawImage(affix2, new Point((4 - Rewards[i].Level) * RewardWidth + affix1.Width, RewardImage.Height - affix2.Height), 1)
+                        .DrawImage(affixbonus, new Point((4 - Rewards[i].Level) * RewardWidth + affix1.Width + affix2.Width, RewardImage.Height - affixbonus.Height), 1)
+                        .DrawImage(DisciplineForPart, new Point((4-Rewards[i].Level)*RewardWidth,RewardsImage.Height-(affix1.Height+DisciplineForPart.Height+5)),1)
+                        );
+                    }
+                });
+                RewardsImage.Save(imageLoc);
+            }
+            using var upFile = new FileStream(imageLoc, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+            var msgBuilder = new DiscordFollowupMessageBuilder
+            {
+                Content = $"{ctx.User.Mention}, here are {Week.GetName(Week)} summit rewards:"
+            };
+            msgBuilder.AddFile(upFile);
+            msgBuilder.AddMention(new UserMention());
+            await ctx.FollowUpAsync(msgBuilder);
+        }
+
+        public enum Week
+        {
+            [ChoiceName("This Week")]
+            ThisWeek = 0,
+            [ChoiceName("Next Week")]
+            NextWeek = 1,
+            [ChoiceName("3rd Week")]
+            ThirdWeek = 2,
+            [ChoiceName("4th Week")]
+            ForthWeek = 3,
         }
 
         public enum Platforms
