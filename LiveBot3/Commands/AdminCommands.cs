@@ -475,7 +475,7 @@ namespace LiveBot.Commands
                 Admin_ID = ctx.Message.Author.Id,
                 Type = "note",
                 User_ID = user.Id,
-                Date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                Time_Created= DateTime.UtcNow,
                 Reason = note
             };
             DB.DBLists.InsertWarnings(newEntry);

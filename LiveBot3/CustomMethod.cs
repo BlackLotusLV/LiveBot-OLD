@@ -354,7 +354,7 @@ namespace LiveBot
                 {
                     Reason = reason,
                     Active = true,
-                    Date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                    Time_Created = DateTime.UtcNow,
                     Admin_ID = aid,
                     User_ID = uid,
                     Server_ID = server.Id,
@@ -505,7 +505,7 @@ namespace LiveBot
                 kcount = UserStats.Kick_Count;
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).ToList();
+                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).OrderBy(w=>w.Time_Created).ToList();
                 if (!AdminCommand)
                 {
                     WarningsList.RemoveAll(w => w.Type == "note");
@@ -538,7 +538,7 @@ namespace LiveBot
                             }
                             break;
                     }
-                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** {item.Date}\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
+                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** <t:{(item.Time_Created-new DateTime(1970,1,1)).TotalSeconds}>\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
 
                     if (Reason.Length + addedInfraction.Length > 1023 * splitcount)
                     {
@@ -557,11 +557,11 @@ namespace LiveBot
                 Color = new DiscordColor(0xFF6600),
                 Author = new DiscordEmbedBuilder.EmbedAuthor
                 {
-                    Name = User.Username,
+                    Name = $"{User.Username}({User.Id})",
                     IconUrl = User.AvatarUrl
                 },
                 Description = $"",
-                Title = "User kick Count",
+                Title = "Infraction Count",
                 Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
                 {
                     Url = User.AvatarUrl

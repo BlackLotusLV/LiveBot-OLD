@@ -19,8 +19,8 @@ namespace LiveBot.DB
         public bool Active { get; set; }
 
         [Required]
-        [Column("date")]
-        public string Date { get; set; }
+        [Column("time_created")]
+        public DateTime Time_Created { get; set; }
 
         [Required]
         [Column("admin_id")]
