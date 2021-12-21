@@ -538,7 +538,7 @@ namespace LiveBot
                             }
                             break;
                     }
-                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** <t:{(item.Time_Created-new DateTime(1970,1,1)).TotalSeconds}>\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
+                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** <t:{(int)(item.Time_Created-new DateTime(1970,1,1)).TotalSeconds}>\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
 
                     if (Reason.Length + addedInfraction.Length > 1023 * splitcount)
                     {

@@ -13,7 +13,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Added summit rewards command to slash command list. Please get used to using slash commands as they will slowly replace all commands\n" +
+            string changelog = "[FIX] summit reward tier colour order fixed.\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder

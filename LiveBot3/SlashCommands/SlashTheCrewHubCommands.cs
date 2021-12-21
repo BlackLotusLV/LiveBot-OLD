@@ -396,7 +396,7 @@ namespace LiveBot.SlashCommands
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder { Content = "Gathering data and building image." }));
             await HubMethods.UpdateHubInfo();
 
-            Color[] RewardColours = new Color[] { Rgba32.ParseHex("#B07C4D"), Rgba32.ParseHex("#C2C2C2"), Rgba32.ParseHex("#D5A45F"), Rgba32.ParseHex("#0060A9") };
+            Color[] RewardColours = new Color[] { Rgba32.ParseHex("#0060A9"), Rgba32.ParseHex("#D5A45F"), Rgba32.ParseHex("#C2C2C2"), Rgba32.ParseHex("#B07C4D") };
 
             string imageLoc = $"{Program.tmpLoc}{ctx.User.Id}-summitrewards.png";
             int RewardWidth = 412;
