@@ -278,7 +278,7 @@ namespace LiveBot.Commands
                         Name = $"{ctx.Guild.Name} Open Mod Mail Entries"
                     }
                 };
-                embed.AddField("ModMail Mail Entries", sb.ToString().Length < 1 ? "No entreis" : sb.ToString());
+                embed.AddField("ModMail Entries list", sb.ToString().Length < 1 ? "No entries" : sb.ToString());
                 await ctx.RespondAsync(embed: embed);
             }
         }

@@ -51,7 +51,7 @@ namespace LiveBot.Commands
         }
 
         [Command("update")]
-        public async Task Update(CommandContext ctx, [Description("Which database to update. (All will update all db)")] string db = null)
+        public async Task Update(CommandContext ctx, [Description("Which database to update. (All will update all db)")] string db = "default")
         {
             string msgcontent;
             switch (db.ToLower())
