@@ -30,37 +30,51 @@ namespace LiveBot.DB
         public static void LoadAllLists()
         {
             CustomMethod.DBProgress(LoadedTableCount, TimeSpan.Zero);
-            LoadServerSettings(true);
-            LoadWeatherSchedule(true);
-            new Thread(() => LoadServerWelcomeSettings(true)).Start();
-            new Thread(() => LoadVehicleList(true)).Start();
-            new Thread(() => LoadDisciplineList(true)).Start();
-            new Thread(() => LoadStreamNotifications(true)).Start();
-            new Thread(() => LoadBackgroundImage(true)).Start();
-            new Thread(() => LoadLeaderboard(true)).Start();
-            new Thread(() => LoadServerRanks(true)).Start();
-            new Thread(() => LoadUserImages(true)).Start();
-            new Thread(() => LoadUserSettings(true)).Start();
-            new Thread(() => LoadWarnings(true)).Start();
-            new Thread(() => LoadRankRoles(true)).Start();
-            new Thread(() => LoadCUC(true)).Start();
-            new Thread(() => LoadBannedWords(true)).Start();
-            new Thread(() => LoadBotOutputList(true)).Start();
-            new Thread(() => LoadModMail(true)).Start();
-            new Thread(() => LoadRoleTagSettings(true)).Start();
-            new Thread(() => LoadButtonRoles(true)).Start();
+            Stopwatch sw = Stopwatch.StartNew();
+            LoadServerSettings(true,sw);
+            LoadWeatherSchedule(true,sw);
+            new Thread(() =>
+            {
+                Parallel.Invoke(
+                    () => LoadServerWelcomeSettings(true, sw),
+                    () => LoadVehicleList(true, sw),
+                    () => LoadDisciplineList(true, sw),
+                    () => LoadStreamNotifications(true, sw),
+                    () => LoadBackgroundImage(true, sw),
+                    () => LoadLeaderboard(true, sw),
+                    () => LoadServerRanks(true, sw),
+                    () => LoadUserImages(true, sw),
+                    () => LoadUserSettings(true, sw),
+                    () => LoadWarnings(true, sw),
+                    () => LoadRankRoles(true, sw),
+                    () => LoadCUC(true, sw),
+                    () => LoadBannedWords(true, sw),
+                    () => LoadBotOutputList(true, sw),
+                    () => LoadModMail(true, sw),
+                    () => LoadRoleTagSettings(true, sw),
+                    () => LoadButtonRoles(true, sw)
+                    );
+                sw.Stop();
+            }).Start();
         }
 
         #region Load Functions
 
-        public static void LoadVehicleList(bool progress = false)
+        public static void LoadVehicleList(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer==null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new VehicleListContext();
             VehicleList = (from c in ctx.VehicleList
                            select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -68,18 +82,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Vehicle List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Vehicle List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadDisciplineList(bool progress = false)
+        public static void LoadDisciplineList(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new DisciplineListContext();
             DisciplineList = (from c in ctx.DisciplineList
                               select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -87,18 +108,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Discipline List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Discipline List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadStreamNotifications(bool progress = false)
+        public static void LoadStreamNotifications(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new StreamNotificationsContext();
             StreamNotifications = (from c in ctx.StreamNotifications
                                    select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -106,18 +134,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Stream Notifications List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Stream Notifications List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadBackgroundImage(bool progress = false)
+        public static void LoadBackgroundImage(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new BackgroundImageContext();
             BackgroundImage = (from c in ctx.BackgroundImage
                                select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -125,18 +160,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Background Images List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Background Images List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadLeaderboard(bool progress = false)
+        public static void LoadLeaderboard(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new LeaderboardContext();
             Leaderboard = (from c in ctx.Leaderboard
                            select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -144,18 +186,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Leaderboard List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Leaderboard List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadServerRanks(bool progress = false)
+        public static void LoadServerRanks(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new ServerRanksContext();
             ServerRanks = (from c in ctx.ServerRanks
                            select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -163,18 +212,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Ranks List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Ranks List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadUserSettings(bool progress = false)
+        public static void LoadUserSettings(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new UserSettingsContext();
             UserSettings = (from c in ctx.UserSettings
                             select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -182,18 +238,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Settings List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Settings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadUserImages(bool progress = false)
+        public static void LoadUserImages(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new UserImagesContext();
             UserImages = (from c in ctx.UserImages
                           select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -201,18 +264,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Images List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Images List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadWarnings(bool progress = false)
+        public static void LoadWarnings(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new WarningsContext();
             Warnings = (from c in ctx.Warnings
                         select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -220,18 +290,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Warnings List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Warnings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadServerSettings(bool progress = false)
+        public static void LoadServerSettings(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new ServerSettingsContext();
             ServerSettings = (from c in ctx.ServerSettings
                               select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -239,18 +316,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Settings List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Settings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadServerWelcomeSettings(bool progress = false)
+        public static void LoadServerWelcomeSettings(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new ServerWelcomeSettingsContext();
             ServerWelcomeSettings = (from c in ctx.ServerWelcomeSettings
                                      select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -258,18 +342,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Welcome Settings List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Welcome Settings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadRankRoles(bool progress = false)
+        public static void LoadRankRoles(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new RankRolesContext();
             RankRoles = (from c in ctx.RankRoles
                          select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -277,18 +368,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Rank Roles List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Rank Roles List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadCUC(bool progress = false)
+        public static void LoadCUC(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new CommandsUsedCountContext();
             CommandsUsedCount = (from c in ctx.CommandsUsedCount
                                  select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -296,14 +394,21 @@ namespace LiveBot.DB
             }
         }
 
-        public static void LoadBannedWords(bool progress = false)
+        public static void LoadBannedWords(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new AMBannedWordsContext();
             AMBannedWords = (from c in ctx.AMBannedWords
                              select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -311,18 +416,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Banned Words List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Banned Words List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadBotOutputList(bool progress = false)
+        public static void LoadBotOutputList(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new BotOutputListContext();
             BotOutputList = (from c in ctx.BotOutputList
                              select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -330,18 +442,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "BotOutputList List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "BotOutputList List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadWeatherSchedule(bool progress = false)
+        public static void LoadWeatherSchedule(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new WeatherScheduleContext();
             WeatherSchedule = (from c in ctx.WeatherSchedule
                                select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -349,18 +468,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "WeatherSchedule List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "WeatherSchedule List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadModMail(bool progress = false)
+        public static void LoadModMail(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new ModMailContext();
             ModMail = (from c in ctx.ModMail
                        select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -368,18 +494,25 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ModMail List Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ModMail List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadRoleTagSettings(bool progress = false)
+        public static void LoadRoleTagSettings(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using var ctx = new RoleTagSettingsContext();
             RoleTagSettings = (from c in ctx.RoleTagSettings
                                select c).ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -387,17 +520,24 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "RoleTag Settings Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "RoleTag Settings Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds,timer.Elapsed.Milliseconds);
             }
         }
 
-        public static void LoadButtonRoles(bool progress = false)
+        public static void LoadButtonRoles(bool progress = false, Stopwatch timer = null)
         {
-            Stopwatch timer = new();
-            timer.Start();
+            bool check = false;
+            if (timer == null)
+            {
+                timer = Stopwatch.StartNew();
+                check = true;
+            }
             using ButtonRolesContext ctx = new();
             ButtonRoles = ctx.ButtonRoles.ToList();
-            timer.Stop();
+            if (check)
+            {
+                timer.Stop();
+            }
             if (progress)
             {
                 LoadedTableCount++;
@@ -405,7 +545,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ButtonRoles Loaded");
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ButtonRoles Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
