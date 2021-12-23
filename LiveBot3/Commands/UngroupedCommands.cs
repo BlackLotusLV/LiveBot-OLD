@@ -14,6 +14,8 @@ namespace LiveBot.Commands
             DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
             string changelog = "[FIX] summit reward tier colour order fixed.\n" +
+                "[INTERNAL] Database integration improvements, might break things, keep an eye out for bugs\n" +
+                "[FIX] Fixed a typo for active mod mail command\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
