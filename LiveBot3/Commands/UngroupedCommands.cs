@@ -980,10 +980,10 @@ namespace LiveBot.Commands
             List<DB.RoleTagSettings> Roles = DB.DBLists.RoleTagSettings.Where(w => w.Server_ID == ctx.Guild.Id && w.Emoji_ID == Emoji.Id).ToList();
             if (Roles != null)
             {
-                DB.RoleTagSettings RT = Roles.FirstOrDefault(w => (ulong)w.Channel_ID == ctx.Channel.Id);
+                DB.RoleTagSettings RT = Roles.FirstOrDefault(w => w.Channel_ID == ctx.Channel.Id);
                 if (RT != null)
                 {
-                    DiscordRole role = ctx.Guild.GetRole((ulong)RT.Role_ID);
+                    DiscordRole role = ctx.Guild.GetRole(RT.Role_ID);
                     if (RT.Last_Used < DateTime.UtcNow - TimeSpan.FromMinutes(RT.Cooldown))
                     {
                         await new DiscordMessageBuilder()

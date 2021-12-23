@@ -12,16 +12,19 @@ namespace LiveBot.DB
 
         [Required]
         [Column("server_id")]
-        public decimal Server_ID { get; set; }
+        public ulong Server_ID { get=> _Server_ID; set { _Server_ID = Convert.ToUInt64(value); } }
+        private ulong _Server_ID;
 
         [Column("games")]
         public string[] Games { get; set; }
 
         [Column("roles_id")]
-        public decimal[] Roles_ID { get; set; }
+        public ulong[] Roles_ID { get=>_Roles_ID; set { _Roles_ID = value.Select(w => Convert.ToUInt64(w)).ToArray(); } }
+        private ulong[] _Roles_ID;
 
         [Required]
         [Column("channel_id")]
-        public decimal Channel_ID { get; set; }
+        public ulong Channel_ID { get=>_Channel_ID; set { _Channel_ID = Convert.ToUInt64(value); } }
+        private ulong _Channel_ID;
     }
 }

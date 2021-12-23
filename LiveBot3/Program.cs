@@ -167,6 +167,8 @@ namespace LiveBot
                 Console.WriteLine($"Running test build!");
                 this.Slash.RegisterCommands<SlashCommands.SlashTheCrewHubCommands>(282478449539678210);
                 this.Slash.RegisterCommands<SlashCommands.SlashAdminCommands>(282478449539678210);
+
+                Client.ScheduledGuildEventCreated += GuildEvents.Event_Created;
             }
             DiscordActivity BotActivity = new($"DM {CFGJson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
@@ -210,7 +212,7 @@ namespace LiveBot
                     Delete_Log = 0,
                     User_Traffic = 0,
                     WKB_Log = 0,
-                    Spam_Exception_Channels = new decimal[] { 0 }
+                    Spam_Exception_Channels = new ulong[] { 0 }
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }

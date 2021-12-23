@@ -27,7 +27,7 @@ namespace LiveBot.Commands
                 GuildNameString.AppendLine("The mod-mail is only available on certain servers, here are the server names you can use:");
                 foreach (var item in ModMailServers)
                 {
-                    DiscordGuild Guild = ctx.Client.Guilds.FirstOrDefault(w => w.Key == (ulong)item.ID_Server).Value;
+                    DiscordGuild Guild = ctx.Client.Guilds.FirstOrDefault(w => w.Key == item.ID_Server).Value;
                     if (Guild != null)
                     {
                         GuildNameDict.Add(Guild, Guild.Name.Replace(' ', '-').ToLower());
@@ -69,7 +69,7 @@ namespace LiveBot.Commands
                         long EntryID = DBLists.InsertModMailGetID(newEntry);
                         await ctx.RespondAsync($"**----------------------------------------------------**\n" +
                             $"Modmail entry **open** with `{serverName.ToLower()}`. Continue to write as you would normally ;)\n*Mod Mail will time out in {Automation.ModMail.TimeoutMinutes} minutes after last message is sent.*");
-                        DiscordChannel MMChannel = Guild.GetChannel((ulong)ModMailServers.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
+                        DiscordChannel MMChannel = Guild.GetChannel(ModMailServers.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
                         DiscordEmbedBuilder ModeratorEmbed = new()
                         {
                             Author = new DiscordEmbedBuilder.EmbedAuthor
@@ -133,7 +133,7 @@ namespace LiveBot.Commands
                     };
                     try
                     {
-                        DiscordMember member = await ctx.Guild.GetMemberAsync((ulong)MMEntry.User_ID);
+                        DiscordMember member = await ctx.Guild.GetMemberAsync(MMEntry.User_ID);
                         await member.SendMessageAsync($"{ctx.Member.Username} - {reply}");
                     }
                     catch (Exception e)
@@ -145,7 +145,7 @@ namespace LiveBot.Commands
                     MMEntry.LastMSGTime = DateTime.UtcNow;
                     DBLists.UpdateModMail(MMEntry);
 
-                    DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id).ModMailID);
+                    DiscordChannel MMChannel = ctx.Guild.GetChannel(DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id).ModMailID);
                     await MMChannel.SendMessageAsync(embed: embed);
 
                     Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "An admin has responded to Mod Mail entry #{EntryId}", MMEntry.ID);
@@ -223,7 +223,7 @@ namespace LiveBot.Commands
                 }
                 if (!ErrorCheck)
                 {
-                    DiscordChannel MMChannel = ctx.Guild.GetChannel((ulong)SSettings.ModMailID);
+                    DiscordChannel MMChannel = ctx.Guild.GetChannel(SSettings.ModMailID);
                     DiscordEmbedBuilder embed = new()
                     {
                         Author = new DiscordEmbedBuilder.EmbedAuthor

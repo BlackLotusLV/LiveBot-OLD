@@ -318,7 +318,6 @@ namespace LiveBot
 
             string modinfo = "";
             StringBuilder SB = new();
-            decimal uid = user.Id, aid = admin.Id;
             bool kick = false, ban = false;
             if (ServerSettings.WKB_Log != 0)
             {
@@ -355,8 +354,8 @@ namespace LiveBot
                     Reason = reason,
                     Active = true,
                     Time_Created = DateTime.UtcNow,
-                    Admin_ID = aid,
-                    User_ID = uid,
+                    Admin_ID = admin.Id,
+                    User_ID = user.Id,
                     Server_ID = server.Id,
                     Type = "warning"
                 };

@@ -24,15 +24,18 @@ namespace LiveBot.DB
 
         [Required]
         [Column("admin_id")]
-        public decimal Admin_ID { get; set; }
+        public ulong Admin_ID { get=>_Admin_ID; set { _Admin_ID = Convert.ToUInt64(value); } }
+        private ulong _Admin_ID;
 
         [Required]
         [Column("user_id")]
-        public decimal User_ID { get; set; }
+        public ulong User_ID { get=>_User_ID; set { _User_ID = Convert.ToUInt64(value); } }
+        private ulong _User_ID;
 
         [Required]
         [Column("server_id")]
-        public decimal Server_ID { get; set; }
+        public ulong Server_ID { get=>_Server_ID; set { _Server_ID = Convert.ToUInt64(value); } }
+        private ulong _Server_ID;
 
         [Required]
         [Column("type")]

@@ -12,7 +12,8 @@ namespace LiveBot.DB
 
         [Required]
         [Column("user_id")]
-        public decimal User_ID { get; set; }
+        public ulong User_ID { get=>_User_ID; set { _User_ID = Convert.ToUInt64(value); } }
+        private ulong _User_ID;
 
         [Required]
         [Column("bg_id")]

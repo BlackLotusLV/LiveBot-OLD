@@ -12,11 +12,13 @@ namespace LiveBot.DB
 
         [Required]
         [Column("server_id")]
-        public decimal Server_ID { get; set; }
+        public ulong Server_ID { get=> _Server_ID; set {_Server_ID = Convert.ToUInt64(value); } }
+        private ulong _Server_ID;
 
         [Required]
         [Column("user_id")]
-        public decimal User_ID { get; set; }
+        public ulong User_ID { get=>_User_ID; set { _User_ID = Convert.ToUInt64(value); } }
+        private ulong _User_ID;
 
         [Required]
         [Column("last_message_time")]

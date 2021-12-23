@@ -299,10 +299,18 @@ namespace LiveBot.Automation
                         timesRun++;
                         Console.WriteLine($"--Trying check again {timesRun}. {(banEntry == null ? "Empty" : "Found")}");
                     }
-                    Console.WriteLine($"Ban reason search {(banEntry == null ? "Failed" : "Succeeded")}");
                     DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings.WKB_Log));
-                    await CustomMethod.SendModLog(wkbLog, banEntry?.Target, $"**User Banned:**\t{banEntry?.Target.Mention}\n*by {banEntry?.UserResponsible.Mention}*\n**Reason:** {banEntry?.Reason}", CustomMethod.ModLogType.Ban);
-                    DB.DBLists.InsertWarnings(new DB.Warnings { Reason = banEntry?.Reason ?? "No reason specified", Active = false, Time_Created= DateTime.UtcNow, Admin_ID = Convert.ToDecimal(banEntry?.UserResponsible.Id), User_ID = Convert.ToDecimal(banEntry?.Target.Id), Server_ID = e.Guild.Id, Type = "ban" });
+                    if (banEntry != null)
+                    {
+                        Console.WriteLine("Ban reason search succeeded");
+                        await CustomMethod.SendModLog(wkbLog, banEntry.Target, $"**User Banned:**\t{banEntry.Target.Mention}\n*by {banEntry.UserResponsible.Mention}*\n**Reason:** {banEntry.Reason}", CustomMethod.ModLogType.Ban);
+                        DB.DBLists.InsertWarnings(new DB.Warnings { Reason = banEntry.Reason ?? "No reason specified", Active = false, Time_Created = DateTime.UtcNow, Admin_ID = banEntry.UserResponsible.Id, User_ID = banEntry.Target.Id, Server_ID = e.Guild.Id, Type = "ban" });
+                    }
+                    else
+                    {
+                        Console.WriteLine("Ban Reason search failed");
+                        await wkbLog.SendMessageAsync("A user got banned but failed to find data, please log manually");
+                    }
                 }
                 var UserSettings = DB.DBLists.ServerRanks.FirstOrDefault(f => e.Member.Id == f.User_ID && e.Guild.Id == f.Server_ID);
                 if (UserSettings == null)

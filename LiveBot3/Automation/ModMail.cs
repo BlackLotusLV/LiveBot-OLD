@@ -11,8 +11,8 @@
                 var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Author.Id && w.IsActive);
                 if (e.Guild == null && MMEntry != null && !(e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}modmail") || e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}mm")))
                 {
-                    DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == (ulong)MMEntry.Server_ID).Value;
-                    DiscordChannel ModMailChannel = Guild.GetChannel((ulong)DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);
+                    DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == MMEntry.Server_ID).Value;
+                    DiscordChannel ModMailChannel = Guild.GetChannel(DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);
                     DiscordEmbedBuilder embed = new()
                     {
                         Author = new DiscordEmbedBuilder.EmbedAuthor
@@ -50,7 +50,7 @@
             var TimedOutEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.IsActive && (DateTime.UtcNow - w.LastMSGTime) > TimeSpan.FromMinutes(TimeoutMinutes));
             if (TimedOutEntry != null)
             {
-                DiscordUser User = await Program.Client.GetUserAsync((ulong)TimedOutEntry.User_ID);
+                DiscordUser User = await Program.Client.GetUserAsync(TimedOutEntry.User_ID);
                 await CloseModMail(
                     TimedOutEntry,
                     User,
@@ -63,8 +63,8 @@
         {
             ModMail.IsActive = false;
             string DMNotif = string.Empty;
-            DiscordGuild Guild = await Program.Client.GetGuildAsync((ulong)ModMail.Server_ID);
-            DiscordChannel ModMailChannel = Guild.GetChannel((ulong)DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
+            DiscordGuild Guild = await Program.Client.GetGuildAsync(ModMail.Server_ID);
+            DiscordChannel ModMailChannel = Guild.GetChannel(DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == Guild.Id).ModMailID);
             DiscordEmbedBuilder embed = new()
             {
                 Title = $"[CLOSED] #{ModMail.ID} {ClosingText}",
@@ -77,7 +77,7 @@
             };
             try
             {
-                DiscordMember member = await Guild.GetMemberAsync((ulong)ModMail.User_ID);
+                DiscordMember member = await Guild.GetMemberAsync(ModMail.User_ID);
                 await member.SendMessageAsync(ClosingTextToUser);
             }
             catch
