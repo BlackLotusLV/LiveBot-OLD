@@ -17,7 +17,7 @@ namespace LiveBot
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public static readonly DateTime start = DateTime.UtcNow;
-        public static readonly string BotVersion = $"20211216_B";
+        public static readonly string BotVersion = $"20211223_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -178,23 +178,6 @@ namespace LiveBot
         private Task Client_Ready(DiscordClient Client, ReadyEventArgs e)
         {
             Client.Logger.LogInformation(CustomLogEvents.LiveBot, "[LiveBot] Client is ready to process events.");
-            _ = Task.Run(async () =>
-            {
-                // Servers
-                TCGuild = await Client.GetGuildAsync(150283740172517376); //The Crew server
-
-                while (!ServerIdList.Contains(TCGuild.Id))
-                {
-                    await Task.Delay(100);
-                }
-                if (!TestBuild)
-                {
-                    StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
-                    HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
-                    MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
-                    ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
-                }
-            });
             return Task.CompletedTask;
         }
 
@@ -215,6 +198,13 @@ namespace LiveBot
                     Spam_Exception_Channels = new ulong[] { 0 }
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
+            }
+            if (e.Guild.Id== 150283740172517376)
+            {
+                StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
+                HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));
+                MessageCacheClearTimer.Change(TimeSpan.Zero, TimeSpan.FromDays(1));
+                ModMailCloserTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(30));
             }
             Client.Logger.LogInformation(CustomLogEvents.LiveBot, "Guild available: {GuildName}", e.Guild.Name);
             return Task.CompletedTask;

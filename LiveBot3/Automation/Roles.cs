@@ -9,7 +9,7 @@
             if (e.Interaction.Type == InteractionType.Component && !e.Interaction.User.IsBot && e.Interaction.Guild != null)
             {
                 var ButtonRoleInfo = DB.DBLists.ButtonRoles.Where(w => w.Server_ID == e.Interaction.GuildId && w.Channel_ID == e.Interaction.ChannelId && e.Interaction.Guild.Roles.Any(f => f.Value.Id == Convert.ToUInt64(w.Button_ID))).ToList();
-                if (ButtonRoleInfo.Count > 0)
+                if (ButtonRoleInfo.Count > 0 && ButtonRoleInfo[0].Channel_ID==e.Interaction.Channel.Id)
                 {
                     DiscordInteractionResponseBuilder response = new()
                     {

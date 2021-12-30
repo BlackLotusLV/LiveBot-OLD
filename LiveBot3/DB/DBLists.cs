@@ -82,7 +82,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Vehicle List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Vehicle List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -108,7 +108,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Discipline List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Discipline List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -134,7 +134,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Stream Notifications List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Stream Notifications List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -160,7 +160,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Background Images List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Background Images List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -186,7 +186,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Leaderboard List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Leaderboard List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -212,7 +212,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Ranks List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Server Ranks List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -238,7 +238,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Settings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"User Settings List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -264,7 +264,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "User Images List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"User Images List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -290,7 +290,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Warnings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Warnings List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -316,7 +316,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Settings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Server Settings List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -342,7 +342,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Server Welcome Settings List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Server Welcome Settings List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -368,7 +368,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Rank Roles List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Rank Roles List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -416,7 +416,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "Banned Words List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"Banned Words List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -442,7 +442,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "BotOutputList List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"BotOutputList List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -468,7 +468,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "WeatherSchedule List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"WeatherSchedule List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -494,7 +494,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ModMail List Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"ModMail List Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 
@@ -520,7 +520,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "RoleTag Settings Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds,timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"RoleTag Settings Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds,timer.Elapsed.Milliseconds);
             }
         }
 
@@ -545,7 +545,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, "ButtonRoles Loaded [{seconds}:{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"ButtonRoles Loaded [{seconds}\.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 

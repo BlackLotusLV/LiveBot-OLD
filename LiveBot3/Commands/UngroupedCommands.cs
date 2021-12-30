@@ -13,7 +13,9 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
-            string changelog = "[FIX] summit reward tier colour order fixed.\n" +
+            string changelog = "[NEW] Added `>bs` command\n" +
+                "[FIX] Random vehicle command now removes option buttons after selecting the vehicle type.\n" +
+                "[FIX] summit reward tier colour order fixed.\n" +
                 "[INTERNAL] Database integration improvements, might break things, keep an eye out for bugs\n" +
                 "[FIX] Fixed a typo for active mod mail command\n" +
                 "";
@@ -57,7 +59,6 @@ namespace LiveBot.Commands
         [Command("ping")]
         [Description("Shows that the bots response time")]
         [Aliases("pong")]
-        [Cooldown(1, 10, CooldownBucketType.Channel)]
         public async Task Ping(CommandContext ctx)
         {
             await ctx.TriggerTypingAsync();
@@ -221,7 +222,7 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            FileStream ITImage = new("Assets/ITC.jpg", FileMode.Open);
+            FileStream ITImage = new("Assets/img/ITC.jpg", FileMode.Open);
             string content;
             if (username == null)
             {
@@ -236,6 +237,19 @@ namespace LiveBot.Commands
                 .WithFile(ITImage)
                 .WithContent(content)
                 .WithAllowedMention(new UserMention())
+                .SendAsync(ctx.Channel);
+        }
+
+        [Command("bs")]
+        public async Task BS(CommandContext ctx, DiscordMember discordMember = null)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.TriggerTypingAsync();
+            FileStream image = new("Assets/img/bs.gif", FileMode.Open);
+            await new DiscordMessageBuilder()
+                .WithFile(image)
+                .WithAllowedMention(new UserMention())
+                .WithContent($"{(discordMember == null ? ctx.Member.Mention : discordMember.Mention)}")
                 .SendAsync(ctx.Channel);
         }
 
@@ -434,16 +448,18 @@ namespace LiveBot.Commands
             Random r = new();
             int row = 0;
             List<DB.VehicleList> SelectedVehicles = new();
+            DiscordMessageBuilder MsgBuilder = null;
             DiscordMessage ChoiceMsg = null;
 
             if (disciplinename == "Street Race")
             {
                 DiscordButtonComponent carButton = new(ButtonStyle.Primary, "CarButton", "Car", false, new DiscordComponentEmoji("🏎"));
                 DiscordButtonComponent bikeButton = new(ButtonStyle.Primary, "BikeButton", "Bike", false, new DiscordComponentEmoji("🏍"));
-                ChoiceMsg = await new DiscordMessageBuilder()
+                MsgBuilder = new DiscordMessageBuilder()
                     .WithContent($"{ctx.Member.Mention} **Select vehicle type!**")
-                    .AddComponents(carButton, bikeButton)
-                    .SendAsync(ctx.Channel);
+                    .AddComponents(carButton, bikeButton);
+
+                ChoiceMsg = await MsgBuilder.SendAsync(ctx.Channel);
 
                 var Result = await ChoiceMsg.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(30));
 
@@ -533,9 +549,12 @@ namespace LiveBot.Commands
             embed.AddField("Crew Credits only?", $"{(SelectedVehicles[row].IsCCOnly ? "✅" : "❌")}", true);
             embed.AddField("Summit exclusive?", $"{(SelectedVehicles[row].IsSummitVehicle ? "✅" : "❌")}", true);
             embed.AddField("MP exclusive?", $"{(SelectedVehicles[row].IsMotorPassExclusive ? "✅" : "❌")}", true);
-            if (ChoiceMsg != null)
+            if (MsgBuilder != null)
             {
-                await ChoiceMsg.ModifyAsync($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*", (DiscordEmbed)embed);
+                MsgBuilder.ClearComponents();
+                MsgBuilder.AddEmbed(embed);
+                MsgBuilder.WithContent($"*({SelectedVehicles.Count - 1} vehicles left in current rotation)*");
+                await ChoiceMsg.ModifyAsync(MsgBuilder);
             }
             else
             {

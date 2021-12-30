@@ -417,7 +417,6 @@ namespace LiveBot.Automation
                 if (SS.VCLog != 0)
                 {
                     DiscordChannel VCActivityLogChannel = await Client.GetChannelAsync(Convert.ToUInt64(SS.VCLog));
-
                     DiscordEmbedBuilder embed = new()
                     {
                         Author = new DiscordEmbedBuilder.EmbedAuthor
