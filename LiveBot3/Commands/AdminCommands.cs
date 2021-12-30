@@ -283,22 +283,27 @@ namespace LiveBot.Commands
             DB.DBLists.LoadBannedWords();
             var duplicate = (from bw in DB.DBLists.AMBannedWords
                              where bw.Server_ID == ctx.Guild.Id
-                             where bw.Word == BannedWord.ToLower()
+                             where bw.Word == BannedWord
                              select bw).FirstOrDefault();
             if (duplicate is null)
             {
                 DB.AMBannedWords newEntry = new()
                 {
-                    Word = BannedWord.ToLower(),
+                    Word = BannedWord,
                     Offense = warning,
                     Server_ID = ctx.Guild.Id
                 };
                 DB.DBLists.InsertBannedWords(newEntry);
-                info = $"The word `{BannedWord.ToLower()}` has been added to the list. They will be warned with `{warning}`";
+                info = $"The word `{BannedWord}` has been added to the list. They will be warned with `{warning}`";
+                var ss = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id);
+                if (ss != null && ss.WKB_Log != 0)
+                {
+                    await CustomMethod.SendModLog(ctx.Guild.GetChannel(ss.WKB_Log), ctx.User, $"**[Banned Word Pattern Added]**\n**By:**{ctx.User.Mention}\n**Pattern:** ```{BannedWord}```**", CustomMethod.ModLogType.Info);
+                }
             }
             else
             {
-                info = $"The word `{BannedWord.ToLower()}` is already in the database for this server.";
+                info = $"The word `{BannedWord}` is already in the database for this server.";
             }
             DiscordMessage msg = await ctx.RespondAsync(info);
             await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
@@ -316,18 +321,23 @@ namespace LiveBot.Commands
             DB.DBLists.LoadBannedWords();
             var DBEntry = (from bw in DB.DBLists.AMBannedWords
                            where bw.Server_ID == ctx.Guild.Id
-                           where bw.Word == word.ToLower()
+                           where bw.Word == word
                            select bw).FirstOrDefault();
             if (DBEntry != null)
             {
                 var context = new DB.AMBannedWordsContext();
                 context.Remove(DBEntry);
                 context.SaveChanges();
-                info = $"The word `{word.ToLower()}` has been removed from the list.";
+                info = $"The word `{word}` has been removed from the list.";
+                var ss = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == ctx.Guild.Id);
+                if (ss != null && ss.WKB_Log != 0)
+                {
+                    await CustomMethod.SendModLog(ctx.Guild.GetChannel(ss.WKB_Log), ctx.User, $"**[Banned Word Pattern Removed]**\n**By:**{ctx.User.Mention}\n**Pattern:** ```{word}```", CustomMethod.ModLogType.Info);
+                }
             }
             else
             {
-                info = $"The word `{word.ToLower()}` is not listed for this server.";
+                info = $"The word `{word}` is not listed for this server.";
             }
             DiscordMessage msg = await ctx.RespondAsync(info);
             await Task.Delay(5000).ContinueWith(t => msg.DeleteAsync());
