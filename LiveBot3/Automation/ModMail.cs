@@ -88,7 +88,7 @@
             await ModMailChannel.SendMessageAsync(DMNotif, embed: embed);
         }
 
-        public static async Task ModMailButton(object Client, InteractionCreateEventArgs e)
+        public static async Task ModMailButton(DiscordClient Client, ComponentInteractionCreateEventArgs e)
         {
             if (e.Interaction.Type == InteractionType.Component && !e.Interaction.User.IsBot && e.Interaction.Guild != null && e.Interaction.Data.CustomId.Contains("close"))
             {
@@ -100,7 +100,9 @@
                         e.Interaction.User,
                         $" Mod Mail closed by {e.Interaction.User.Username}",
                         $"**Mod Mail closed by {e.Interaction.User.Username}!\n----------------------------------------------------**");
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+
+                    DiscordInteractionResponseBuilder discordInteractionResponseBuilder = new();
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,discordInteractionResponseBuilder.AddEmbed(e.Message.Embeds[0]));
                 }
             }
         }

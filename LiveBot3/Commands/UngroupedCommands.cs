@@ -18,7 +18,8 @@ namespace LiveBot.Commands
                 "[FIX] summit reward tier colour order fixed.\n" +
                 "[INTERNAL] Database integration improvements, might break things, keep an eye out for bugs\n" +
                 "[FIX] Fixed a typo for active mod mail command\n" +
-                "";
+                "[NEW] Adding banned word patterns now gets logged in mod logs\n" +
+                "[NEW] Mod mail close button now removes itself after a click.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

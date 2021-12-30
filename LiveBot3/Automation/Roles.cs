@@ -4,7 +4,7 @@
     {
         public static List<ActivateRolesTimer> ActivateRolesTimer { get; set; } = new List<ActivateRolesTimer>();
 
-        public static async Task Button_Roles(object Client, InteractionCreateEventArgs e)
+        public static async Task Button_Roles(object Client, ComponentInteractionCreateEventArgs e)
         {
             if (e.Interaction.Type == InteractionType.Component && !e.Interaction.User.IsBot && e.Interaction.Guild != null)
             {
