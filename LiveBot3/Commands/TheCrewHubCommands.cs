@@ -426,7 +426,8 @@ namespace LiveBot.Commands
                 using HttpClient wc = new();
                 int i = JSummit[0].Events.Select((element, index) => new { element, index })
                        .FirstOrDefault(x => x.element.Equals(Event))?.index ?? -1;
-                TCHubJson.SummitLeaderboard Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{Event.ID}?page_size=1", CancellationToken.None));
+                string ActivityString = await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/leaderboard/{platform}/{Event.ID}?page_size=1", CancellationToken.None);
+                TCHubJson.SummitLeaderboard Activity = JsonConvert.DeserializeObject<TCHubJson.SummitLeaderboard>(ActivityString);
                 TCHubJson.Rank Rank = JsonConvert.DeserializeObject<TCHubJson.Rank>(await wc.GetStringAsync($"https://api.thecrew-hub.com/v1/summit/{JSummit[0].ID}/score/{platform}/profile/{Activity.Entries[0].Profile_ID}", CancellationToken.None));
                 Image image = await HubMethods.BuildEventImage(
                         Event,

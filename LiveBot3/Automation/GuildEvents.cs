@@ -8,7 +8,7 @@ namespace LiveBot.Automation
 {
     internal static class GuildEvents
     {
-        public static async Task Event_Created(DiscordClient Client, ScheduledGuildEventCreateEventArgs e)
+        public static async Task Event_Created(object Client, ScheduledGuildEventCreateEventArgs e)
         {
             //WIP
             var serverSettings = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == e.Guild.Id);

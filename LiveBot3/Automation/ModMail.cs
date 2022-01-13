@@ -88,7 +88,7 @@
             await ModMailChannel.SendMessageAsync(DMNotif, embed: embed);
         }
 
-        public static async Task ModMailButton(DiscordClient Client, ComponentInteractionCreateEventArgs e)
+        public static async Task ModMailButton(object Client, ComponentInteractionCreateEventArgs e)
         {
             if (e.Interaction.Type == InteractionType.Component && !e.Interaction.User.IsBot && e.Interaction.Guild != null && e.Interaction.Data.CustomId.Contains("close"))
             {

@@ -13,13 +13,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
-            string changelog = "[NEW] Added `>bs` command\n" +
-                "[FIX] Random vehicle command now removes option buttons after selecting the vehicle type.\n" +
-                "[FIX] summit reward tier colour order fixed.\n" +
-                "[INTERNAL] Database integration improvements, might break things, keep an eye out for bugs\n" +
-                "[FIX] Fixed a typo for active mod mail command\n" +
-                "[NEW] Adding banned word patterns now gets logged in mod logs\n" +
-                "[NEW] Mod mail close button now removes itself after a click.";
+            string changelog = "[NEW] everyone tag protection in testing.";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

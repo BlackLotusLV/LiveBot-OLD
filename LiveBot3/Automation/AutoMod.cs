@@ -352,10 +352,10 @@ namespace LiveBot.Automation
                 if (!e.Author.IsBot && e.Guild != null)
                 {
                     var Server_Settings = (from ss in DB.DBLists.ServerSettings
-                                           where ss.ID_Server == e.Guild.Id
+                                           where ss.ID_Server == e.Guild?.Id
                                            select ss).FirstOrDefault();
 
-                    if (Server_Settings.WKB_Log != 0 && !Server_Settings.Spam_Exception_Channels.Any(id => id == e.Channel.Id))
+                    if (Server_Settings != null && Server_Settings.WKB_Log != 0 && !Server_Settings.Spam_Exception_Channels.Any(id => id == e.Channel.Id))
                     {
                         DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
                         if (!CustomMethod.CheckIfMemberAdmin(member))
@@ -391,10 +391,14 @@ namespace LiveBot.Automation
             _ = Task.Run(async () =>
             {
                 var Server_Settings = (from ss in DB.DBLists.ServerSettings
-                                       where ss.ID_Server == e.Guild.Id
+                                       where ss.ID_Server == e.Guild?.Id
                                        select ss).FirstOrDefault();
 
-                if (Server_Settings.WKB_Log != 0 && Server_Settings.HasLinkProtection)
+                if (
+                        Server_Settings != null &&
+                        Server_Settings.WKB_Log != 0 &&
+                        Server_Settings.HasLinkProtection
+                    )
                 {
                     var invites = await e.Guild.GetInvitesAsync();
                     DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
@@ -404,6 +408,30 @@ namespace LiveBot.Automation
                         await CustomMethod.WarnUserAsync(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered - invite links", true);
                     }
                 }
+            });
+            await Task.Delay(1);
+        }
+
+        public static async Task Everyone_Tag_Protection(DiscordClient Client, MessageCreateEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                var Server_Settings = (from ss in DB.DBLists.ServerSettings
+                                       where ss.ID_Server == e.Guild?.Id
+                                       select ss).FirstOrDefault();
+                if (
+                        Server_Settings != null &&
+                        Server_Settings.WKB_Log != 0 &&
+                        Server_Settings.HasEveryoneProtection &&
+                        !CustomMethod.CheckIfMemberAdmin(await e.Guild.GetMemberAsync(e.Author.Id)) &&
+                        e.Message.Content.Contains("@everyone") &&
+                        !Regex.IsMatch(e.Message.Content, "`[a-zA-Z0-1.,:/ ]{0,}@everyone[a-zA-Z0-1.,:/ ]{0,}`")
+                    )
+                {
+                    await e.Message.DeleteAsync();
+                    await CustomMethod.WarnUserAsync(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Tried to tag everyone", true);
+                }
+
             });
             await Task.Delay(1);
         }
