@@ -416,20 +416,24 @@ namespace LiveBot.Automation
         {
             _ = Task.Run(async () =>
             {
-                var Server_Settings = (from ss in DB.DBLists.ServerSettings
-                                       where ss.ID_Server == e.Guild?.Id
-                                       select ss).FirstOrDefault();
-                if (
-                        Server_Settings != null &&
-                        Server_Settings.WKB_Log != 0 &&
-                        Server_Settings.HasEveryoneProtection &&
-                        !CustomMethod.CheckIfMemberAdmin(await e.Guild.GetMemberAsync(e.Author.Id)) &&
-                        e.Message.Content.Contains("@everyone") &&
-                        !Regex.IsMatch(e.Message.Content, "`[a-zA-Z0-1.,:/ ]{0,}@everyone[a-zA-Z0-1.,:/ ]{0,}`")
-                    )
+                if (!e.Author.IsBot)
                 {
-                    await e.Message.DeleteAsync();
-                    await CustomMethod.WarnUserAsync(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Tried to tag everyone", true);
+                    var Server_Settings = (from ss in DB.DBLists.ServerSettings
+                                           where ss.ID_Server == e.Guild?.Id
+                                           select ss).FirstOrDefault();
+                    DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+                    if (
+                            Server_Settings != null &&
+                            Server_Settings.WKB_Log != 0 &&
+                            Server_Settings.HasEveryoneProtection &&
+                            !member.Permissions.HasPermission(Permissions.MentionEveryone) &&
+                            e.Message.Content.Contains("@everyone") &&
+                            !Regex.IsMatch(e.Message.Content, "`[a-zA-Z0-1.,:/ ]{0,}@everyone[a-zA-Z0-1.,:/ ]{0,}`")
+                        )
+                    {
+                        await e.Message.DeleteAsync();
+                        await CustomMethod.WarnUserAsync(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Tried to tag everyone", true);
+                    }
                 }
 
             });

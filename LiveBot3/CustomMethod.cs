@@ -433,16 +433,13 @@ namespace LiveBot
 
         public static bool CheckIfMemberAdmin(DiscordMember member)
         {
-            foreach (DiscordRole role in member.Roles)
+            if (
+                member.Permissions.HasPermission(Permissions.ManageMessages) ||
+                member.Permissions.HasPermission(Permissions.KickMembers) ||
+                member.Permissions.HasPermission(Permissions.BanMembers) ||
+                member.Permissions.HasPermission(Permissions.Administrator))
             {
-                if (role.CheckPermission(Permissions.ManageMessages) == PermissionLevel.Allowed
-                    || role.CheckPermission(Permissions.KickMembers) == PermissionLevel.Allowed
-                    || role.CheckPermission(Permissions.BanMembers) == PermissionLevel.Allowed
-                    || role.CheckPermission(Permissions.Administrator) == PermissionLevel.Allowed
-                    || role.Id == 152156646402031627)
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
