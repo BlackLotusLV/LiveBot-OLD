@@ -34,7 +34,7 @@ namespace LiveBot.Commands
         {
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
-            await CustomMethod.WarnUserAsync(username, ctx.Member, ctx.Guild, ctx.Channel, reason, false);
+            await Services.WarningService.WarnUserAsync(username, ctx.Member, ctx.Guild, ctx.Channel, reason, false);
         }
 
         [Command("unwarn")]
