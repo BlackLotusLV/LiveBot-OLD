@@ -73,6 +73,7 @@ namespace LiveBot
             Thread HubThread = new(async () => await HubMethods.UpdateHubInfo());
             HubThread.Start();
             //
+
             LogLevel logLevel = LogLevel.Debug;
             if (args.Length == 1 && args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev
             {
@@ -129,6 +130,12 @@ namespace LiveBot
 
             //*/
 
+            // Services
+
+            Services.WarningService.StartService();
+
+            //
+
             if (!TestBuild) //Only enables these when using live version
             {
                 Client.PresenceUpdated += LiveStream.Stream_Notification;
@@ -170,11 +177,21 @@ namespace LiveBot
                 this.Slash.RegisterCommands<SlashCommands.SlashAdminCommands>(282478449539678210);
 
                 Client.ScheduledGuildEventCreated += GuildEvents.Event_Created;
-                Client.MessageCreated += AutoMod.Everyone_Tag_Protection;
+                Client.MessageCreated += this.test;
+
             }
             DiscordActivity BotActivity = new($"DM {CFGJson.CommandPrefix}modmail to open chat with mods", ActivityType.Playing);
             await Client.ConnectAsync(BotActivity);
             await Task.Delay(-1);
+        }
+
+        private async Task test(DiscordClient client, MessageCreateEventArgs e)
+        {
+            if (!e.Author.IsBot&&e.Guild?.Id== 282478449539678210 && e.Channel?.Id== 742442360293556310)
+            {
+                Services.WarningService.QueueWarning(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"This is test", true);
+            }
+            await Task.Delay(1);
         }
 
         private Task Client_Ready(DiscordClient Client, ReadyEventArgs e)
@@ -201,7 +218,7 @@ namespace LiveBot
                 };
                 DB.DBLists.InsertServerSettings(newEntry);
             }
-            if (e.Guild.Id== 150283740172517376)
+            if (e.Guild.Id == 150283740172517376)
             {
                 StreamDelayTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(2));
                 HubUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(30));

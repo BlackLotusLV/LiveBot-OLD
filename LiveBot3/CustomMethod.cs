@@ -2,6 +2,7 @@
 using DSharpPlus.SlashCommands;
 using LiveBot.Json;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Net.Http;
 
 namespace LiveBot

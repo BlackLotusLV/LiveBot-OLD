@@ -432,7 +432,8 @@ namespace LiveBot.Automation
                         )
                     {
                         await e.Message.DeleteAsync();
-                        await CustomMethod.WarnUserAsync(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Tried to tag everyone", true);
+                        Services.WarningService.QueueWarning(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Tried to tag everyone", true);
+                        //await CustomMethod.WarnUserAsync(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Tried to tag everyone", true);
                     }
                 }
 
