@@ -39,7 +39,7 @@
                     MMEntry.LastMSGTime = DateTime.UtcNow;
                     DB.DBLists.UpdateModMail(MMEntry);
 
-                    Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail message sent to {ChannelName}({ChannelId}) in {GuildName} from {Username}({UserId})", ModMailChannel.Name, ModMailChannel.Id, ModMailChannel.Guild.Name, e.Author.Username,e.Author.Id);
+                    Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail message sent to {ChannelName}({ChannelId}) in {GuildName} from {Username}({UserId})", ModMailChannel.Name, ModMailChannel.Id, ModMailChannel.Guild.Name, e.Author.Username, e.Author.Id);
                 }
             });
             await Task.Delay(1);
@@ -102,7 +102,7 @@
                         $"**Mod Mail closed by {e.Interaction.User.Username}!\n----------------------------------------------------**");
 
                     DiscordInteractionResponseBuilder discordInteractionResponseBuilder = new();
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,discordInteractionResponseBuilder.AddEmbed(e.Message.Embeds[0]));
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, discordInteractionResponseBuilder.AddEmbed(e.Message.Embeds[0]));
                 }
             }
         }

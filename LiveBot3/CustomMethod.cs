@@ -1,8 +1,6 @@
 ﻿using DSharpPlus.CommandsNext;
-using DSharpPlus.SlashCommands;
 using LiveBot.Json;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using System.Net.Http;
 
 namespace LiveBot
@@ -243,7 +241,7 @@ namespace LiveBot
             return Missions.ToString();
         }
 
-        public static async Task SendModLog(DiscordChannel ModLogChannel, DiscordUser TargetUser, string Description, ModLogType type, string Content=null)
+        public static async Task SendModLog(DiscordChannel ModLogChannel, DiscordUser TargetUser, string Description, ModLogType type, string Content = null)
         {
             DiscordColor color = DiscordColor.NotQuiteBlack;
             string FooterText = string.Empty;
@@ -253,24 +251,30 @@ namespace LiveBot
                     color = new DiscordColor(0xf90707);
                     FooterText = "User Kicked";
                     break;
+
                 case ModLogType.Ban:
                     color = new DiscordColor(0xf90707);
                     FooterText = "User Banned";
                     break;
+
                 case ModLogType.Info:
                     color = new DiscordColor(0x59bfff);
                     FooterText = "Info";
                     break;
+
                 case ModLogType.Warning:
                     color = new DiscordColor(0xFFBA01);
                     FooterText = "User Warned";
                     break;
+
                 case ModLogType.Unwarn:
                     FooterText = "User Unwarned";
                     break;
+
                 case ModLogType.Unban:
                     FooterText = "User Unbanned";
                     break;
+
                 default:
                     break;
             }
@@ -281,13 +285,13 @@ namespace LiveBot
                 Description = Description,
                 Author = new DiscordEmbedBuilder.EmbedAuthor
                 {
-                    IconUrl=TargetUser.AvatarUrl,
-                    Name=$"{TargetUser.Username} ({TargetUser.Id})"
+                    IconUrl = TargetUser.AvatarUrl,
+                    Name = $"{TargetUser.Username} ({TargetUser.Id})"
                 },
                 Footer = new DiscordEmbedBuilder.EmbedFooter
                 {
-                    IconUrl=TargetUser.AvatarUrl,
-                    Text=FooterText
+                    IconUrl = TargetUser.AvatarUrl,
+                    Text = FooterText
                 }
             };
 
@@ -367,7 +371,7 @@ namespace LiveBot
                 kcount = UserStats.Kick_Count;
                 bcount = UserStats.Ban_Count;
                 wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).OrderBy(w=>w.Time_Created).ToList();
+                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).OrderBy(w => w.Time_Created).ToList();
                 if (!AdminCommand)
                 {
                     WarningsList.RemoveAll(w => w.Type == "note");
@@ -400,7 +404,7 @@ namespace LiveBot
                             }
                             break;
                     }
-                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** <t:{(int)(item.Time_Created-new DateTime(1970,1,1)).TotalSeconds}>\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
+                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** <t:{(int)(item.Time_Created - new DateTime(1970, 1, 1)).TotalSeconds}>\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
 
                     if (Reason.Length + addedInfraction.Length > 1023 * splitcount)
                     {
@@ -473,8 +477,8 @@ namespace LiveBot
                 }
             }
             sb.Append(((float)LoadedTableCount / (float)DB.DBLists.TableCount).ToString(@$"] - [0.00%] [{time.Seconds}\.{time.Milliseconds}]"));
-            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, "{DataBase}",DataTableName is null ? "Starting to load Data Base" : $"{DataTableName} List Loaded");
-            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, "{LoadBar}",sb.ToString());
+            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, "{DataBase}", DataTableName is null ? "Starting to load Data Base" : $"{DataTableName} List Loaded");
+            Program.Client.Logger.LogInformation(CustomLogEvents.POSTGRESQL, "{LoadBar}", sb.ToString());
             if (LoadedTableCount == DB.DBLists.TableCount)
             {
                 DB.DBLists.LoadedTableCount = 0;

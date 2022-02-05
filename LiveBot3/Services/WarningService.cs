@@ -1,26 +1,23 @@
 ﻿using DSharpPlus.SlashCommands;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LiveBot.Services
 {
     internal static class WarningService
     {
         private static readonly ConcurrentQueue<WarningItem> _warnings = new();
+
         private static readonly Thread Warningthread = new(async () =>
-          {
-              while (true)
-              {
-                  while (_warnings.TryDequeue(out WarningItem item))
-                  {
-                      await WarnUserAsync(item.User, item.Admin, item.Guild, item.Channel, item.Reason, item.Automsg, item.Ctx);
-                  }
-              }
-          });
+             {
+                 while (true)
+                 {
+                     while (_warnings.TryDequeue(out WarningItem item))
+                     {
+                         await WarnUserAsync(item.User, item.Admin, item.Guild, item.Channel, item.Reason, item.Automsg, item.Ctx);
+                     }
+                 }
+             });
+
         public static void StartService()
         {
             Warningthread.Start();
@@ -167,17 +164,17 @@ namespace LiveBot.Services
             }
         }
     }
-    
 
     public class WarningItem
     {
-        public DiscordUser User { get; set;}
+        public DiscordUser User { get; set; }
         public DiscordUser Admin { get; set; }
         public DiscordGuild Guild { get; set; }
         public DiscordChannel Channel { get; set; }
         public string Reason { get; set; }
         public bool Automsg { get; set; }
         public InteractionContext Ctx { get; set; }
+
         public WarningItem(DiscordUser user, DiscordUser admin, DiscordGuild server, DiscordChannel channel, string reason, bool automsg, InteractionContext ctx = null)
         {
             User = user;

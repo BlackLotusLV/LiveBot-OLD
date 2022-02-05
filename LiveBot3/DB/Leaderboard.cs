@@ -8,7 +8,9 @@ namespace LiveBot.DB
     {
         [Key]
         [Column("id_user")]
-        public ulong ID_User { get=>_ID_User; set { _ID_User = Convert.ToUInt64(value); } }
+        public ulong ID_User
+        { get => _ID_User; set { _ID_User = Convert.ToUInt64(value); } }
+
         private ulong _ID_User;
 
         [Required]

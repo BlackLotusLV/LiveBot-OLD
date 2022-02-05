@@ -12,17 +12,23 @@ namespace LiveBot.DB
 
         [Required]
         [Column("server_id")]
-        public ulong Server_ID { get=>_Server_ID; set { _Server_ID = Convert.ToUInt64(value); } }
+        public ulong Server_ID
+        { get => _Server_ID; set { _Server_ID = Convert.ToUInt64(value); } }
+
         private ulong _Server_ID;
 
         [Required]
         [Column("role_id")]
-        public ulong Role_ID { get=>_Role_ID; set { _Role_ID = Convert.ToUInt64(value); } }
+        public ulong Role_ID
+        { get => _Role_ID; set { _Role_ID = Convert.ToUInt64(value); } }
+
         private ulong _Role_ID;
 
         [Required]
         [Column("channel_id")]
-        public ulong Channel_ID { get=>_Channel_ID; set { _Channel_ID = Convert.ToUInt64(value); } }
+        public ulong Channel_ID
+        { get => _Channel_ID; set { _Channel_ID = Convert.ToUInt64(value); } }
+
         private ulong _Channel_ID;
 
         [Required]
@@ -35,7 +41,9 @@ namespace LiveBot.DB
 
         [Required]
         [Column("emoji_id")]
-        public ulong Emoji_ID { get=>_Emoji_ID; set { _Emoji_ID = Convert.ToUInt64(value); } }
+        public ulong Emoji_ID
+        { get => _Emoji_ID; set { _Emoji_ID = Convert.ToUInt64(value); } }
+
         private ulong _Emoji_ID;
 
         [Required]

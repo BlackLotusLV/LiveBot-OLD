@@ -390,8 +390,8 @@ namespace LiveBot.SlashCommands
             await ctx.FollowUpAsync(msgBuilder);
         }
 
-        [SlashCommand("Rewards","Summit rewards for selected date")]
-        public async Task Rewards(InteractionContext ctx, [Option("Week","Which week do you want to see the rewards for? Defaults to current")] Week Week=Week.ThisWeek)
+        [SlashCommand("Rewards", "Summit rewards for selected date")]
+        public async Task Rewards(InteractionContext ctx, [Option("Week", "Which week do you want to see the rewards for? Defaults to current")] Week Week = Week.ThisWeek)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder(new DiscordMessageBuilder { Content = "Gathering data and building image." }));
             await HubMethods.UpdateHubInfo();
@@ -447,8 +447,8 @@ namespace LiveBot.SlashCommands
                             }
                             try
                             {
-                                DisciplineForPart = Image.Load<Rgba32>($"Assets/Disciplines/{Rewards[i].Extra.FirstOrDefault(w=>w.Key.Equals("vcat_icon")).Value}.png");
-                                DisciplineForPart.Mutate(ctx => ctx.Resize((int)(affix1.Width * 1.2f), (int)(affix1.Height * 1.2f),false));
+                                DisciplineForPart = Image.Load<Rgba32>($"Assets/Disciplines/{Rewards[i].Extra.FirstOrDefault(w => w.Key.Equals("vcat_icon")).Value}.png");
+                                DisciplineForPart.Mutate(ctx => ctx.Resize((int)(affix1.Width * 1.2f), (int)(affix1.Height * 1.2f), false));
                             }
                             catch
                             {
@@ -524,7 +524,7 @@ namespace LiveBot.SlashCommands
                         .DrawImage(affix1, new Point((4 - Rewards[i].Level) * RewardWidth, RewardImage.Height - affix1.Height), 1)
                         .DrawImage(affix2, new Point((4 - Rewards[i].Level) * RewardWidth + affix1.Width, RewardImage.Height - affix2.Height), 1)
                         .DrawImage(affixbonus, new Point((4 - Rewards[i].Level) * RewardWidth + affix1.Width + affix2.Width, RewardImage.Height - affixbonus.Height), 1)
-                        .DrawImage(DisciplineForPart, new Point((4-Rewards[i].Level)*RewardWidth,RewardsImage.Height-(affix1.Height+DisciplineForPart.Height+5)),1)
+                        .DrawImage(DisciplineForPart, new Point((4 - Rewards[i].Level) * RewardWidth, RewardsImage.Height - (affix1.Height + DisciplineForPart.Height + 5)), 1)
                         );
                     }
                 });
@@ -544,10 +544,13 @@ namespace LiveBot.SlashCommands
         {
             [ChoiceName("This Week")]
             ThisWeek = 0,
+
             [ChoiceName("Next Week")]
             NextWeek = 1,
+
             [ChoiceName("3rd Week")]
             ThirdWeek = 2,
+
             [ChoiceName("4th Week")]
             ForthWeek = 3,
         }

@@ -31,8 +31,8 @@ namespace LiveBot.DB
         {
             CustomMethod.DBProgress(LoadedTableCount, TimeSpan.Zero);
             Stopwatch sw = Stopwatch.StartNew();
-            LoadServerSettings(true,sw);
-            LoadWeatherSchedule(true,sw);
+            LoadServerSettings(true, sw);
+            LoadWeatherSchedule(true, sw);
             new Thread(() =>
             {
                 Parallel.Invoke(
@@ -63,7 +63,7 @@ namespace LiveBot.DB
         public static void LoadVehicleList(bool progress = false, Stopwatch timer = null)
         {
             bool check = false;
-            if (timer==null)
+            if (timer == null)
             {
                 timer = Stopwatch.StartNew();
                 check = true;
@@ -520,7 +520,7 @@ namespace LiveBot.DB
             }
             else
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"RoleTag Settings Loaded [{seconds}.{miliseconds}]", timer.Elapsed.Seconds,timer.Elapsed.Milliseconds);
+                Program.Client.Logger.LogInformation(CustomLogEvents.TableLoaded, @"RoleTag Settings Loaded [{seconds}.{miliseconds}]", timer.Elapsed.Seconds, timer.Elapsed.Milliseconds);
             }
         }
 

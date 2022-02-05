@@ -13,7 +13,8 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
-            string changelog = "[Update] Adjusted permission check for everyone tag filter. Reduces false positives.";
+            string changelog = "[Update] Reworked backend of warnings(need feedback of performance and bugs)\n" +
+                "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
             {

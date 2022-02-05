@@ -87,7 +87,7 @@ namespace LiveBot.Commands
                             .AddComponents(CloseButton)
                             .WithEmbed(ModeratorEmbed)
                             .SendAsync(MMChannel);
-                        Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail entry created by {UserName}({UserId}) for {GuildName}", ctx.User.Username, ctx.User.Id,serverName);
+                        Program.Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail entry created by {UserName}({UserId}) for {GuildName}", ctx.User.Username, ctx.User.Id, serverName);
                     }
                     else
                     {
