@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using DSharpPlus.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace LiveBot.Automation
 {
@@ -24,8 +25,16 @@ namespace LiveBot.Automation
                                          where Regex.IsMatch(e.Message.Content.ToLower(), @$"\b{word.Word}\b")
                                          select word)
                     {
-                        await e.Message.DeleteAsync();
-                        if (DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
+                        bool msgDeleted = false;
+                        try
+                        {
+                            await e.Message.DeleteAsync();
+                        }
+                        catch (NotFoundException)
+                        {
+                            msgDeleted = true;
+                        }
+                        if (!msgDeleted && DB.DBLists.ServerRanks.FirstOrDefault(w => w.Server_ID == e.Guild.Id && w.User_ID == e.Author.Id).Warning_Level < 5)
                         {
                             if (word.Offense.Contains("ASCII"))
                             {
@@ -341,6 +350,7 @@ namespace LiveBot.Automation
                             if (time < TimeSpan.FromSeconds(6))
                             {
                                 List<DiscordChannel> ChannelList = duplicatemessages.GetRange(i - 5, 5).Select(s => s.Channel).Distinct().ToList();
+                                await member.TimeoutAsync(DateTimeOffset.UtcNow + TimeSpan.FromHours(1));
                                 foreach (DiscordChannel channel in ChannelList)
                                 {
                                     await channel.DeleteMessagesAsync(duplicatemessages.GetRange(i - 5, 5));
@@ -374,6 +384,7 @@ namespace LiveBot.Automation
                 if (!CustomMethod.CheckIfMemberAdmin(member) && (e.Message.Content.Contains("discordapp.com/invite/") || e.Message.Content.Contains("discord.gg/")) && !invites.Any(w => e.Message.Content.Contains($"/{w.Code}")))
                 {
                     await e.Message.DeleteAsync();
+                    await member.TimeoutAsync(DateTimeOffset.UtcNow + TimeSpan.FromHours(1));
                     Services.WarningService.QueueWarning(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Spam protection triggered - invite links", true);
                 }
             }
@@ -381,22 +392,33 @@ namespace LiveBot.Automation
 
         public static async Task Everyone_Tag_Protection(DiscordClient Client, MessageCreateEventArgs e)
         {
-            if (!e.Author.IsBot && e.Guild != null)
+            if (e.Author.IsBot && e.Guild == null) return;
+
+            var Server_Settings = (from ss in DB.DBLists.ServerSettings
+                                   where ss.ID_Server == e.Guild?.Id
+                                   select ss).FirstOrDefault();
+            DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+            if (
+                    Server_Settings != null &&
+                    Server_Settings.WKB_Log != 0 &&
+                    Server_Settings.HasEveryoneProtection &&
+                    !member.Permissions.HasPermission(Permissions.MentionEveryone) &&
+                    e.Message.Content.Contains("@everyone") &&
+                    !Regex.IsMatch(e.Message.Content, "`[a-zA-Z0-1.,:/ ]{0,}@everyone[a-zA-Z0-1.,:/ ]{0,}`")
+                )
             {
-                var Server_Settings = (from ss in DB.DBLists.ServerSettings
-                                       where ss.ID_Server == e.Guild?.Id
-                                       select ss).FirstOrDefault();
-                DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
-                if (
-                        Server_Settings != null &&
-                        Server_Settings.WKB_Log != 0 &&
-                        Server_Settings.HasEveryoneProtection &&
-                        !member.Permissions.HasPermission(Permissions.MentionEveryone) &&
-                        e.Message.Content.Contains("@everyone") &&
-                        !Regex.IsMatch(e.Message.Content, "`[a-zA-Z0-1.,:/ ]{0,}@everyone[a-zA-Z0-1.,:/ ]{0,}`")
-                    )
+                bool msgDeleted = false;
+                try
                 {
                     await e.Message.DeleteAsync();
+                }
+                catch (NotFoundException)
+                {
+                    msgDeleted = true;
+                }
+                if (!msgDeleted)
+                {
+                    await member.TimeoutAsync(DateTimeOffset.UtcNow + TimeSpan.FromHours(1));
                     Services.WarningService.QueueWarning(e.Author, Client.CurrentUser, e.Guild, e.Channel, $"Tried to tag everyone", true);
                 }
             }
