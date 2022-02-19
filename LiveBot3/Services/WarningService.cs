@@ -15,6 +15,7 @@ namespace LiveBot.Services
                      {
                          await WarnUserAsync(item.User, item.Admin, item.Guild, item.Channel, item.Reason, item.Automsg, item.Ctx);
                      }
+                     Thread.Sleep(100);
                  }
              });
 
@@ -46,6 +47,7 @@ namespace LiveBot.Services
             }
             catch (Exception)
             {
+                if (automsg) return;
                 await channel.SendMessageAsync($"{user.Username} is no longer in the server.");
             }
 

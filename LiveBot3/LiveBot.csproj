@@ -15,13 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01064" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01064" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01064" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01064" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
-    <PackageReference Include="Npgsql" Version="6.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.3" />
+    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01077" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01077" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01077" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01077" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0-preview.1.22076.6" />
+    <PackageReference Include="Npgsql" Version="7.0.0-preview.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0-preview.1" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta15" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />

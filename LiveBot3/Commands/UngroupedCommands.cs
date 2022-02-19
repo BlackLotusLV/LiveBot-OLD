@@ -13,7 +13,7 @@ namespace LiveBot.Commands
         {
             DateTime current = DateTime.UtcNow;
             TimeSpan time = current - Program.start;
-            string changelog = "[Update] Reworked backend of warnings(need feedback of performance and bugs)\n" +
+            string changelog = "[NEW] Auto moderator won't add extra warnings to users already banned/kicked\n" +
                 "";
             DiscordUser user = ctx.Client.CurrentUser;
             var embed = new DiscordEmbedBuilder
@@ -342,7 +342,6 @@ namespace LiveBot.Commands
         [Description("Shows users discord info")]
         public async Task Info(CommandContext ctx, [Description("users ID or mention")] DiscordMember user = null)
         {
-            await Task.Delay(5);
             await ctx.Message.DeleteAsync();
             await ctx.TriggerTypingAsync();
             if (user == null)
