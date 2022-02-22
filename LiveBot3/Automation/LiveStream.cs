@@ -11,106 +11,105 @@
             if (e.User == null || e.User.IsBot) return;
             DiscordGuild guild = e.User.Presence.Guild;
             DB.StreamNotifications StreamNotification = DB.DBLists.StreamNotifications.FirstOrDefault(w => w.Server_ID == guild.Id);
+            if (StreamNotification == null) return;
             DiscordChannel channel = guild.GetChannel(Convert.ToUInt64(StreamNotification.Channel_ID));
-            if (Program.ServerIdList.Contains(guild.Id))
+            if (!Program.ServerIdList.Contains(guild.Id)) return;
+            LiveStreamer streamer = new()
             {
-                LiveStreamer streamer = new()
+                User = e.User,
+                Time = DateTime.UtcNow,
+                Guild = guild
+            };
+            int ItemIndex;
+            try
+            {
+                ItemIndex = LiveStreamerList.FindIndex(a => a.User.Id == e.User.Id
+                && a.Guild.Id == e.User.Presence.Guild.Id);
+            }
+            catch (Exception)
+            {
+                ItemIndex = -1;
+            }
+            if (ItemIndex >= 0
+                && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == null)
+            {
+                //removes user from list
+                if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.UtcNow
+                    && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == LiveStreamerList[ItemIndex].User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube"))
                 {
-                    User = e.User,
-                    Time = DateTime.UtcNow,
-                    Guild = guild
-                };
-                int ItemIndex;
-                try
-                {
-                    ItemIndex = LiveStreamerList.FindIndex(a => a.User.Id == e.User.Id
-                    && a.Guild.Id == e.User.Presence.Guild.Id);
+                    LiveStreamerList.RemoveAt(ItemIndex);
                 }
-                catch (Exception)
+            }
+            else if (ItemIndex == -1
+            && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") != null
+            && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").ActivityType.Equals(ActivityType.Streaming))
+            {
+                DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
+                bool role = false, game = false;
+                string gameTitle = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").RichPresence.State;
+                string streamTitle = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").RichPresence.Details;
+                string streamURL = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").StreamUrl;
+                if (StreamNotification.Roles_ID != null)
                 {
-                    ItemIndex = -1;
-                }
-                if (ItemIndex >= 0
-                    && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == null)
-                {
-                    //removes user from list
-                    if (LiveStreamerList[ItemIndex].Time.AddHours(StreamCheckDelay) < DateTime.UtcNow
-                        && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") == LiveStreamerList[ItemIndex].User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube"))
+                    foreach (DiscordRole urole in StreamMember.Roles)
                     {
-                        LiveStreamerList.RemoveAt(ItemIndex);
-                    }
-                }
-                else if (ItemIndex == -1
-                && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube") != null
-                && e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").ActivityType.Equals(ActivityType.Streaming))
-                {
-                    DiscordMember StreamMember = await guild.GetMemberAsync(e.User.Id);
-                    bool role = false, game = false;
-                    string gameTitle = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").RichPresence.State;
-                    string streamTitle = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").RichPresence.Details;
-                    string streamURL = e.User.Presence.Activities.FirstOrDefault(w => w.Name.ToLower() == "twitch" || w.Name.ToLower() == "youtube").StreamUrl;
-                    if (StreamNotification.Roles_ID != null)
-                    {
-                        foreach (DiscordRole urole in StreamMember.Roles)
+                        foreach (decimal roleid in StreamNotification.Roles_ID)
                         {
-                            foreach (decimal roleid in StreamNotification.Roles_ID)
+                            if (urole.Id == roleid)
                             {
-                                if (urole.Id == roleid)
-                                {
-                                    role = true;
-                                    break;
-                                }
+                                role = true;
+                                break;
                             }
                         }
                     }
-                    else if (StreamNotification.Roles_ID == null)
+                }
+                else if (StreamNotification.Roles_ID == null)
+                {
+                    role = true;
+                }
+                if (StreamNotification.Games != null)
+                {
+                    foreach (string ugame in StreamNotification.Games)
                     {
-                        role = true;
-                    }
-                    if (StreamNotification.Games != null)
-                    {
-                        foreach (string ugame in StreamNotification.Games)
+                        try
                         {
-                            try
+                            if (gameTitle == ugame)
                             {
-                                if (gameTitle == ugame)
-                                {
-                                    game = true;
-                                    break;
-                                }
+                                game = true;
+                                break;
                             }
-                            catch { game = false; }
                         }
+                        catch { game = false; }
                     }
-                    else if (StreamNotification.Games == null)
+                }
+                else if (StreamNotification.Games == null)
+                {
+                    game = true;
+                }
+                if (game && role)
+                {
+                    DiscordEmbedBuilder embed = new()
                     {
-                        game = true;
-                    }
-                    if (game && role)
-                    {
-                        DiscordEmbedBuilder embed = new()
+                        Color = new DiscordColor(0x6441A5),
+                        Author = new DiscordEmbedBuilder.EmbedAuthor
                         {
-                            Color = new DiscordColor(0x6441A5),
-                            Author = new DiscordEmbedBuilder.EmbedAuthor
-                            {
-                                IconUrl = e.User.AvatarUrl,
-                                Name = "STREAM",
-                                Url = streamURL
-                            },
-                            Description = $"**Streamer:**\n {e.User.Mention}\n\n" +
-                    $"**Game:**\n{gameTitle}\n\n" +
-                    $"**Stream title:**\n{streamTitle}\n\n" +
-                    $"**Stream Link:**\n{streamURL}",
-                            Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
-                            {
-                                Url = e.User.AvatarUrl
-                            },
-                            Title = $"Check out {e.User.Username} is now Streaming!"
-                        };
-                        await channel.SendMessageAsync(embed: embed);
-                        //adds user to list
-                        LiveStreamerList.Add(streamer);
-                    }
+                            IconUrl = e.User.AvatarUrl,
+                            Name = "STREAM",
+                            Url = streamURL
+                        },
+                        Description = $"**Streamer:**\n {e.User.Mention}\n\n" +
+                $"**Game:**\n{gameTitle}\n\n" +
+                $"**Stream title:**\n{streamTitle}\n\n" +
+                $"**Stream Link:**\n{streamURL}",
+                        Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                        {
+                            Url = e.User.AvatarUrl
+                        },
+                        Title = $"Check out {e.User.Username} is now Streaming!"
+                    };
+                    await channel.SendMessageAsync(embed: embed);
+                    //adds user to list
+                    LiveStreamerList.Add(streamer);
                 }
             }
         }
