@@ -13,7 +13,7 @@ namespace LiveBot.Automation
 
         public static async Task Banned_Words(DiscordClient Client, MessageCreateEventArgs e)
         {
-            if (e.Author.IsBot && e.Guild == null) return;
+            if (e.Author.IsBot || e.Guild == null) return;
             DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
             if (CustomMethod.CheckIfMemberAdmin(member)) return;
             var wordlist = (from bw in DB.DBLists.AMBannedWords

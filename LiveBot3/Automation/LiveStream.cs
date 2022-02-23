@@ -12,7 +12,6 @@
             DiscordGuild guild = e.User.Presence.Guild;
             List<DB.StreamNotifications> streamNotifications = DB.DBLists.StreamNotifications.Where(w => w.Server_ID == guild.Id).ToList();
             if (streamNotifications.Count < 1) return;
-            await guild.GetChannelsAsync();
             foreach (var StreamNotification in streamNotifications)
             {
                 DiscordChannel channel = guild.GetChannel(StreamNotification.Channel_ID);
@@ -50,6 +49,7 @@
                     Services.StreamNotificationService.QueueStream(StreamNotification, e, guild, channel, streamer);
                 }
             }
+            await Task.Delay(1);
         }
     }
 

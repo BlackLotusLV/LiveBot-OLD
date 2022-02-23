@@ -18,128 +18,122 @@
 
         public static async Task Level_Gaining_System(object Client, MessageCreateEventArgs e)
         {
-            if (!e.Author.IsBot && e.Guild != null)
+            if (e.Author.IsBot || e.Guild == null) return;
+            Random r = new();
+            int FollowersMin = MinimalSmallInterval,
+                FollowersMax = MaximalSmallInterval;
+            if (e.Message.Content.Length > BigMSGLenght)
             {
-                Random r = new();
-                int FollowersMin = MinimalSmallInterval,
-                    FollowersMax = MaximalSmallInterval;
-                if (e.Message.Content.Length > BigMSGLenght)
+                FollowersMin = MinimalBigInterval;
+                FollowersMax = MaximalBigInterval;
+            }
+            else if (e.Message.Content.Length > SmallMSGLenght && e.Message.Content.Length < BigMSGLenght)
+            {
+                float diff = MinimalBigInterval - MinimalSmallInterval - 1;
+                diff /= BigMSGLenght;
+                diff *= e.Message.Content.Length;
+                FollowersMin += (int)diff;
+                diff = MaximalBigInterval - MaximalSmallInterval - 1;
+                diff /= BigMSGLenght;
+                diff *= e.Message.Content.Length;
+                FollowersMax += (int)diff;
+            }
+            int FollowersAdded = r.Next(FollowersMin, FollowersMax);
+            int MoneyAdded = r.Next(MinimalMoney, MaximalMoney);
+            LevelTimer GlobalUser = GlobalLevelTimer.FirstOrDefault(w => w.User.Id == e.Author.Id);
+            if (GlobalUser != null && GlobalUser.Time.AddMinutes(MSGCooldown) <= DateTime.UtcNow)
+            {
+                var dbEntry = DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(w => w.ID_User == e.Author.Id);
+                dbEntry.Followers += FollowersAdded;
+                dbEntry.Bucks += MoneyAdded;
+                if (dbEntry.Level < dbEntry.Followers / (300 * (dbEntry.Level + 1) * 0.5))
                 {
-                    FollowersMin = MinimalBigInterval;
-                    FollowersMax = MaximalBigInterval;
+                    dbEntry.Level += 1;
                 }
-                else if (e.Message.Content.Length > SmallMSGLenght && e.Message.Content.Length < BigMSGLenght)
+                GlobalUser.Time = DateTime.UtcNow;
+                DB.DBLists.UpdateLeaderboard(dbEntry);
+            }
+            else
+            {
+                if (DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(w => w.ID_User == e.Author.Id) == null)
                 {
-                    float diff = MinimalBigInterval - MinimalSmallInterval - 1;
-                    diff /= BigMSGLenght;
-                    diff *= e.Message.Content.Length;
-                    FollowersMin += (int)diff;
-                    diff = MaximalBigInterval - MaximalSmallInterval - 1;
-                    diff /= BigMSGLenght;
-                    diff *= e.Message.Content.Length;
-                    FollowersMax += (int)diff;
+                    CustomMethod.AddUserToLeaderboard(e.Author);
                 }
-                int FollowersAdded = r.Next(FollowersMin, FollowersMax);
-                int MoneyAdded = r.Next(MinimalMoney, MaximalMoney);
-                LevelTimer GlobalUser = GlobalLevelTimer.FirstOrDefault(w => w.User.Id == e.Author.Id);
-                if (GlobalUser != null && GlobalUser.Time.AddMinutes(MSGCooldown) <= DateTime.UtcNow)
+                var dbEntry = DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(w => w.ID_User == e.Author.Id);
+                dbEntry.Followers += FollowersAdded;
+                dbEntry.Bucks += MoneyAdded;
+                if (dbEntry.Level < dbEntry.Followers / (300 * (dbEntry.Level + 1) * 0.5))
                 {
-                    var dbEntry = DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(w => w.ID_User == e.Author.Id);
-                    dbEntry.Followers += FollowersAdded;
-                    dbEntry.Bucks += MoneyAdded;
-                    if (dbEntry.Level < dbEntry.Followers / (300 * (dbEntry.Level + 1) * 0.5))
-                    {
-                        dbEntry.Level += 1;
-                    }
-                    GlobalUser.Time = DateTime.UtcNow;
-                    DB.DBLists.UpdateLeaderboard(dbEntry);
-                }
-                else
-                {
-                    if (DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(w => w.ID_User == e.Author.Id) == null)
-                    {
-                        CustomMethod.AddUserToLeaderboard(e.Author);
-                    }
-                    var dbEntry = DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(w => w.ID_User == e.Author.Id);
-                    dbEntry.Followers += FollowersAdded;
-                    dbEntry.Bucks += MoneyAdded;
-                    if (dbEntry.Level < dbEntry.Followers / (300 * (dbEntry.Level + 1) * 0.5))
-                    {
-                        dbEntry.Level += 1;
-                    }
-
-                    LevelTimer NewToList = new()
-                    {
-                        Time = DateTime.UtcNow,
-                        User = e.Author
-                    };
-                    GlobalLevelTimer.Add(NewToList);
-
-                    DB.DBLists.UpdateLeaderboard(dbEntry);
-                }
-                ServerLevelTimer ServerUser = ServerLevelTimer.FirstOrDefault(w => w.User.Id == e.Author.Id);
-                if (ServerUser != null && ServerUser.Time.AddMinutes(MSGCooldown) <= DateTime.UtcNow)
-                {
-                    var dbEntry = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id);
-                    dbEntry.Followers += FollowersAdded;
-                    ServerUser.Time = DateTime.UtcNow;
-                    DB.DBLists.UpdateServerRanks(dbEntry);
-                }
-                else
-                {
-                    if (DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id && w.Server_ID == e.Guild.Id) == null)
-                    {
-                        CustomMethod.AddUserToServerRanks(e.Author, e.Guild);
-                    }
-                    var dbEntry = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id && w.Server_ID == e.Guild.Id);
-                    dbEntry.Followers += FollowersAdded;
-
-                    ServerLevelTimer NewToList = new()
-                    {
-                        Time = DateTime.UtcNow,
-                        Guild = e.Guild,
-                        User = e.Author
-                    };
-                    ServerLevelTimer.Add(NewToList);
-
-                    DB.DBLists.UpdateServerRanks(dbEntry);
+                    dbEntry.Level += 1;
                 }
 
-                long UserServerFollowers = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id && w.Server_ID == e.Guild.Id).Followers;
-                var RankRolesUnder = DB.DBLists.RankRoles.AsParallel().Where(w => w.Server_ID == e.Guild.Id && w.Server_Rank <= UserServerFollowers && w.Server_Rank != 0).OrderByDescending(w => w.Server_Rank).ToList();
-                if (RankRolesUnder.Count != 0 && !(e.Author as DiscordMember).Roles.Any(w => w.Id == RankRolesUnder[0].Role_ID))
+                LevelTimer NewToList = new()
                 {
-                    DiscordMember ServerMember = (e.Author as DiscordMember);
-                    await ServerMember.GrantRoleAsync(e.Guild.Roles.Values.FirstOrDefault(w => w.Id == RankRolesUnder[0].Role_ID));
-                    if (RankRolesUnder.Count > 1)
-                    {
-                        await ServerMember.RevokeRoleAsync(e.Guild.Roles.Values.FirstOrDefault(w => w.Id == RankRolesUnder[1].Role_ID));
-                    }
+                    Time = DateTime.UtcNow,
+                    User = e.Author
+                };
+                GlobalLevelTimer.Add(NewToList);
+
+                DB.DBLists.UpdateLeaderboard(dbEntry);
+            }
+            ServerLevelTimer ServerUser = ServerLevelTimer.FirstOrDefault(w => w.User.Id == e.Author.Id);
+            if (ServerUser != null && ServerUser.Time.AddMinutes(MSGCooldown) <= DateTime.UtcNow)
+            {
+                var dbEntry = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id);
+                dbEntry.Followers += FollowersAdded;
+                ServerUser.Time = DateTime.UtcNow;
+                DB.DBLists.UpdateServerRanks(dbEntry);
+            }
+            else
+            {
+                if (DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id && w.Server_ID == e.Guild.Id) == null)
+                {
+                    CustomMethod.AddUserToServerRanks(e.Author, e.Guild);
+                }
+                var dbEntry = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id && w.Server_ID == e.Guild.Id);
+                dbEntry.Followers += FollowersAdded;
+
+                ServerLevelTimer NewToList = new()
+                {
+                    Time = DateTime.UtcNow,
+                    Guild = e.Guild,
+                    User = e.Author
+                };
+                ServerLevelTimer.Add(NewToList);
+
+                DB.DBLists.UpdateServerRanks(dbEntry);
+            }
+
+            long UserServerFollowers = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w => w.User_ID == e.Author.Id && w.Server_ID == e.Guild.Id).Followers;
+            var RankRolesUnder = DB.DBLists.RankRoles.AsParallel().Where(w => w.Server_ID == e.Guild.Id && w.Server_Rank <= UserServerFollowers && w.Server_Rank != 0).OrderByDescending(w => w.Server_Rank).ToList();
+            if (RankRolesUnder.Count != 0 && !(e.Author as DiscordMember).Roles.Any(w => w.Id == RankRolesUnder[0].Role_ID))
+            {
+                DiscordMember ServerMember = (e.Author as DiscordMember);
+                await ServerMember.GrantRoleAsync(e.Guild.Roles.Values.FirstOrDefault(w => w.Id == RankRolesUnder[0].Role_ID));
+                if (RankRolesUnder.Count > 1)
+                {
+                    await ServerMember.RevokeRoleAsync(e.Guild.Roles.Values.FirstOrDefault(w => w.Id == RankRolesUnder[1].Role_ID));
                 }
             }
         }
 
         public static async Task Add_To_Leaderboards(object O, GuildMemberAddEventArgs e)
         {
-            _ = Task.Run(() =>
-             {
-                 var global = (from lb in DB.DBLists.Leaderboard.AsParallel()
-                               where lb.ID_User == e.Member.Id
-                               select lb).FirstOrDefault();
-                 if (global is null)
-                 {
-                     CustomMethod.AddUserToLeaderboard(e.Member);
-                 }
-                 var local = (from lb in DB.DBLists.ServerRanks.AsParallel()
-                              where lb.User_ID == e.Member.Id
-                              where lb.Server_ID == e.Guild.Id
-                              select lb).FirstOrDefault();
-                 if (local is null)
-                 {
-                     CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
-                 }
-             });
-            await Task.Delay(1);
+            var global = (from lb in DB.DBLists.Leaderboard.AsParallel()
+                          where lb.ID_User == e.Member.Id
+                          select lb).FirstOrDefault();
+            if (global is null)
+            {
+                CustomMethod.AddUserToLeaderboard(e.Member);
+            }
+            var local = (from lb in DB.DBLists.ServerRanks.AsParallel()
+                         where lb.User_ID == e.Member.Id
+                         where lb.Server_ID == e.Guild.Id
+                         select lb).FirstOrDefault();
+            if (local is null)
+            {
+                CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
+            }
         }
     }
 
