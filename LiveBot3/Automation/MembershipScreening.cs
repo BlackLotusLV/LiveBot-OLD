@@ -13,7 +13,7 @@
                                 where rr.Server_Rank == 0
                                 select rr).FirstOrDefault();
 
-                if (WelcomeSettings.Channel_ID == 0 && !WelcomeSettings.HasScreening) return;
+                if (WelcomeSettings.Channel_ID == 0 || !WelcomeSettings.HasScreening) return;
                 DiscordChannel WelcomeChannel = e.Guild.GetChannel(Convert.ToUInt64(WelcomeSettings.Channel_ID));
 
                 if (WelcomeSettings.Welcome_Message == null) return;
