@@ -19,7 +19,7 @@ namespace LiveBot
             }
             catch (Exception)
             {
-                Program.Client.Logger.LogInformation(CustomLogEvents.LiveStream, "Live Stream list is empty. No-one to remove or check.");
+                Program.Client.Logger.LogDebug(CustomLogEvents.LiveStream, "Live Stream list is empty. No-one to remove or check.");
             }
         }
     }
