@@ -20,13 +20,14 @@
                 {
                     User = e.User,
                     Time = DateTime.UtcNow,
-                    Guild = guild
+                    Guild = guild,
+                    Channel = channel
                 };
                 int ItemIndex;
                 try
                 {
                     ItemIndex = LiveStreamerList.FindIndex(a => a.User.Id == e.User.Id
-                    && a.Guild.Id == e.User.Presence.Guild.Id);
+                    && a.Guild.Id == e.User.Presence.Guild.Id && a.Channel.Id == channel.Id);
                 }
                 catch (Exception)
                 {
@@ -58,5 +59,6 @@
         public DiscordUser User { get; set; }
         public DateTime Time { get; set; }
         public DiscordGuild Guild { get; set; }
+        public DiscordChannel Channel { get; set; }
     }
 }
