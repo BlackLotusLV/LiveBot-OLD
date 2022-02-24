@@ -134,6 +134,7 @@
             {
                 CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
             }
+            await Task.Delay(1);
         }
     }
 

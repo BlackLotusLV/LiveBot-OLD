@@ -77,7 +77,7 @@ namespace LiveBot.Automation
             if (GuildSettings == null || GuildSettings.Delete_Log == 0) return;
             bool HasAttachment = e.Message.Attachments.Count > 0;
             DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == GuildSettings.ID_Server).Value;
-            DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Delete_Log));
+            DiscordChannel DeleteLog = Guild.GetChannel(GuildSettings.Delete_Log);
             if (author != null && !author.IsBot)
             {
                 string converteddeletedmsg = msg.Content;
@@ -134,7 +134,7 @@ namespace LiveBot.Automation
                                  select ss).FirstOrDefault();
             if (GuildSettings == null || GuildSettings.Delete_Log == 0) return;
             DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == GuildSettings.ID_Server).Value;
-            DiscordChannel DeleteLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings.Delete_Log));
+            DiscordChannel DeleteLog = Guild.GetChannel(GuildSettings.Delete_Log);
             StringBuilder sb = new();
             foreach (var message in e.Messages.Reverse())
             {
@@ -182,7 +182,7 @@ namespace LiveBot.Automation
                                  select ss).FirstOrDefault();
             DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == GuildSettings.ID_Server).Value;
             if (GuildSettings == null || GuildSettings.User_Traffic == 0) return;
-            DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings.User_Traffic));
+            DiscordChannel UserTraffic = Guild.GetChannel(GuildSettings.User_Traffic);
             DiscordEmbedBuilder embed = new()
             {
                 Title = $"📥{e.Member.Username}({e.Member.Id}) has joined the server",
@@ -203,7 +203,7 @@ namespace LiveBot.Automation
                                  select ss).FirstOrDefault();
             if (GuildSettings == null || GuildSettings.User_Traffic == 0) return;
             DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == GuildSettings.ID_Server).Value;
-            DiscordChannel UserTraffic = Guild.GetChannel(Convert.ToUInt64(GuildSettings.User_Traffic));
+            DiscordChannel UserTraffic = Guild.GetChannel(GuildSettings.User_Traffic);
             DiscordEmbedBuilder embed = new()
             {
                 Title = $"📤{e.Member.Username}({e.Member.Id}) has left the server",
@@ -228,7 +228,7 @@ namespace LiveBot.Automation
             if (GuildSettings == null || GuildSettings.WKB_Log == 0) return;
             DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == GuildSettings.ID_Server).Value;
             var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Kick);
-            DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(GuildSettings.WKB_Log));
+            DiscordChannel wkbLog = Guild.GetChannel(GuildSettings.WKB_Log);
             if (logs[0].CreationTimestamp >= beforetime && logs[0].CreationTimestamp <= aftertime)
             {
                 await CustomMethod.SendModLog(wkbLog, e.Member, $"*by {logs[0].UserResponsible.Mention}*\n**Reason:** {logs[0].Reason}", CustomMethod.ModLogType.Kick);
@@ -251,7 +251,7 @@ namespace LiveBot.Automation
             _ = Task.Run(async () =>
             {
                 var wkb_Settings = DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == e.Guild.Id);
-                DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Key == (Convert.ToUInt64(wkb_Settings.ID_Server))).Value;
+                DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Key == (wkb_Settings.ID_Server)).Value;
                 if (wkb_Settings.WKB_Log != 0)
                 {
                     int timesRun = 0;
@@ -266,7 +266,7 @@ namespace LiveBot.Automation
                         timesRun++;
                         Console.WriteLine($"--Trying check again {timesRun}. {(banEntry == null ? "Empty" : "Found")}");
                     }
-                    DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings.WKB_Log));
+                    DiscordChannel wkbLog = Guild.GetChannel(wkb_Settings.WKB_Log);
                     if (banEntry != null)
                     {
                         Console.WriteLine("Ban reason search succeeded");
@@ -300,12 +300,12 @@ namespace LiveBot.Automation
                 var wkb_Settings = (from ss in DB.DBLists.ServerSettings
                                     where ss.ID_Server == e.Guild.Id
                                     select ss).ToList();
-                DiscordGuild Guild = await Client.GetGuildAsync(Convert.ToUInt64(wkb_Settings[0].ID_Server));
+                DiscordGuild Guild = await Client.GetGuildAsync(wkb_Settings[0].ID_Server);
                 if (wkb_Settings[0].WKB_Log != 0)
                 {
                     await Task.Delay(1000);
                     var logs = await Guild.GetAuditLogsAsync(1, action_type: AuditLogActionType.Unban);
-                    DiscordChannel wkbLog = Guild.GetChannel(Convert.ToUInt64(wkb_Settings[0].WKB_Log));
+                    DiscordChannel wkbLog = Guild.GetChannel(wkb_Settings[0].WKB_Log);
                     await CustomMethod.SendModLog(wkbLog, e.Member, $"**User Unbanned:**\t{e.Member.Mention}\n*by {logs[0].UserResponsible.Mention}*", CustomMethod.ModLogType.Unban);
                 }
             });
