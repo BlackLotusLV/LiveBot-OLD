@@ -26,10 +26,7 @@ namespace LiveBot
         {
             DB.Leaderboard newEntry = new()
             {
-                ID_User = user.Id,
-                Followers = (long)0,
-                Level = 0,
-                Bucks = (long)0
+                ID_User = user.Id
             };
             DB.DBLists.InsertLeaderboard(newEntry);
             List<DB.UserImages> UserImg = DB.DBLists.UserImages;

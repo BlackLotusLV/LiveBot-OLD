@@ -119,17 +119,7 @@
 
         public static async Task Add_To_Leaderboards(object O, GuildMemberAddEventArgs e)
         {
-            var global = (from lb in DB.DBLists.Leaderboard.AsParallel()
-                          where lb.ID_User == e.Member.Id
-                          select lb).FirstOrDefault();
-            if (global is null)
-            {
-                CustomMethod.AddUserToLeaderboard(e.Member);
-            }
-            var local = (from lb in DB.DBLists.ServerRanks.AsParallel()
-                         where lb.User_ID == e.Member.Id
-                         where lb.Server_ID == e.Guild.Id
-                         select lb).FirstOrDefault();
+            DB.ServerRanks local = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(lb => lb.User_ID == e.Member.Id && lb.Server_ID == e.Guild.Id);
             if (local is null)
             {
                 CustomMethod.AddUserToServerRanks(e.Member, e.Guild);
