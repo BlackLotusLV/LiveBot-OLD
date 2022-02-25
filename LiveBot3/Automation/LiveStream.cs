@@ -26,8 +26,10 @@
                 int ItemIndex;
                 try
                 {
-                    ItemIndex = LiveStreamerList.FindIndex(a => a.User.Id == e.User.Id
-                    && a.Guild.Id == e.User.Presence.Guild.Id && a.Channel.Id == channel.Id);
+                    ItemIndex = LiveStreamerList.FindIndex(a =>
+                        a.User.Id == e.User.Id
+                        && a.Guild.Id == e.User.Presence.Guild.Id
+                        && a.Channel.Id == channel.Id);
                 }
                 catch (Exception)
                 {
