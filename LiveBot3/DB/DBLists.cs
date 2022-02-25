@@ -674,7 +674,6 @@ namespace LiveBot.DB
             using var ctx = new UserImagesContext();
             ctx.UserImages.Add(o);
             ctx.SaveChanges();
-            LoadUserImages();
         }
 
         public static void InsertUserSettings(UserSettings o)
@@ -682,7 +681,6 @@ namespace LiveBot.DB
             using var ctx = new UserSettingsContext();
             ctx.UserSettings.Add(o);
             ctx.SaveChanges();
-            LoadUserSettings();
         }
 
         public static void InsertLeaderboard(Leaderboard o)
@@ -690,7 +688,6 @@ namespace LiveBot.DB
             using var ctx = new LeaderboardContext();
             ctx.Leaderboard.Add(o);
             ctx.SaveChanges();
-            LoadLeaderboard();
         }
 
         public static void InsertServerRanks(ServerRanks o)
@@ -698,7 +695,6 @@ namespace LiveBot.DB
             using var ctx = new ServerRanksContext();
             ctx.ServerRanks.Add(o);
             ctx.SaveChanges();
-            LoadServerRanks();
         }
 
         public static void InsertWarnings(Warnings o)
@@ -706,7 +702,6 @@ namespace LiveBot.DB
             using var ctx = new WarningsContext();
             ctx.Warnings.Add(o);
             ctx.SaveChanges();
-            LoadWarnings();
         }
 
         public static void InsertServerSettings(ServerSettings o)
@@ -714,7 +709,6 @@ namespace LiveBot.DB
             using var ctx = new ServerSettingsContext();
             ctx.ServerSettings.Add(o);
             ctx.SaveChanges();
-            LoadServerSettings();
         }
 
         public static void InsertRankRoles(RankRoles o)
@@ -722,7 +716,6 @@ namespace LiveBot.DB
             using var ctx = new RankRolesContext();
             ctx.RankRoles.Add(o);
             ctx.SaveChanges();
-            LoadRankRoles();
         }
 
         public static void InsertCUC(CommandsUsedCount o)
@@ -730,7 +723,6 @@ namespace LiveBot.DB
             using var ctx = new CommandsUsedCountContext();
             ctx.CommandsUsedCount.Add(o);
             ctx.SaveChanges();
-            LoadRankRoles();
         }
 
         public static void InsertBannedWords(AMBannedWords o)
@@ -738,7 +730,6 @@ namespace LiveBot.DB
             using var ctx = new AMBannedWordsContext();
             ctx.AMBannedWords.Add(o);
             ctx.SaveChanges();
-            LoadRankRoles();
         }
 
         public static void InsertBotOutputList(BotOutputList o)
@@ -746,7 +737,6 @@ namespace LiveBot.DB
             using var ctx = new BotOutputListContext();
             ctx.BotOutputList.Add(o);
             ctx.SaveChanges();
-            LoadRankRoles();
         }
 
         public static void InsertWeatherSchedule(WeatherSchedule o)
@@ -754,7 +744,6 @@ namespace LiveBot.DB
             using var ctx = new WeatherScheduleContext();
             ctx.WeatherSchedule.Add(o);
             ctx.SaveChanges();
-            LoadRankRoles();
         }
 
         public static void InsertBackgroundImage(BackgroundImage o)
@@ -762,7 +751,6 @@ namespace LiveBot.DB
             using var ctx = new BackgroundImageContext();
             ctx.BackgroundImage.Add(o);
             ctx.SaveChanges();
-            LoadBackgroundImage();
         }
 
         public static void InsertModMail(ModMail o)
@@ -770,7 +758,6 @@ namespace LiveBot.DB
             using var ctx = new ModMailContext();
             ctx.ModMail.Add(o);
             ctx.SaveChanges();
-            LoadModMail();
         }
 
         public static long InsertModMailGetID(ModMail o)
@@ -778,7 +765,6 @@ namespace LiveBot.DB
             using var ctx = new ModMailContext();
             ctx.ModMail.Add(o);
             ctx.SaveChanges();
-            LoadModMail();
             return o.ID;
         }
 
@@ -787,7 +773,6 @@ namespace LiveBot.DB
             using var ctx = new RoleTagSettingsContext();
             ctx.RoleTagSettings.Add(o);
             ctx.SaveChanges();
-            LoadRoleTagSettings();
         }
 
         #endregion Insert Functions

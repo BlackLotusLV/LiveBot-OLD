@@ -7,15 +7,6 @@ namespace LiveBot.Commands
 {
     public class UngroupedCommands : BaseCommandModule
     {
-        [Command("test")]
-        public async Task Test(CommandContext ctx)
-        {
-            DB.Leaderboard global2 = DB.DBLists.Leaderboard.FirstOrDefault(lb => lb.ID_User == ctx.Member.Id);
-            DB.Leaderboard global = DB.DBLists.Leaderboard.AsParallel().FirstOrDefault(lb => lb.ID_User == ctx.Member.Id);
-            List<DB.UserImages> UserImg = DB.DBLists.UserImages;
-            var idui = UserImg.Max(m => m.ID_User_Images);
-        }
-
         [Command("bot")]//list of Live bot changes
         [Description("Info about the bot. Latest changes, how to support, how long it has been up.")]
         public async Task Bot(CommandContext ctx)
