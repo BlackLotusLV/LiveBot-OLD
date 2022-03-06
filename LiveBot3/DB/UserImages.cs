@@ -19,6 +19,6 @@ namespace LiveBot.DB
 
         [Required]
         [Column("bg_id")]
-        public int BG_ID { get; set; }
+        public int BG_ID { get; set; } = 1;
     }
 }

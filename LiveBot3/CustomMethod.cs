@@ -24,43 +24,34 @@ namespace LiveBot
 
         public static void AddUserToLeaderboard(DiscordUser user)
         {
+            if (DB.DBLists.Leaderboard.FirstOrDefault(w => w.ID_User == user.Id) != null) return;
+
             DB.Leaderboard newEntry = new()
             {
                 ID_User = user.Id
             };
             DB.DBLists.InsertLeaderboard(newEntry);
-            List<DB.UserImages> UserImg = DB.DBLists.UserImages;
-            var idui = UserImg.Max(m => m.ID_User_Images);
             DB.UserImages newUImage = new()
             {
-                User_ID = user.Id,
-                BG_ID = 1,
-                ID_User_Images = idui + 1
+                User_ID = user.Id
             };
             DB.DBLists.InsertUserImages(newUImage);
-            List<DB.UserSettings> UserSet = DB.DBLists.UserSettings;
-            var us = UserSet.Max(m => m.ID_User_Settings);
             DB.UserSettings newUSettings = new()
             {
                 User_ID = user.Id,
                 User_Info = "There is a difference between knowing the path and walking the path.",
-                Image_ID = newUImage.ID_User_Images,
-                ID_User_Settings = us + 1
+                Image_ID = newUImage.ID_User_Images
             };
             DB.DBLists.InsertUserSettings(newUSettings);
         }
 
         public static void AddUserToServerRanks(DiscordUser user, DiscordGuild guild)
         {
-            if (DB.DBLists.Leaderboard.FirstOrDefault(f => f.ID_User == user.Id) == null)
+            if (DB.DBLists.Leaderboard.FirstOrDefault(w => w.ID_User == user.Id) == null)
             {
                 AddUserToLeaderboard(user);
             }
-            List<DB.ServerRanks> Leaderboard = DB.DBLists.ServerRanks;
-            var local = (from lb in Leaderboard.AsParallel()
-                         where lb.User_ID == user.Id
-                         where lb.Server_ID == guild.Id
-                         select lb).FirstOrDefault();
+            DB.ServerRanks local = DB.DBLists.ServerRanks.AsParallel().FirstOrDefault(w=>w.User_ID==user.Id && w.Server_ID == guild.Id);
             if (local is null)
             {
                 DB.ServerRanks newEntry = new()
@@ -354,7 +345,6 @@ namespace LiveBot
             DB.DBLists.LoadWarnings();
             List<DB.ServerRanks> ServerRanks = DB.DBLists.ServerRanks;
             List<DB.Warnings> warnings = DB.DBLists.Warnings;
-            bool UserCheck = false;
             int kcount = 0,
                 bcount = 0,
                 wlevel = 0,
@@ -362,58 +352,59 @@ namespace LiveBot
                 splitcount = 1;
             StringBuilder Reason = new();
             var UserStats = ServerRanks.FirstOrDefault(f => User.Id == f.User_ID && Guild.Id == f.Server_ID);
-            if (UserStats != null)
+            if (UserStats == null)
             {
-                UserCheck = true;
-                kcount = UserStats.Kick_Count;
-                bcount = UserStats.Ban_Count;
-                wlevel = UserStats.Warning_Level;
-                var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).OrderBy(w => w.Time_Created).ToList();
-                if (!AdminCommand)
+                AddUserToServerRanks(User, Guild);
+                UserStats = ServerRanks.FirstOrDefault(f => User.Id == f.User_ID && Guild.Id == f.Server_ID);
+            }
+            kcount = UserStats.Kick_Count;
+            bcount = UserStats.Ban_Count;
+            wlevel = UserStats.Warning_Level;
+            var WarningsList = warnings.Where(w => w.User_ID == User.Id && w.Server_ID == Guild.Id).OrderBy(w => w.Time_Created).ToList();
+            if (!AdminCommand)
+            {
+                WarningsList.RemoveAll(w => w.Type == "note");
+            }
+            wcount = WarningsList.Count(w => w.Type == "warning");
+            foreach (var item in WarningsList)
+            {
+                switch (item.Type)
                 {
-                    WarningsList.RemoveAll(w => w.Type == "note");
+                    case "ban":
+                        Reason.Append("[🔨]");
+                        break;
+
+                    case "kick":
+                        Reason.Append("[🥾]");
+                        break;
+
+                    case "note":
+                        Reason.Append("[❔]");
+                        break;
+
+                    default: // warning
+                        if (item.Active)
+                        {
+                            Reason.Append("[✅] ");
+                        }
+                        else
+                        {
+                            Reason.Append("[❌] ");
+                        }
+                        break;
                 }
-                wcount = WarningsList.Count(w => w.Type == "warning");
-                foreach (var item in WarningsList)
+                string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** <t:{(int)(item.Time_Created - new DateTime(1970, 1, 1)).TotalSeconds}>\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
+
+                if (Reason.Length + addedInfraction.Length > 1023 * splitcount)
                 {
-                    switch (item.Type)
-                    {
-                        case "ban":
-                            Reason.Append("[🔨]");
-                            break;
-
-                        case "kick":
-                            Reason.Append("[🥾]");
-                            break;
-
-                        case "note":
-                            Reason.Append("[❔]");
-                            break;
-
-                        default: // warning
-                            if (item.Active)
-                            {
-                                Reason.Append("[✅] ");
-                            }
-                            else
-                            {
-                                Reason.Append("[❌] ");
-                            }
-                            break;
-                    }
-                    string addedInfraction = $"**ID:**{item.ID_Warning}\t**By:** <@{item.Admin_ID}>\t**Date:** <t:{(int)(item.Time_Created - new DateTime(1970, 1, 1)).TotalSeconds}>\n**Reason:** {item.Reason}\n **Type:**\t{item.Type}";
-
-                    if (Reason.Length + addedInfraction.Length > 1023 * splitcount)
-                    {
-                        Reason.Append("~split~");
-                        splitcount++;
-                    }
-                    Reason.AppendLine(addedInfraction);
+                    Reason.Append("~split~");
+                    splitcount++;
                 }
-                if (WarningsList.Count == 0)
-                {
-                    Reason.AppendLine("User has no warnings.");
-                }
+                Reason.AppendLine(addedInfraction);
+            }
+            if (WarningsList.Count == 0)
+            {
+                Reason.AppendLine("User has no warnings.");
             }
             DiscordEmbedBuilder embed = new()
             {
@@ -439,23 +430,7 @@ namespace LiveBot
             {
                 embed.AddField($"Infraction({i + 1}/{SplitReason.Length})", SplitReason[i], false);
             }
-            if (!UserCheck)
-            {
-                return new DiscordEmbedBuilder
-                {
-                    Color = new DiscordColor(0xFF6600),
-                    Author = new DiscordEmbedBuilder.EmbedAuthor
-                    {
-                        Name = User.Username,
-                        IconUrl = User.AvatarUrl
-                    },
-                    Description = "This user has no warning, kick and/or ban history in this server."
-                };
-            }
-            else
-            {
-                return embed;
-            }
+            return embed;
         }
 
         public static void DBProgress(int LoadedTableCount, TimeSpan time, string DataTableName = null)
