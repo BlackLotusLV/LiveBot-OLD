@@ -7,10 +7,6 @@ namespace LiveBot.DB
     internal class UserSettings
     {
         [Key]
-        [Column("id_user_settings")]
-        public int ID_User_Settings { get; set; }
-
-        [Required]
         [Column("user_id")]
         public ulong User_ID
         { get => _User_ID; set { _User_ID = Convert.ToUInt64(value); } }
