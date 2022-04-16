@@ -19,28 +19,32 @@ namespace LiveBot.SlashCommands
         [SlashRequireGuild]
         public async Task News(InteractionContext ctx)
         {
-            DiscordSelectComponentOption option1 = new("test 1", "1");
-            DiscordSelectComponentOption option2 = new("test 2", "2");
-            List<DiscordSelectComponentOption> options = new ();
-            options.Add(option1);
-            options.Add(option2);
-            DiscordInteractionResponseBuilder modal = new DiscordInteractionResponseBuilder().WithTitle("Nodal").WithCustomId($"modal-{ctx.User.Id}")
-                .AddComponents(
-                    new TextInputComponent("test", "test", "this is a placeholder"),
-                    new DiscordSelectComponent("test-select", "test?", options)
-                    );
+            var modal = new DiscordInteractionResponseBuilder().WithTitle("News Post Form").WithCustomId($"modal-{ctx.User.Id}")
+            .AddComponents(new TextInputComponent(label: "News Title", customId: "Title", value: ""))
+            .AddComponents(new TextInputComponent(label: "Body Text", customId: "Body", value: ""))
+            .AddComponents(new TextInputComponent(label: "Media link", customId: "Media", value: "",required: false));
 
-            await ctx.CreateResponseAsync(InteractionResponseType.Modal ,modal);
-
+            await ctx.CreateResponseAsync(InteractionResponseType.Modal, modal);
             var interactivity = ctx.Client.GetInteractivity();
             var response = await interactivity.WaitForModalAsync($"modal-{ctx.User.Id}", ctx.User);
-
             if (!response.TimedOut)
             {
                 var modalInteraction = response.Result.Interaction;
-                await modalInteraction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"thing created"));
+                var values = response.Result.Values;
+                DiscordEmbedBuilder embed = new()
+                {
+                    Author = new DiscordEmbedBuilder.EmbedAuthor()
+                    {
+                        Name = ctx.Client.CurrentUser.Username,
+                        IconUrl = ctx.Client.CurrentUser.AvatarUrl
+                    },
+                    Title = values["Title"],
+                    Description = values["Body"],
+                    Color= new DiscordColor(0x59bfff)
+                };
+                await modalInteraction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed));
             }
         }
-        */
+        //*/
     }
 }

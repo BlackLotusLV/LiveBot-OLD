@@ -17,7 +17,7 @@ namespace LiveBot
         public SlashCommandsExtension Slash { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
         public static readonly DateTime start = DateTime.UtcNow;
-        public static readonly string BotVersion = $"20220317_A";
+        public static readonly string BotVersion = $"20220416_A";
         public static bool TestBuild { get; set; } = true;
         // TC Hub
 
@@ -57,22 +57,24 @@ namespace LiveBot
 
         public async Task RunBotAsync(string[] args)
         {
+            // Load Fonts
             Fonts.Install("Assets/Fonts/Hurme_Geometric_Sans_3_W03_Blk.ttf");
             Fonts.Install("Assets/Fonts/RobotoMono-BoldItalic.ttf");
             Fonts.Install("Assets/Fonts/RobotoMono-Bold.ttf");
             Fonts.Install("Assets/Fonts/RobotoMono-Italic.ttf");
             Fonts.Install("Assets/Fonts/RobotoMono-Regular.ttf");
+            // Load Config
             var json = string.Empty;
             using (var sr = new StreamReader(File.OpenRead("Config.json"), new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
             TCEJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCE;
             CFGJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DevBot;
 
-            // TC Hub
+            // Start The Crew Hub service
             TCHubJson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).TCHub;
             Thread HubThread = new(async () => await HubMethods.UpdateHubInfo());
             HubThread.Start();
-            //
+            
 
             LogLevel logLevel = LogLevel.Debug;
             if (args.Length == 1 && args[0] == "live") // Checks for command argument to be "live", if so, then launches the live version of the bot, not dev

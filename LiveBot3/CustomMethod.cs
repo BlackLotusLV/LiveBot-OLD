@@ -7,6 +7,10 @@ namespace LiveBot
 {
     internal static class CustomMethod
     {
+        /// <summary>
+        /// Gets the database connection string
+        /// </summary>
+        /// <returns>Returns connection string</returns>
         public static string GetConnString()
         {
             string json;
@@ -15,13 +19,20 @@ namespace LiveBot
             var cfgjson = JsonConvert.DeserializeObject<ConfigJson.Config>(json).DataBase;
             return $"Host={cfgjson.Host};Username={cfgjson.Username};Password={cfgjson.Password};Database={cfgjson.Database}; Port={cfgjson.Port}";
         }
-
+        /// <summary>
+        /// Converts epoch time to datetime
+        /// </summary>
+        /// <param name="ms"></param>
+        /// <returns>A datetime based on epoch</returns>
         public static DateTime EpochConverter(long ms)
         {
             DateTime f = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return f.AddMilliseconds(ms);
         }
-
+        /// <summary>
+        /// Creates a new entry in the Leaderboard database
+        /// </summary>
+        /// <param name="user"></param>
         public static void AddUserToLeaderboard(DiscordUser user)
         {
             if (DB.DBLists.Leaderboard.FirstOrDefault(w => w.ID_User == user.Id) != null) return;
@@ -288,7 +299,11 @@ namespace LiveBot
 
             await ModLogChannel.SendMessageAsync(discordMessageBuilder);
         }
-
+        /// <summary>
+        /// Checks if the user has the required permissions to use the command
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns>If user has permissions, returns true</returns>
         public static bool CheckIfMemberAdmin(DiscordMember member)
         {
             if (

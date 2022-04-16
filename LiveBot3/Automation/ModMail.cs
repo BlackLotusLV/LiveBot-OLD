@@ -6,43 +6,39 @@
 
         public static async Task ModMailDM(DiscordClient Client, MessageCreateEventArgs e)
         {
-            _ = Task.Run(async () =>
+            var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Author.Id && w.IsActive);
+            if (e.Guild == null && MMEntry != null && !(e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}modmail") || e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}mm")))
             {
-                var MMEntry = DB.DBLists.ModMail.FirstOrDefault(w => w.User_ID == e.Author.Id && w.IsActive);
-                if (e.Guild == null && MMEntry != null && !(e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}modmail") || e.Message.Content.StartsWith($"{Program.CFGJson.CommandPrefix}mm")))
+                DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == MMEntry.Server_ID).Value;
+                DiscordChannel ModMailChannel = Guild.GetChannel(DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);
+                DiscordEmbedBuilder embed = new()
                 {
-                    DiscordGuild Guild = Client.Guilds.FirstOrDefault(w => w.Value.Id == MMEntry.Server_ID).Value;
-                    DiscordChannel ModMailChannel = Guild.GetChannel(DB.DBLists.ServerSettings.FirstOrDefault(w => w.ID_Server == MMEntry.Server_ID).ModMailID);
-                    DiscordEmbedBuilder embed = new()
+                    Author = new DiscordEmbedBuilder.EmbedAuthor
                     {
-                        Author = new DiscordEmbedBuilder.EmbedAuthor
-                        {
-                            IconUrl = e.Author.AvatarUrl,
-                            Name = $"{e.Author.Username} ({e.Author.Id})"
-                        },
-                        Color = new DiscordColor(MMEntry.ColorHex),
-                        Title = $"[INBOX] #{MMEntry.ID} Mod Mail user message.",
-                        Description = e.Message.Content
-                    };
+                        IconUrl = e.Author.AvatarUrl,
+                        Name = $"{e.Author.Username} ({e.Author.Id})"
+                    },
+                    Color = new DiscordColor(MMEntry.ColorHex),
+                    Title = $"[INBOX] #{MMEntry.ID} Mod Mail user message.",
+                    Description = e.Message.Content
+                };
 
-                    if (e.Message.Attachments != null)
+                if (e.Message.Attachments != null)
+                {
+                    foreach (var attachment in e.Message.Attachments)
                     {
-                        foreach (var attachment in e.Message.Attachments)
-                        {
-                            embed.AddField("Atachment", attachment.Url, false);
-                        }
+                        embed.AddField("Atachment", attachment.Url, false);
                     }
-
-                    await ModMailChannel.SendMessageAsync(embed: embed);
-
-                    MMEntry.HasChatted = true;
-                    MMEntry.LastMSGTime = DateTime.UtcNow;
-                    DB.DBLists.UpdateModMail(MMEntry);
-
-                    Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail message sent to {ChannelName}({ChannelId}) in {GuildName} from {Username}({UserId})", ModMailChannel.Name, ModMailChannel.Id, ModMailChannel.Guild.Name, e.Author.Username, e.Author.Id);
                 }
-            });
-            await Task.Delay(1);
+
+                await ModMailChannel.SendMessageAsync(embed: embed);
+
+                MMEntry.HasChatted = true;
+                MMEntry.LastMSGTime = DateTime.UtcNow;
+                DB.DBLists.UpdateModMail(MMEntry);
+
+                Client.Logger.LogInformation(CustomLogEvents.ModMail, "New Mod Mail message sent to {ChannelName}({ChannelId}) in {GuildName} from {Username}({UserId})", ModMailChannel.Name, ModMailChannel.Id, ModMailChannel.Guild.Name, e.Author.Username, e.Author.Id);
+            }
         }
 
         public static async Task ModMailCloser()
